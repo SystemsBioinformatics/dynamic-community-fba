@@ -1,8 +1,14 @@
+import pandas as pd
+import cbmpy
+from cbmpy.CBModel import Reaction
+from build_community_matrix import load_n_models, combine_models
+
+
 def main():
     ls_models_combined = [
-        "../Models/toy_organism_A.xml",
-        "../Models/toy_organism_B.xml",
-        "../Models/toy_organism_A.txt",
+        "data/toy_model/toy_organism_A.xml",
+        "data/toy_model/toy_organism_B.xml",
+        "data/toy_model/toy_organism_A.txt",
     ]
 
     models = load_n_models(ls_models_combined)
@@ -37,14 +43,17 @@ def main():
     FBAsol = pd.DataFrame(zip(FBAsol[1], FBAsol[0]), columns=["ID", "flux"])
 
     print(FBAsol)
-    # cbmpy.saveModel(combined_model, "../Models/test_community.xml")
-    # cbmpy.writeCOBRASBML(combined_model, "../Models/test_community_cobra.xml")
+    # cbmpy.saveModel(combined_model, "data/toy_model/test_community.xml")
+    # cbmpy.writeCOBRASBML(combined_model, "data/toy_model/test_community_cobra.xml")
 
 
 # main()
 
 
-list_real_models = ["../Models/strep.xml", "../Models/iML1515.xml"]
+list_real_models = [
+    "data/bigg_models/strep.xml",
+    "data/bigg_models/iML1515.xml",
+]
 models = load_n_models(list_real_models)
 
 combined_model = combine_models(models)
