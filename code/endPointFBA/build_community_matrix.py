@@ -20,13 +20,15 @@ def load_n_models(files: list[str]) -> list[Model]:
 def combine_models(models: list[Model]) -> Model:
     # First just rename all species/reagants
 
-    combined_model = Model("Combined_model")
+    combined_model = Model("combined_model")
     combined_model.createCompartment("e", "extracellular space")
     duplicate_species = create_duplicate_species_dict(models)
+
     for model in models:
-        fix_duplicate_species(duplicate_species, model)
-        merge_compartments(model, combined_model)
-        merge_reactions(model, combined_model)
+        if isinstance(model, Model):
+            merge_compartments(model, combined_model)
+            merge_species(duplicate_species, model)
+            merge_reactions(model, combined_model)
 
     return combined_model
 
@@ -69,10 +71,15 @@ def merge_reactions(model: Model, combined_model: Model):
         # If the response is None the reaction was probably already in the
         # model. Check if it is an exchange reaction or if it is specfic to
         # the cellular space of the organisms, and fix accordingly
-        if res is None and (
-            (not reaction.id.startswith("R_EX"))
-            or reaction.id not in model.getExchangeReactionIds()
-        ):
+        is_exchange_reaction: bool = False
+
+        if reaction.id.startswith("R_EX"):
+            is_exchange_reaction = True
+        if reaction.id not in model.getExchangeReactionIds():
+            is_exchange_reaction = True
+        # Expand if there are other cases in which a reaction could be an
+        # exchange reaction
+        if res is None and is_exchange_reaction:
             copyReaction(
                 model,
                 combined_model,
@@ -83,7 +90,7 @@ def merge_reactions(model: Model, combined_model: Model):
             continue
 
 
-def fix_duplicate_species(duplicate_species: dict[str, int], model: Model):
+def merge_species(duplicate_species: dict[str, int], model: Model):
     """If a species occurs in two or more models we append the id of that
     species with the model id, such that we make a distinguishing between the
     two species/metabolites in the organisms, if the species on the other
@@ -101,22 +108,21 @@ def fix_duplicate_species(duplicate_species: dict[str, int], model: Model):
         Model: The new combined model
     """
 
-    # Loop over the duplicate species, if the species is in the old_model
-    # and if a species is not in the external compartment we have to change it
-    # such that we know from which organism it is
-    # Next we need to change all reactions in which the old species
-    # was a reagent to link to the new wrapped species.
-
-    for species_id in duplicate_species.keys():
-        if species_id in model.getSpeciesIds():
-            species: Species = model.getSpecies(species_id)
-            if species.compartment != "e":
+    # Get orginal list, if we getrieve this in the for loop
+    # the list is being altered on the fly
+    # this creates inconsistency errors
+    ls_species_ids = model.getSpeciesIds()
+    for species_id in ls_species_ids:
+        species: Species = model.getSpecies(species_id)
+        if species.compartment != "e":
+            if species.id in duplicate_species.keys():
+                # If species is in more than one species it's id and
+                # reactions have to be changed
                 handle_duplicate_species_reagents(model, species)
-                model.deleteSpecies(species_id)
-            # TODO what if species has two exchange for the same metabolite
-            # TODO reaction with different ids?
-        #  else:
-        #     for model in models:
+                model.deleteSpecies(species.id)
+            else:
+                # Set compartment of species to the right model
+                species.setCompartmentId(f"{species.compartment}_{model.id}")
 
 
 def handle_duplicate_species_reagents(model: Model, species: Species) -> Model:
@@ -150,7 +156,7 @@ def handle_duplicate_species_reagents(model: Model, species: Species) -> Model:
 
 
 # TODO should be imported from package when available
-def copyReaction(m_src, m_targ, rid, altrid=None):
+def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
     """
     Copy a reaction from a source model to a target model, if the required species exist in the target
     then they are mapped as reagents, otherwise new metabolites are added as boundary species.
@@ -201,13 +207,13 @@ def copyReaction(m_src, m_targ, rid, altrid=None):
             targ_exists = True
     if out is None:
         return None
-
-    R = m_src.getReaction(rid).clone()
-
+    old_reaction: Reaction = m_src.getReaction(rid)
+    R: Reaction = old_reaction.clone()
     if targ_exists and altrid is not None:
         R.setId(altrid)
         for re in R.reagents:
             re.setId("{}_{}".format(altrid, re.getSpecies()))
+
     tSpecies = m_targ.getSpeciesIds()
     out["new_species"] = []
     out["existing_species"] = []
@@ -226,7 +232,12 @@ def copyReaction(m_src, m_targ, rid, altrid=None):
         else:
             out["existing_species"].append(s)
         out["reagents"].append(s)
+
     m_targ.addReaction(R, create_default_bounds=True, silent=True)
+    m_targ.setReactionBounds(
+        R.id, old_reaction.getLowerBound(), old_reaction.getUpperBound()
+    )
+
     del R
 
     return out

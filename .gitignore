@@ -155,4 +155,5 @@ cython_debug/
 #vscode
 .vscode/
 
-.data/
+data/
+
