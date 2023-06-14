@@ -55,9 +55,11 @@ list_real_models = [
     "data/bigg_models/iML1515.xml",
 ]
 models = load_n_models(list_real_models)
+print(models[0].getExchangeReactionIds())
+print(models[1].getExchangeReactionIds())
 
-combined_model = combine_models(models)
-print(combined_model.compartments)
-print(combined_model.species[3243].compartment)
+# combined_model = combine_models(models)
+# print(combined_model.compartments)
+# print(combined_model.species[3243].compartment)
 
 # print(combined_model.reactions)

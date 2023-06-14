@@ -66,10 +66,13 @@ def merge_reactions(model: Model, combined_model: Model):
     for reaction in model.reactions:
         # Shoudl be fixed in the package
         res = copyReaction(model, combined_model, reaction.id)
-        # If the response is None the reaction was probably already in the model.
-        # Check if it is an exchange reaction or if it is specfic to the cellular space
-        # of the organisms, and fix accordingly
-        if res is None and (not reaction.id.startswith("R_EX")):
+        # If the response is None the reaction was probably already in the
+        # model. Check if it is an exchange reaction or if it is specfic to
+        # the cellular space of the organisms, and fix accordingly
+        if res is None and (
+            (not reaction.id.startswith("R_EX"))
+            or reaction.id not in model.getExchangeReactionIds()
+        ):
             copyReaction(
                 model,
                 combined_model,
