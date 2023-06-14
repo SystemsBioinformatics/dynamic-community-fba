@@ -1,7 +1,11 @@
 import pandas as pd
 import cbmpy
 from cbmpy.CBModel import Reaction
-from build_community_matrix import load_n_models, combine_models
+from build_community_matrix import (
+    load_n_models,
+    combine_models,
+    create_duplicate_species_dict,
+)
 import sys
 
 # sys.path is a list of absolute path strings
@@ -37,19 +41,47 @@ def main():
     # combined_model.setReactionLowerBound("BM_A_and_B", 0)
 
 
-main()
+# main()
 
 
-# list_real_models = [
-#     "data/bigg_models/strep.xml",
-#     "data/bigg_models/iML1515.xml",
-# ]
-# models = load_n_models(list_real_models)
-# print(models[0].getExchangeReactionIds())
-# print(models[1].getExchangeReactionIds())
+list_real_models = [
+    "data/bigg_models/strep.xml",
+    "data/bigg_models/iML1515.xml",
+]
 
-# combined_model = combine_models(models)
-# print(combined_model.compartments)
-# print(combined_model.species[3243].compartment)
+models = load_n_models(list_real_models)
+print(models[0].getExchangeReactionIds())
+print(models[1].getExchangeReactionIds())
 
-# print(combined_model.reactions)
+combined_model = combine_models(models)
+print(combined_model.getCompartmentIds())
+print(combined_model.getReactionIds())
+print(combined_model.getSpeciesIds())
+
+
+print(len(models[0].getReactionIds()))
+print(len(models[1].getReactionIds()))
+print(len(combined_model.getReactionIds()))
+
+print(len(models[0].getSpeciesIds()))
+print(len(models[1].getSpeciesIds()))
+print(len(combined_model.getSpeciesIds()))
+
+
+print("\n---------------------\n")
+
+models = load_n_models(list_real_models)
+print(create_duplicate_species_dict(models))
+print(len(create_duplicate_species_dict(models)))
+
+for model in models:
+    for species_id in model.getSpeciesIds():
+        if (
+            species_id not in combined_model.getSpeciesIds()
+            and f"{species_id}_{model.id}"
+            not in combined_model.getSpeciesIds()
+        ):
+            print(model.id)
+            print(species_id)
+
+print(combined_model.getSpecies("M_mnl1p_c_iRZ476").id)

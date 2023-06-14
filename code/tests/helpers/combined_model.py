@@ -68,9 +68,26 @@ def build_combined_model():
         "BM_e_B", name="Biomass external species A", compartment="e"
     )
 
+    # Model C species
+    model.createSpecies(
+        "S_c_Organism_C", name="S_c organism C", compartment="c"
+    )
+
+    model.createSpecies("F_c", name="F of organism C", compartment="c")
+
+    model.createSpecies(
+        "BM_c_C", name="Biomass cytosol species C", compartment="c"
+    )
+
+    model.createSpecies(
+        "BM_e_C", name="Biomass external species C", compartment="e"
+    )
+
     # Compartments
     model.createCompartment("c_Organism_A", "cytosol")
     model.createCompartment("c_Organism_B", "cytosol")
+    model.createCompartment("c_Organism_C", "cytosol")
+
     model.createCompartment("e", "external")
 
     # Model A Reactions
@@ -239,5 +256,31 @@ def build_combined_model():
     model.createReactionReagent("BM_e_B_exchange", "BM_e_B", -1)
     model.setReactionBounds("BM_e_B_exchange", 0, 1000)
     model.getReaction("BM_e_B_exchange").is_exchange = True
+
+    # Model C reactions
+    model.createReaction("R_1_Organism_C", reversible=True)
+    model.createReactionReagent("R_1_Organism_C", "S_e", -1)
+    model.createReactionReagent("R_1_Organism_C", "S_c_Organism_C", 1)
+    model.setReactionBounds("R_1_Organism_C", -1000, 1000)
+
+    model.createReaction("R_13", reversible=True)
+    model.createReactionReagent("R_13", "S_c_Organism_C", -2)
+    model.createReactionReagent("R_13", "F_c", 3)
+    model.setReactionBounds("R_13", -1000, 1000)
+
+    model.createReaction("R_14", reversible=True)
+    model.createReactionReagent("R_14", "F_c", -2)
+    model.createReactionReagent("R_14", "BM_c_C", 1)
+    model.setReactionBounds("R_14", -1000, 1000)
+
+    model.createReaction("R_BM_C", reversible=True)
+    model.createReactionReagent("R_BM_C", "BM_c_C", -1)
+    model.createReactionReagent("R_BM_C", "BM_e_C", 1)
+    model.setReactionBounds("R_BM_C", -1000, 1000)
+
+    model.createReaction("BM_e_C_exchange", reversible=False)
+    model.createReactionReagent("BM_e_C_exchange", "BM_e_C", -1)
+    model.setReactionBounds("BM_e_C_exchange", 0, 1000)
+    model.getReaction("BM_e_C_exchange").is_exchange = True
 
     return model

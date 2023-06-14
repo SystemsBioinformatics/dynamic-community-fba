@@ -1,9 +1,7 @@
-from .helpers import model_a, model_b, combined_model
-from cbmpy.CBModel import Model, Reaction
 import pytest
 import cbmpy
 import endPointFBA.build_community_matrix as bcm
-import pandas as pd
+from .helpers import model_a, model_b, model_c, combined_model
 
 
 @pytest.fixture
@@ -17,12 +15,20 @@ def model_B():
 
 
 @pytest.fixture
+def model_C():
+    return model_c.build_model_C()
+
+
+@pytest.fixture
 def defined_combined_model():
     return combined_model.build_combined_model()
 
 
 def test_if_n_models_are_merged_correctly(
-    model_A: Model, model_B: Model, defined_combined_model: Model
+    model_A: cbmpy.CBModel.Model,
+    model_B: cbmpy.CBModel.Model,
+    model_C: cbmpy.CBModel.Model,
+    defined_combined_model: cbmpy.CBModel.Model,
 ):
     """For the community matrix to be correct the compartments, species and
     reactions have to be copied accordingly and follow pur template rules for
@@ -35,7 +41,10 @@ def test_if_n_models_are_merged_correctly(
 
     Asserts true if all three demands are correct
     """
-    combined_model = bcm.combine_models([model_A, model_B])
+    combined_model = bcm.combine_models([model_A, model_B, model_C])
+    print(combined_model.getReactionIds())
+    print(combined_model.getSpeciesIds())
+    print(combined_model.getCompartmentIds())
 
     compartments_are_copied_correctly = sorted(
         combined_model.getCompartmentIds()
@@ -58,40 +67,37 @@ def test_if_n_models_are_merged_correctly(
     )
 
 
-def test_if_community_matrix_performance_FBA(model_A, model_B):
-    combined_model = bcm.combine_models([model_A, model_B])
+def test_if_community_matrix_performance_FBA(model_A, model_B, model_C):
+    combined_model = bcm.combine_models([model_A, model_B, model_C])
 
     # Create objective function
-    combined_model.createReaction("BM_A_and_B", "Biomass reaction both", False)
-    combined_model.createReactionReagent("BM_A_and_B", "BM_e_A", -1)
-    combined_model.createReactionReagent("BM_A_and_B", "BM_e_B", -3)
-    combined_model.setReactionLowerBound("BM_A_and_B", 0)
-    combined_model.getReaction("BM_A_and_B").is_exchange = True
+    combined_model.createReaction("BM_A_B_C", "Biomass reaction both", False)
+    combined_model.createReactionReagent("BM_A_B_C", "BM_e_A", -1)
+    combined_model.createReactionReagent("BM_A_B_C", "BM_e_B", -3)
+    combined_model.createReactionReagent("BM_A_B_C", "BM_e_C", -1)
 
-    combined_model.createObjectiveFunction("BM_A_and_B")
+    combined_model.setReactionLowerBound("BM_A_B_C", 0)
+    combined_model.getReaction("BM_A_B_C").is_exchange = True
 
-    assert round(cbmpy.doFBA(combined_model), 1) == 57.1
+    combined_model.createObjectiveFunction("BM_A_B_C")
 
-
-def test_if_a_none_type_is_skipped():
-    pass
+    assert round(cbmpy.doFBA(combined_model), 1) == 55.3
 
 
-def test_if_dict_contains_all_duplicate_species():
-    pass
+def test_if_dict_contains_all_duplicate_species(model_A, model_B, model_C):
+    dic: dict[str, int] = bcm.create_duplicate_species_dict(
+        [model_A, model_B, model_C]
+    )
+    print(dic)
+    assert dic == {
+        "S_e": 3,
+        "S_c": 3,
+        "B_e": 2,
+        "Z_c": 2,
+        "X_c": 2,
+        "A_e": 2,
+        "B_c": 2,
+    }
 
 
-def test_merge_compartments():
-    pass
-
-
-def test_merge_reactions():
-    pass
-
-
-def fix_duplicate_species():
-    pass
-
-
-def test_handle_duplicate_species():
-    pass
+# TODO Test if a species is in the model but not in a reaction the species is not added

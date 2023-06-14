@@ -25,25 +25,24 @@ def combine_models(models: list[Model]) -> Model:
     duplicate_species = create_duplicate_species_dict(models)
 
     for model in models:
-        if isinstance(model, Model):
-            merge_compartments(model, combined_model)
-            merge_species(duplicate_species, model)
-            merge_reactions(model, combined_model)
+        merge_compartments(model, combined_model)
+        merge_species(duplicate_species, model)
+        merge_reactions(model, combined_model)
 
     return combined_model
 
 
 def create_duplicate_species_dict(models: list[Model]) -> dict[str, int]:
     combined_species_list = [
-        item for sublist in models for item in sublist.species
+        item for sublist in models for item in sublist.getSpeciesIds()
     ]
 
     species_dict = {}
     for m in combined_species_list:
-        if m.id in species_dict.keys():
-            species_dict[m.id] += 1
+        if m in species_dict.keys():
+            species_dict[m] += 1
         else:
-            species_dict[m.id] = 1
+            species_dict[m] = 1
 
     # Find which species are in more than 1 model
     return {k: v for k, v in species_dict.items() if v >= 2}
@@ -64,6 +63,7 @@ def merge_compartments(model: Model, combined_model: Model):
 
 
 def merge_reactions(model: Model, combined_model: Model):
+    exchange_reactions = model.getExchangeReactionIds()
     reaction: Reaction
     for reaction in model.reactions:
         # Shoudl be fixed in the package
@@ -75,7 +75,7 @@ def merge_reactions(model: Model, combined_model: Model):
 
         if reaction.id.startswith("R_EX"):
             is_exchange_reaction = True
-        if reaction.id not in model.getExchangeReactionIds():
+        if reaction.id not in exchange_reactions:
             is_exchange_reaction = True
         # Expand if there are other cases in which a reaction could be an
         # exchange reaction
@@ -111,15 +111,15 @@ def merge_species(duplicate_species: dict[str, int], model: Model):
     # Get orginal list, if we getrieve this in the for loop
     # the list is being altered on the fly
     # this creates inconsistency errors
-    ls_species_ids = model.getSpeciesIds()
+    ls_species_ids = model.getSpeciesIds().copy()
     for species_id in ls_species_ids:
         species: Species = model.getSpecies(species_id)
         if species.compartment != "e":
-            if species.id in duplicate_species.keys():
+            if species_id in duplicate_species.keys():
                 # If species is in more than one species it's id and
                 # reactions have to be changed
                 handle_duplicate_species_reagents(model, species)
-                model.deleteSpecies(species.id)
+                model.deleteSpecies(species_id)
             else:
                 # Set compartment of species to the right model
                 species.setCompartmentId(f"{species.compartment}_{model.id}")
