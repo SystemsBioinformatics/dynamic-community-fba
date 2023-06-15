@@ -92,7 +92,6 @@ def merge_compartments(model: Model, combined_model: Model):
 
     Returns:
         None
-
     """
 
     compartment: Compartment
@@ -216,13 +215,15 @@ def handle_duplicate_species_reagents(model: Model, species: Species):
 # TODO should be imported from package when available
 def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
     """
-    Copy a reaction from a source model to a target model, if the required species exist in the target
-    then they are mapped as reagents, otherwise new metabolites are added as boundary species.
+    Copy a reaction from a source model to a target model, if the required
+    species exist in the target then they are mapped as reagents, otherwise
+    new metabolites are added as boundary species.
 
      - *m_src* the source model
      - *m_targ* the target model
      - *rid* the reaction id to copy
-     - *altrid* if the reaction name exists in the target, try use this one instead
+     - *altrid* if the reaction name exists in the target,
+     try use this one instead
 
     """
     out = {}
