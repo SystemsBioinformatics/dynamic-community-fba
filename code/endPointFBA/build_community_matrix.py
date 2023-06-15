@@ -3,6 +3,17 @@ import cbmpy
 
 
 def load_n_models(files: list[str]) -> list[Model]:
+    """
+    Load multiple CBModels from files and return a list of loaded models.
+
+    Args:
+        files (list[str]): A list of file paths of SBML model files.
+
+    Returns:
+        list[Model]: A list of loaded CBModels.
+
+    """
+
     models: list[Model] = []
     for file in files:
         m: Model = cbmpy.loadModel(file)
@@ -18,7 +29,17 @@ def load_n_models(files: list[str]) -> list[Model]:
 
 
 def combine_models(models: list[Model]) -> Model:
-    # First just rename all species/reagants
+    """
+    Combine multiple CBModels into a single model by renaming species
+    and reactions.
+
+    Args:
+        models (list[Model]): A list of CBModels to combine.
+
+    Returns:
+        Model: The combined CBModel.
+
+    """
 
     combined_model = Model("combined_model")
     combined_model.createCompartment("e", "extracellular space")
@@ -33,6 +54,20 @@ def combine_models(models: list[Model]) -> Model:
 
 
 def create_duplicate_species_dict(models: list[Model]) -> dict[str, int]:
+    """
+    Create a dictionary of duplicate species and their occurrence count from
+    multiple models. This dictionary will be used later on the know which
+    species to rename
+
+    Args:
+        models (list[Model]): A list of CBModels.
+
+    Returns:
+        dict[str, int]: A dictionary mapping duplicate species IDs to their
+        occurrence count.
+
+    """
+
     combined_species_list = [
         item for sublist in models for item in sublist.getSpeciesIds()
     ]
@@ -44,12 +79,22 @@ def create_duplicate_species_dict(models: list[Model]) -> dict[str, int]:
         else:
             species_dict[m] = 1
 
-    # Find which species are in more than 1 model
     return {k: v for k, v in species_dict.items() if v >= 2}
 
 
-# Reanem compartment ids to be organism specific?
 def merge_compartments(model: Model, combined_model: Model):
+    """
+    Merge compartments from a model into a combined model.
+
+    Args:
+        model (Model): The source CBModel.
+        combined_model (Model): The combined CBModel.
+
+    Returns:
+        None
+
+    """
+
     compartment: Compartment
 
     for compartment in model.compartments:
@@ -63,10 +108,21 @@ def merge_compartments(model: Model, combined_model: Model):
 
 
 def merge_reactions(model: Model, combined_model: Model):
+    """
+    Merge reactions from a model into a combined model.
+
+    Args:
+        model (Model): The source CBModel.
+        combined_model (Model): The combined CBModel.
+
+    Returns:
+        None
+
+    """
     exchange_reactions = model.getExchangeReactionIds()
     reaction: Reaction
     for reaction in model.reactions:
-        # Shoudl be fixed in the package
+        # TODO Shoud be fixed in the package
         res = copyReaction(model, combined_model, reaction.id)
         # If the response is None the reaction was probably already in the
         # model. Check if it is an exchange reaction or if it is specfic to
@@ -77,7 +133,7 @@ def merge_reactions(model: Model, combined_model: Model):
             is_exchange_reaction = True
         if reaction.id not in exchange_reactions:
             is_exchange_reaction = True
-        # Expand if there are other cases in which a reaction could be an
+        # TODO Expand if there are other cases in which a reaction could be an
         # exchange reaction
         if res is None and is_exchange_reaction:
             copyReaction(
@@ -91,13 +147,17 @@ def merge_reactions(model: Model, combined_model: Model):
 
 
 def merge_species(duplicate_species: dict[str, int], model: Model):
-    """If a species occurs in two or more models we append the id of that
-    species with the model id, such that we make a distinguishing between the
-    two species/metabolites in the organisms, if the species on the other
-    hand is present in the extracellular space we can leave the species
-
-    After renaming the species all the linked reagents also need to be changed
-    see handle_duplicate_species_reagents
+    """
+    Merge species from a model into a combined model.
+    Rules based:
+    1) If a species occurs in two or more models in the cytosolic space
+    we append the id of that species with the model id, such that we make
+    a distinguishing between the two species/metabolites in the organisms
+    2) If the species on the other lives in the extracellular space
+    we don't merge the species, the two model now use the same extracellular
+    space species
+    3) If the species of a model is not a duplicate we still change it's
+    compartment for clarity. Now the user know where the species is located
 
     Args:
         models (list[Model]): The list of the models that need to be in the
@@ -105,41 +165,39 @@ def merge_species(duplicate_species: dict[str, int], model: Model):
         combined_model (Model): The new combined model
 
     Returns:
-        Model: The new combined model
+        None
     """
 
-    # Get orginal list, if we getrieve this in the for loop
-    # the list is being altered on the fly
+    # Get original list, if we retrieve this in the for loop
+    # the list is being altered within the function adding the new species
     # this creates inconsistency errors
-    ls_species_ids = model.getSpeciesIds().copy()
+    ls_species_ids = model.getSpeciesIds()
     for species_id in ls_species_ids:
         species: Species = model.getSpecies(species_id)
         if species.compartment != "e":
             if species_id in duplicate_species.keys():
-                # If species is in more than one species it's id and
-                # reactions have to be changed
                 handle_duplicate_species_reagents(model, species)
                 model.deleteSpecies(species_id)
             else:
-                # Set compartment of species to the right model
                 species.setCompartmentId(f"{species.compartment}_{model.id}")
 
 
-def handle_duplicate_species_reagents(model: Model, species: Species) -> Model:
-    """_summary_
+def handle_duplicate_species_reagents(model: Model, species: Species):
+    """
+    Handle duplicate species reagents when merging models.
+    If the species exists in one of the base models, add new instance of that
+    species in the old model with a new id. Afterwards update
+    all the reactions in which the old_species occurs such that the
+    reactions uses the new_species, and delete the old reagent
 
     Args:
-        model (Model): _description_
-        combined_model (Model): _description_
-        species (Species): _description_
+        model (Model): The CBModel.
+        species (Species): The species to handle.
 
     Returns:
-        Model: _description_
+        None
+
     """
-    # If the species exists in one of the base models, add new
-    # instance of that species in the old model with a new id
-    # Afterwards update all the links of the reactions of the model
-    # to this new species
     new_species_id = f"{species.id}_{model.id}"
     new_species = species.clone()
     new_species.setId(new_species_id)
