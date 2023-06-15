@@ -23,6 +23,15 @@ def build_model_C():
         "BM_e_C", name="Biomass external species B", compartment="e"
     )
 
+    # Dummy species that won't occur in a reaction to test
+    # behavior of the method
+
+    model.createSpecies(
+        "Dummy_species",
+        name="This species does not occur in any reaction",
+        compartment="c",
+    )
+
     model.createCompartment("c", "cytosol")
     model.createCompartment("e", "external")
 

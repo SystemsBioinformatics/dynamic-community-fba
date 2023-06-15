@@ -41,10 +41,8 @@ def test_if_n_models_are_merged_correctly(
 
     Asserts true if all three demands are correct
     """
+
     combined_model = bcm.combine_models([model_A, model_B, model_C])
-    print(combined_model.getReactionIds())
-    print(combined_model.getSpeciesIds())
-    print(combined_model.getCompartmentIds())
 
     compartments_are_copied_correctly = sorted(
         combined_model.getCompartmentIds()
@@ -100,4 +98,9 @@ def test_if_dict_contains_all_duplicate_species(model_A, model_B, model_C):
     }
 
 
-# TODO Test if a species is in the model but not in a reaction the species is not added
+def test_if_species_with_no_reactions_is_not_added(model_A, model_C):
+    combined_model = bcm.combine_models([model_A, model_C])
+
+    dummy_species = model_C.getSpecies("Dummy_species")
+
+    assert combined_model.getSpecies(dummy_species.id) is None
