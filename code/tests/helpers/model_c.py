@@ -43,12 +43,12 @@ def build_model_C():
     model.setReactionBounds("R_1", -1000.0, 1000.0)
 
     model.createReaction("R_13", "Create F from S_c", reversible=True)
-    model.createReactionReagent("R_13", "S_c", -2)
-    model.createReactionReagent("R_13", "F_c", 3)
+    model.createReactionReagent("R_13", "S_c", -1)
+    model.createReactionReagent("R_13", "F_c", 1)
     model.setReactionBounds("R_13", -1000.0, 1000.0)
 
     model.createReaction("R_14", "Create BM_c_C from X", reversible=True)
-    model.createReactionReagent("R_14", "F_c", -2)
+    model.createReactionReagent("R_14", "F_c", -1)
     model.createReactionReagent("R_14", "BM_c_C", 1)
     model.setReactionBounds("R_14", -1000.0, 1000.0)
 
@@ -64,7 +64,7 @@ def build_model_C():
 
     # EXchange reactions:
     model.createReaction("S_exchange", reversible=True)
-    model.createReactionReagent("S_exchange", "S_e", 1)
+    model.createReactionReagent("S_exchange", "S_e", -1)
     model.setReactionBounds("S_exchange", lower=-1000.0, upper=1000.0)
     model.getReaction("S_exchange").is_exchange = True
 

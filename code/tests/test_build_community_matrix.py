@@ -79,7 +79,7 @@ def test_if_community_matrix_performance_FBA(model_A, model_B, model_C):
 
     combined_model.createObjectiveFunction("BM_A_B_C")
 
-    assert round(cbmpy.doFBA(combined_model), 1) == 55.3
+    assert round(cbmpy.doFBA(combined_model), 1) == 55.7
 
 
 def test_if_dict_contains_all_duplicate_species(model_A, model_B, model_C):

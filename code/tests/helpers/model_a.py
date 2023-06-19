@@ -102,21 +102,21 @@ def build_model_A():
 
     # EXchange reactions:
     model.createReaction("S_exchange", reversible=True)
-    model.createReactionReagent("S_exchange", "S_e", 1)
+    model.createReactionReagent("S_exchange", "S_e", -1)
     model.setReactionBounds("S_exchange", lower=-1000.0, upper=1000.0)
     model.getReaction("S_exchange").is_exchange = True
 
     model.createReaction(
         "B_exchange", reversible=True
     )  # Q2.0 - should 'reversible' be True or False?
-    model.createReactionReagent("B_exchange", "B_e", 1)
+    model.createReactionReagent("B_exchange", "B_e", -1)
     model.setReactionBounds("B_exchange", lower=-1000.0, upper=1000.0)
     model.getReaction("B_exchange").is_exchange = True
 
     model.createReaction("A_exchange", reversible=True)
     model.createReactionReagent("A_exchange", "A_e", -1)
     model.setReactionBounds("A_exchange", -1000.0, 1000)
-    model.getReaction("S_exchange").is_exchange = True
+    model.getReaction("A_exchange").is_exchange = True
 
     # D can't be imported
     model.createReaction("D_exchange", reversible=False)

@@ -12,6 +12,8 @@ import sys
 sys.path.append("code/tests/helpers")  # <-- relative path
 import model_a
 import model_b
+import model_c
+import combined_model
 
 
 def main():
@@ -25,10 +27,20 @@ def main():
     models = [model_a.build_model_A(), model_b.build_model_B()]
 
     combined_model = combine_models(models)
-    combined_model.createReaction(
-        "BM_A_and_B", "Biomass_A_and_B_combined", False
-    )
 
+    combined_model.createReaction("BM_A_B_C", "Biomass reaction both", False)
+    combined_model.createReactionReagent("BM_A_B_C", "BM_e_A", -1)
+    combined_model.createReactionReagent("BM_A_B_C", "BM_e_B", -3)
+
+    combined_model.setReactionLowerBound("BM_A_B_C", 0)
+    combined_model.getReaction("BM_A_B_C").is_exchange = True
+
+    combined_model.createObjectiveFunction("BM_A_B_C")
+
+    print(cbmpy.doFBA(combined_model))
+    FBAsol = combined_model.getSolutionVector(names=True)
+    FBAsol = pd.DataFrame(zip(FBAsol[1], FBAsol[0]), columns=["ID", "flux"])
+    print(FBAsol)
     # print(combined_model.getSpeciesIds())
 
     # I had double exchange reactions for every metabolite
@@ -41,7 +53,7 @@ def main():
     # combined_model.setReactionLowerBound("BM_A_and_B", 0)
 
 
-main()
+# main()
 
 
 # list_real_models = [
@@ -85,3 +97,27 @@ main()
 #             print(species_id)
 
 # print(combined_model.getSpecies("M_mnl1p_c_iRZ476").id)
+
+
+def build_models():
+    cbmpy.saveModel(model_a.build_model_A(), "Organism_A.xml")
+    cbmpy.saveModel(model_b.build_model_B(), "Organism_B.xml")
+    cbmpy.saveModel(model_c.build_model_C(), "Organism_C.xml")
+    cbmpy.saveModel(
+        combined_model.build_combined_model(), "Combined_model.xml"
+    )
+
+    from cobra.io import read_sbml_model, save_json_model
+
+    ma = read_sbml_model("Organism_A.xml")
+    mb = read_sbml_model("Organism_B.xml")
+    mc = read_sbml_model("Organism_C.xml")
+    cm = read_sbml_model("combined_model.xml")
+
+    save_json_model(ma, "model_a.json")
+    save_json_model(mb, "model_b.json")
+    save_json_model(mc, "model_s.json")
+    save_json_model(cm, "combined_model.json")
+
+
+build_models()
