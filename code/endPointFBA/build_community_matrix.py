@@ -291,7 +291,9 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
         else:
             out["existing_species"].append(s)
         out["reagents"].append(s)
-
+    # TODO ask Brett
+    if R.getId().startswith("R_EX"):
+        R.is_exchange = True
     m_targ.addReaction(R, create_default_bounds=True, silent=True)
     m_targ.setReactionBounds(
         R.id, old_reaction.getLowerBound(), old_reaction.getUpperBound()

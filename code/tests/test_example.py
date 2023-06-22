@@ -1,7 +1,6 @@
 """
 Unit tests for the example library
 """
-
 from example import example
 
 

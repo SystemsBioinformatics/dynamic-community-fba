@@ -6,7 +6,7 @@ from cbmpy.CBModel import Model
 """
 
 
-class KineticModel(Model):
+class KineticModel:
     m_model: Model
     m_kinetics: dict[str, tuple[float, float]]
 
