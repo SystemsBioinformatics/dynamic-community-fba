@@ -105,3 +105,8 @@ def test_if_species_with_no_reactions_is_not_added(model_A, model_C):
     dummy_species = model_C.getSpecies("Dummy_species")
 
     assert combined_model.getSpecies(dummy_species.id) is None
+
+
+# TODO test if Exchange reactions are being correctly handeld
+
+# TODO test if all ids are set correctly if there are ids provided by the user

@@ -28,7 +28,7 @@ def load_n_models(files: list[str]) -> list[Model]:
     return models
 
 
-def combine_models(models: list[Model]) -> Model:
+def combine_models(models: list[Model], new_ids=[]) -> Model:
     """
     Combine multiple CBModels into a single model by renaming species
     and reactions.
@@ -45,10 +45,17 @@ def combine_models(models: list[Model]) -> Model:
     combined_model.createCompartment("e", "extracellular space")
     duplicate_species = create_duplicate_species_dict(models)
 
-    for model in models:
-        merge_compartments(model, combined_model)
-        merge_species(duplicate_species, model)
-        merge_reactions(model, combined_model)
+    if len(new_ids) > 0 and len(new_ids) < len(models):
+        raise Exception("Too few ids were provided")
+
+    new_id = ""
+    for i in range(0, len(models)):
+        model = models[i]
+        if len(new_ids) > 0:
+            new_id = new_ids[i]
+        merge_compartments(model, combined_model, new_id)
+        merge_species(duplicate_species, model, new_id)
+        merge_reactions(model, combined_model, new_id)
 
     return combined_model
 
@@ -82,7 +89,8 @@ def create_duplicate_species_dict(models: list[Model]) -> dict[str, int]:
     return {k: v for k, v in species_dict.items() if v >= 2}
 
 
-def merge_compartments(model: Model, combined_model: Model):
+# TODO if two the same models are given this one fails
+def merge_compartments(model: Model, combined_model: Model, new_id):
     """
     Merge compartments from a model into a combined model.
 
@@ -97,16 +105,21 @@ def merge_compartments(model: Model, combined_model: Model):
     compartment: Compartment
 
     for compartment in model.compartments:
+        if new_id != "":
+            compartment_id = f"{compartment.id}_{new_id}"
+        else:
+            compartment_id = f"{compartment.id}_{model.id}"
+
         if compartment.id != "e":
             combined_model.createCompartment(
-                f"{compartment.id}_{model.id}",
+                compartment_id,
                 f"Compartmnet {compartment.name} of model: {model.name}",
                 size=compartment.size,
                 dimensions=compartment.dimensions,
             )
 
 
-def merge_reactions(model: Model, combined_model: Model):
+def merge_reactions(model: Model, combined_model: Model, new_id: str):
     """
     Merge reactions from a model into a combined model.
 
@@ -118,6 +131,11 @@ def merge_reactions(model: Model, combined_model: Model):
         None
 
     """
+    if new_id != "":
+        id = new_id
+    else:
+        id = model.id
+
     exchange_reactions = model.getExchangeReactionIds()
     reaction: Reaction
     for reaction in model.reactions:
@@ -130,22 +148,22 @@ def merge_reactions(model: Model, combined_model: Model):
 
         if reaction.id.startswith("R_EX"):
             is_exchange_reaction = True
-        if reaction.id not in exchange_reactions:
+        if reaction.id in exchange_reactions:
             is_exchange_reaction = True
         # TODO Expand if there are other cases in which a reaction could be an
         # exchange reaction
-        if res is None and is_exchange_reaction:
+        if res is None and not is_exchange_reaction:
             copyReaction(
                 model,
                 combined_model,
                 reaction.id,
-                altrid=f"{reaction.id}_{model.id}",
+                altrid=f"{reaction.id}_{id}",
             )
         else:
             continue
 
 
-def merge_species(duplicate_species: dict[str, int], model: Model):
+def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
     """
     Merge species from a model into a combined model.
     Rules based:
@@ -167,6 +185,10 @@ def merge_species(duplicate_species: dict[str, int], model: Model):
         None
     """
 
+    if new_id != "":
+        id = new_id
+    else:
+        id = model.id
     # Get original list, if we retrieve this in the for loop
     # the list is being altered within the function adding the new species
     # this creates inconsistency errors
@@ -175,13 +197,13 @@ def merge_species(duplicate_species: dict[str, int], model: Model):
         species: Species = model.getSpecies(species_id)
         if species.compartment != "e":
             if species_id in duplicate_species.keys():
-                handle_duplicate_species_reagents(model, species)
+                handle_duplicate_species_reagents(model, species, id)
                 model.deleteSpecies(species_id)
             else:
-                species.setCompartmentId(f"{species.compartment}_{model.id}")
+                species.setCompartmentId(f"{species.compartment}_{id}")
 
 
-def handle_duplicate_species_reagents(model: Model, species: Species):
+def handle_duplicate_species_reagents(model: Model, species: Species, new_id):
     """
     Handle duplicate species reagents when merging models.
     If the species exists in one of the base models, add new instance of that
@@ -197,11 +219,12 @@ def handle_duplicate_species_reagents(model: Model, species: Species):
         None
 
     """
-    new_species_id = f"{species.id}_{model.id}"
+
+    new_species_id = f"{species.id}_{new_id}"
     new_species = species.clone()
     new_species.setId(new_species_id)
     new_species.setName(f"{species.name} of {model.name}")
-    new_species.setCompartmentId(f"{species.compartment}_{model.id}")
+    new_species.setCompartmentId(f"{species.compartment}_{new_id}")
 
     model.addSpecies(new_species)
 

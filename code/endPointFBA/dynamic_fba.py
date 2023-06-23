@@ -8,69 +8,56 @@ def dynamic_fba(
     kinetic_model: KineticModel,
     biomass_reaction_id: str,
     time_steps: list[float],
-    initial_conditions: dict[str, list[float]],
+    initial_biomass: float = 0.1,
 ):
-    if "biomass" not in initial_conditions.keys():
-        raise Exception("Biomass must be defined in the initial condition")
-
     model = kinetic_model.get_model()
-    update_conditions = initial_conditions
+    update_conditions = {}
 
-    # If we have Vmax of a reaction set this to be the upper bound
-    # Else just use the model defined upper bound
-    for rid, tt in kinetic_model.get_model_kinetics().items():
-        reaction: Reaction = model.getReaction(rid)
-        reaction.setUpperBound(tt[0])
+    # Use the exchange reaction lower bounds as initial concentrations
+    # If people want to change it they have to change the model
+    # before input, we will use the initial
+
+    for exchange in model.getExchangeReactionIds():
+        reaction: Reaction = model.getReaction(exchange)
+        species_id: str = reaction.reagents[0].getSpecies()
+        update_conditions[species_id] = [-reaction.getLowerBound()]
+
+    update_conditions["biomass"] = [initial_biomass]
 
     species_reaction_dict: dict[
         Species, list[Reaction]
     ] = create_species_reactions_dict(model)
 
-    for species in model.species:
-        if species.id not in update_conditions.keys():
-            update_conditions[species.id] = [0]
+    import_reactions: list[Reaction] = get_import_reactions(model)
 
     t_old = time_steps[0]
 
     for t in time_steps[1:]:
         dt = t - t_old
-
         Xt = update_conditions["biomass"][-1]
-        # Calculate new upper bounds for import reaction
-        for reaction in model.reactions:
-            if reaction.id not in model.getExchangeReactionIds():
-                reagents: list[Reagent] = reaction.reagents
-                slowest_reaction = 1e10
-                for reagent in reagents:
-                    species_id: str = reagent.getSpecies()
-                    species = model.getSpecies(species_id)
+        # Calculate new upper bounds for all the import reaction
+        for reaction in import_reactions:
+            species_concentrations = []
+            reagent: Reagent
+            for reagent in reaction.reagents:
+                species = model.getSpecies(reagent.getSpecies())
+                if species.getCompartmentId() == "e":
+                    species_concentrations.append(
+                        update_conditions[reagent.getSpecies()][-1]
+                    )
+            if all(c > 0 for c in species_concentrations):
+                reaction_upper_bound = calc_reaction_upper_bound(
+                    kinetic_model,
+                    reaction.id,
+                    reaction.getUpperBound(),
+                    min(species_concentrations),
+                    Xt,
+                    dt,
+                )
+                reaction.setUpperBound(reaction_upper_bound)
 
-                    species_concentration = update_conditions[species.id][-1]
-
-                    # Check if the reaction is an importer (imports external
-                    # metabolite) something to import set the upper bound
-                    if (
-                        species.getCompartmentId() == "e"
-                        and reagent.coefficient == -1
-                        and species_concentration > 0
-                    ):
-                        reaction_upper_bound = calc_reaction_upper_bound(
-                            kinetic_model,
-                            reaction.id,
-                            reaction.getUpperBound(),
-                            update_conditions[species.id][-1],
-                            Xt,
-                            dt,
-                        )
-                        # TODO This code is for the fact that if a importer has
-                        # two substrates in the external compartment we choose
-                        # The speed of the bottleneck species
-                        if (
-                            reaction_upper_bound < slowest_reaction
-                            and reaction_upper_bound != 0
-                        ):
-                            reaction.setUpperBound(reaction_upper_bound)
-                            slowest_reaction = reaction_upper_bound
+            else:
+                reaction.setUpperBound(0)
 
         solution = cbmpy.doFBA(model)
 
@@ -99,6 +86,22 @@ def dynamic_fba(
         t_old = t
 
     return update_conditions
+
+
+def get_import_reactions(model: Model) -> list[Reaction]:
+    import_reactions: list[Reaction] = []
+    for reaction in model.reactions:
+        if not reaction.is_exchange:
+            for reagent in reaction.reagents:
+                species_id: str = reagent.getSpecies()
+                species = model.getSpecies(species_id)
+                if (
+                    species.getCompartmentId() == "e"
+                    and reagent.coefficient == -1
+                ):
+                    import_reactions.append(reaction)
+                    break
+    return import_reactions
 
 
 def create_species_reactions_dict(
@@ -140,3 +143,70 @@ def calc_reaction_upper_bound(kinetic_model: KineticModel, rid, ub, S, X, dt):
             return v_hat
     else:
         return vmax * (S / (km + S))
+
+
+from .build_community_matrix import combine_models
+from numpy import linspace
+
+model = combine_models([cbmpy.loadModel("data/bigg_models/e_coli_core.xml")])
+import_reactions = []
+
+model.createObjectiveFunction("R_BIOMASS_Ecoli_core_w_GAM")
+
+# {"R_GLCpts": [10, 5]}
+kinetic_model: KineticModel = KineticModel(model, {})
+
+ts = linspace(0, 15, 100)
+y = dynamic_fba(kinetic_model, "R_BIOMASS_Ecoli_core_w_GAM", ts, 0.1)
+
+
+# y2 = dynamic_fba(
+#     kinetic_model,
+#     "R_BIOMASS_Ecoli_core_w_GAM",
+#     ts,
+#     {
+#         "M_co2_e": [1],
+#         "M_h_e": [1],
+#         "M_h2o_e": [1],
+#         "M_nh4_e": [1],
+#         "M_o2_e": [1],
+#         "M_pi_e": [1],
+#         "M_glc__D_e": [10],
+#         "biomass": [0.1],
+#     },
+# )
+
+
+import matplotlib.pyplot as plt
+
+# Assuming y is the DataFrame containing the data for y1, y2, and y3
+y1 = y["M_gln__L_e"]
+y2 = y["biomass"]
+y3 = y["M_glc__D_e"]
+ts = ts[0 : len(y1)]
+
+print(y3)
+print(y2)
+
+fig, ax1 = plt.subplots()
+
+# Plotting y2 (biomass) on the first y-axis
+ax1.plot(ts, y2, color="b")
+ax1.set_xlabel("Time")
+ax1.set_ylabel("Biomass", color="b")
+ax1.tick_params(axis="y", labelcolor="b")
+
+# Creating the second y-axis for y1 (M_gln__L_e)
+# ax2 = ax1.twinx()
+# ax2.plot(ts, y1, color="r")
+# ax2.set_ylabel("M_gln__L_e", color="r")
+# ax2.tick_params(axis="y", labelcolor="r")
+
+# Creating the third y-axis for y3 (M_glc__D_e)
+ax3 = ax1.twinx()
+ax3.spines["right"].set_position(("outward", 60))
+ax3.plot(ts, y3, color="g")
+ax3.set_ylabel("M_glc__D_e", color="g")
+ax3.tick_params(axis="y", labelcolor="g")
+
+plt.show()
