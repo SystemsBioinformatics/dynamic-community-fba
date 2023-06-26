@@ -19,6 +19,7 @@ def dynamic_fba(
     # before input, we will use the initial
 
     for exchange in model.getExchangeReactionIds():
+        # print(exchange)
         reaction: Reaction = model.getReaction(exchange)
         species_id: str = reaction.reagents[0].getSpecies()
         update_conditions[species_id] = [-reaction.getLowerBound()]
@@ -36,6 +37,7 @@ def dynamic_fba(
     for t in time_steps[1:]:
         dt = t - t_old
         Xt = update_conditions["biomass"][-1]
+
         # Calculate new upper bounds for all the import reaction
         for reaction in import_reactions:
             species_concentrations = []
@@ -57,7 +59,6 @@ def dynamic_fba(
                     user_func,
                 )
                 reaction.setUpperBound(reaction_upper_bound)
-
             else:
                 reaction.setUpperBound(0)
 
@@ -92,7 +93,8 @@ def dynamic_fba(
 
 def get_import_reactions(model: Model) -> list[Reaction]:
     import_reactions: list[Reaction] = []
-    for reaction in model.reactions:
+    for reaction_id in model.getReactionIds():
+        reaction: Reaction = model.getReaction(reaction_id)
         if not reaction.is_exchange:
             for reagent in reaction.reagents:
                 species_id: str = reagent.getSpecies()
@@ -152,61 +154,3 @@ def calc_reaction_upper_bound(
         #     return v_hat
     else:
         return vmax * (S / (km + S))
-
-
-# from .build_community_matrix import combine_models
-# from numpy import linspace
-
-# model = combine_models([cbmpy.loadModel("data/bigg_models/e_coli_core.xml")])
-# import_reactions = []
-
-# model.createObjectiveFunction("R_BIOMASS_Ecoli_core_w_GAM")
-
-# # {"R_GLCpts": [10, 5]}
-# kinetic_model: KineticModel = KineticModel(model, {})
-
-
-# def my_func(kinetic_model, rid, ub, S, X, dt):
-#     v_hat = S / (X * dt)
-#     if ub <= v_hat:
-#         return ub
-#     else:
-#         return v_hat
-
-
-# ts = linspace(0, 15, 100)
-# y = dynamic_fba(kinetic_model, "R_BIOMASS_Ecoli_core_w_GAM", ts, 0.1, my_func)
-
-# import matplotlib.pyplot as plt
-
-# # Assuming y is the DataFrame containing the data for y1, y2, and y3
-# y1 = y["M_gln__L_e"]
-# y2 = y["biomass"]
-# y3 = y["M_glc__D_e"]
-# ts = ts[0 : len(y1)]
-
-# print(y3)
-# print(y2)
-
-# fig, ax1 = plt.subplots()
-
-# # Plotting y2 (biomass) on the first y-axis
-# ax1.plot(ts, y2, color="b")
-# ax1.set_xlabel("Time")
-# ax1.set_ylabel("Biomass", color="b")
-# ax1.tick_params(axis="y", labelcolor="b")
-
-# # Creating the second y-axis for y1 (M_gln__L_e)
-# # ax2 = ax1.twinx()
-# # ax2.plot(ts, y1, color="r")
-# # ax2.set_ylabel("M_gln__L_e", color="r")
-# # ax2.tick_params(axis="y", labelcolor="r")
-
-# # Creating the third y-axis for y3 (M_glc__D_e)
-# ax3 = ax1.twinx()
-# ax3.spines["right"].set_position(("outward", 60))
-# ax3.plot(ts, y3, color="g")
-# ax3.set_ylabel("M_glc__D_e", color="g")
-# ax3.tick_params(axis="y", labelcolor="g")
-
-# plt.show()

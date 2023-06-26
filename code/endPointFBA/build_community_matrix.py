@@ -64,7 +64,7 @@ def combine_models(
         merge_reactions(model, combined_model, new_id)
 
     if len(objective_function) > 0:
-        model.createObjectiveFunction(objective_function)
+        combined_model.createObjectiveFunction(objective_function)
 
     return combined_model
 
@@ -146,8 +146,8 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str):
         id = model.id
 
     exchange_reactions = model.getExchangeReactionIds()
-    reaction: Reaction
-    for reaction in model.reactions:
+    for reaction_id in model.getReactionIds():
+        reaction: Reaction = model.getReaction(reaction_id)
         # TODO Shoud be fixed in the package
         res = copyReaction(model, combined_model, reaction.id)
         # If the response is None the reaction was probably already in the
