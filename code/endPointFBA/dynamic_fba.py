@@ -9,9 +9,10 @@ def dynamic_fba(
     biomass_reaction_id: str,
     time_steps: list[float],
     initial_biomass: float = 0.1,
+    user_func=None,
 ):
     model = kinetic_model.get_model()
-    update_conditions = {}
+    update_conditions: dict[str, list[float]] = {}
 
     # Use the exchange reaction lower bounds as initial concentrations
     # If people want to change it they have to change the model
@@ -53,6 +54,7 @@ def dynamic_fba(
                     min(species_concentrations),
                     Xt,
                     dt,
+                    user_func,
                 )
                 reaction.setUpperBound(reaction_upper_bound)
 
@@ -131,82 +133,80 @@ def create_species_reactions_dict(
     return my_dict
 
 
-def calc_reaction_upper_bound(kinetic_model: KineticModel, rid, ub, S, X, dt):
+def calc_reaction_upper_bound(
+    kinetic_model: KineticModel, rid, ub, S, X, dt, user_func=None
+):
     km = kinetic_model.get_reaction_km(rid)
     vmax = kinetic_model.get_reaction_vmax(rid)
-    if km is None:
-        # Calculate Without kinetics
-        v_hat = S / (X * dt)
-        if ub <= v_hat:
-            return ub
-        else:
-            return v_hat
+    if user_func is not None:
+        return user_func(kinetic_model, rid, ub, S, X, dt)
+    elif km is None:
+        return ub
+
+        # # Calculate Without kinetics
+        # # TODO discuss if this should be turned on or off with Francesco
+        # v_hat = S / (X * dt)
+        # if ub <= v_hat:
+        #     return ub
+        # else:
+        #     return v_hat
     else:
         return vmax * (S / (km + S))
 
 
-from .build_community_matrix import combine_models
-from numpy import linspace
+# from .build_community_matrix import combine_models
+# from numpy import linspace
 
-model = combine_models([cbmpy.loadModel("data/bigg_models/e_coli_core.xml")])
-import_reactions = []
+# model = combine_models([cbmpy.loadModel("data/bigg_models/e_coli_core.xml")])
+# import_reactions = []
 
-model.createObjectiveFunction("R_BIOMASS_Ecoli_core_w_GAM")
+# model.createObjectiveFunction("R_BIOMASS_Ecoli_core_w_GAM")
 
-# {"R_GLCpts": [10, 5]}
-kinetic_model: KineticModel = KineticModel(model, {})
-
-ts = linspace(0, 15, 100)
-y = dynamic_fba(kinetic_model, "R_BIOMASS_Ecoli_core_w_GAM", ts, 0.1)
+# # {"R_GLCpts": [10, 5]}
+# kinetic_model: KineticModel = KineticModel(model, {})
 
 
-# y2 = dynamic_fba(
-#     kinetic_model,
-#     "R_BIOMASS_Ecoli_core_w_GAM",
-#     ts,
-#     {
-#         "M_co2_e": [1],
-#         "M_h_e": [1],
-#         "M_h2o_e": [1],
-#         "M_nh4_e": [1],
-#         "M_o2_e": [1],
-#         "M_pi_e": [1],
-#         "M_glc__D_e": [10],
-#         "biomass": [0.1],
-#     },
-# )
+# def my_func(kinetic_model, rid, ub, S, X, dt):
+#     v_hat = S / (X * dt)
+#     if ub <= v_hat:
+#         return ub
+#     else:
+#         return v_hat
 
 
-import matplotlib.pyplot as plt
+# ts = linspace(0, 15, 100)
+# y = dynamic_fba(kinetic_model, "R_BIOMASS_Ecoli_core_w_GAM", ts, 0.1, my_func)
 
-# Assuming y is the DataFrame containing the data for y1, y2, and y3
-y1 = y["M_gln__L_e"]
-y2 = y["biomass"]
-y3 = y["M_glc__D_e"]
-ts = ts[0 : len(y1)]
+# import matplotlib.pyplot as plt
 
-print(y3)
-print(y2)
+# # Assuming y is the DataFrame containing the data for y1, y2, and y3
+# y1 = y["M_gln__L_e"]
+# y2 = y["biomass"]
+# y3 = y["M_glc__D_e"]
+# ts = ts[0 : len(y1)]
 
-fig, ax1 = plt.subplots()
+# print(y3)
+# print(y2)
 
-# Plotting y2 (biomass) on the first y-axis
-ax1.plot(ts, y2, color="b")
-ax1.set_xlabel("Time")
-ax1.set_ylabel("Biomass", color="b")
-ax1.tick_params(axis="y", labelcolor="b")
+# fig, ax1 = plt.subplots()
 
-# Creating the second y-axis for y1 (M_gln__L_e)
-# ax2 = ax1.twinx()
-# ax2.plot(ts, y1, color="r")
-# ax2.set_ylabel("M_gln__L_e", color="r")
-# ax2.tick_params(axis="y", labelcolor="r")
+# # Plotting y2 (biomass) on the first y-axis
+# ax1.plot(ts, y2, color="b")
+# ax1.set_xlabel("Time")
+# ax1.set_ylabel("Biomass", color="b")
+# ax1.tick_params(axis="y", labelcolor="b")
 
-# Creating the third y-axis for y3 (M_glc__D_e)
-ax3 = ax1.twinx()
-ax3.spines["right"].set_position(("outward", 60))
-ax3.plot(ts, y3, color="g")
-ax3.set_ylabel("M_glc__D_e", color="g")
-ax3.tick_params(axis="y", labelcolor="g")
+# # Creating the second y-axis for y1 (M_gln__L_e)
+# # ax2 = ax1.twinx()
+# # ax2.plot(ts, y1, color="r")
+# # ax2.set_ylabel("M_gln__L_e", color="r")
+# # ax2.tick_params(axis="y", labelcolor="r")
 
-plt.show()
+# # Creating the third y-axis for y3 (M_glc__D_e)
+# ax3 = ax1.twinx()
+# ax3.spines["right"].set_position(("outward", 60))
+# ax3.plot(ts, y3, color="g")
+# ax3.set_ylabel("M_glc__D_e", color="g")
+# ax3.tick_params(axis="y", labelcolor="g")
+
+# plt.show()

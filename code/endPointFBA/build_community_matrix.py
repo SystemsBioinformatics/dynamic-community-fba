@@ -28,13 +28,19 @@ def load_n_models(files: list[str]) -> list[Model]:
     return models
 
 
-def combine_models(models: list[Model], new_ids=[]) -> Model:
+def combine_models(
+    models: list[Model], new_ids: list[str] = [], objective_function: str = ""
+) -> Model:
     """
     Combine multiple CBModels into a single model by renaming species
     and reactions.
 
     Args:
         models (list[Model]): A list of CBModels to combine.
+        new_ids (list(str), optional): A list of user specified ids that
+        should be used to identify the different species used
+        objective_function (str, optional): String of the rid that should be
+        set as objective function
 
     Returns:
         Model: The combined CBModel.
@@ -56,6 +62,9 @@ def combine_models(models: list[Model], new_ids=[]) -> Model:
         merge_compartments(model, combined_model, new_id)
         merge_species(duplicate_species, model, new_id)
         merge_reactions(model, combined_model, new_id)
+
+    if len(objective_function) > 0:
+        model.createObjectiveFunction(objective_function)
 
     return combined_model
 
