@@ -92,64 +92,76 @@ def build_combined_model():
 
     # Model A Reactions
     model.createReaction(
-        "R_1", "Import S external to the cytosol", reversible=True
+        "R_1_Organism_A", "Import S external to the cytosol", reversible=True
     )
-    model.createReactionReagent("R_1", "S_e", -1)
-    model.createReactionReagent("R_1", "S_c_Organism_A", 1)
-    model.setReactionBounds("R_1", -1000.0, 1000.0)
-
-    model.createReaction("R_2", "Create X from S_c", reversible=True)
-    model.createReactionReagent("R_2", "S_c_Organism_A", -2)
-    model.createReactionReagent("R_2", "X_c_Organism_A", 1)
-    model.setReactionBounds("R_2", -1000.0, 1000.0)
-
-    model.createReaction("R_3", "Create Y_c and A_e from S_c", reversible=True)
-    model.createReactionReagent("R_3", "X_c_Organism_A", -1)
-    model.createReactionReagent("R_3", "Y_c", 1)
-    model.createReactionReagent("R_3", "A_e", 2)
-    model.setReactionBounds("R_3", -1000.0, 1000.0)
+    model.createReactionReagent("R_1_Organism_A", "S_e", -1)
+    model.createReactionReagent("R_1_Organism_A", "S_c_Organism_A", 1)
+    model.setReactionBounds("R_1_Organism_A", -1000.0, 1000.0)
 
     model.createReaction(
-        "R_4", "Create Biomass from Y_c and B_c", reversible=True
+        "R_2_Organism_A", "Create X from S_c", reversible=True
     )
-    model.createReactionReagent("R_4", "Y_c", -10)
-    model.createReactionReagent("R_4", "B_c_Organism_A", -1)
-    model.createReactionReagent("R_4", "BM_c_A", 1)
-    model.setReactionBounds("R_4", -1000.0, 1000.0)
+    model.createReactionReagent("R_2_Organism_A", "S_c_Organism_A", -2)
+    model.createReactionReagent("R_2_Organism_A", "X_c_Organism_A", 1)
+    model.setReactionBounds("R_2_Organism_A", -1000.0, 1000.0)
 
-    model.createReaction("R_5", "Create Z from S_int", reversible=True)
-    model.createReactionReagent("R_5", "S_c_Organism_A", -1)
-    model.createReactionReagent("R_5", "Z_c_Organism_A", 1)
-    model.createReactionReagent("R_5", "D_c", 1)
+    model.createReaction(
+        "R_3_Organism_A", "Create Y_c and A_e from S_c", reversible=True
+    )
+    model.createReactionReagent("R_3_Organism_A", "X_c_Organism_A", -1)
+    model.createReactionReagent("R_3_Organism_A", "Y_c", 1)
+    model.createReactionReagent("R_3_Organism_A", "A_e", 2)
+    model.setReactionBounds("R_3_Organism_A", -1000.0, 1000.0)
 
-    model.setReactionBounds("R_5", -1000.0, 1000.0)
+    model.createReaction(
+        "R_4_Organism_A", "Create Biomass from Y_c and B_c", reversible=True
+    )
+    model.createReactionReagent("R_4_Organism_A", "Y_c", -10)
+    model.createReactionReagent("R_4_Organism_A", "B_c_Organism_A", -1)
+    model.createReactionReagent("R_4_Organism_A", "BM_c_A", 1)
+    model.setReactionBounds("R_4_Organism_A", -1000.0, 1000.0)
 
-    model.createReaction("R_6", "Create BM_c_A from Z and B", reversible=True)
-    model.createReactionReagent("R_6", "Z_c_Organism_A", -8)
-    model.createReactionReagent("R_6", "B_c_Organism_A", -3)
-    model.createReactionReagent("R_6", "BM_c_A", 1)
-    model.setReactionBounds("R_6", -1000.0, 1000.0)
+    model.createReaction(
+        "R_5_Organism_A", "Create Z from S_int", reversible=True
+    )
+    model.createReactionReagent("R_5_Organism_A", "S_c_Organism_A", -1)
+    model.createReactionReagent("R_5_Organism_A", "Z_c_Organism_A", 1)
+    model.createReactionReagent("R_5_Organism_A", "D_c", 1)
+
+    model.setReactionBounds("R_5_Organism_A", -1000.0, 1000.0)
+
+    model.createReaction(
+        "R_6_Organism_A", "Create BM_c_A from Z and B", reversible=True
+    )
+    model.createReactionReagent("R_6_Organism_A", "Z_c_Organism_A", -8)
+    model.createReactionReagent("R_6_Organism_A", "B_c_Organism_A", -3)
+    model.createReactionReagent("R_6_Organism_A", "BM_c_A", 1)
+    model.setReactionBounds("R_6_Organism_A", -1000.0, 1000.0)
 
     # Import B
-    model.createReaction("R_7", "Import B_e to B_c", reversible=True)
-    model.createReactionReagent("R_7", "B_e", -1)
-    model.createReactionReagent("R_7", "B_c_Organism_A", 1)
-    model.setReactionBounds("R_7", -1000.0, 1000.0)
+    model.createReaction(
+        "R_7_Organism_A", "Import B_e to B_c", reversible=True
+    )
+    model.createReactionReagent("R_7_Organism_A", "B_e", -1)
+    model.createReactionReagent("R_7_Organism_A", "B_c_Organism_A", 1)
+    model.setReactionBounds("R_7_Organism_A", -1000.0, 1000.0)
 
-    model.createReaction("R_8", "Export D_c to D_e", reversible=True)
-    model.createReactionReagent("R_8", "D_c", -1)
-    model.createReactionReagent("R_8", "D_e", 1)
-    model.setReactionBounds("R_8", -1000.0, 1000.0)
+    model.createReaction(
+        "R_8_Organism_A", "Export D_c to D_e", reversible=True
+    )
+    model.createReactionReagent("R_8_Organism_A", "D_c", -1)
+    model.createReactionReagent("R_8_Organism_A", "D_e", 1)
+    model.setReactionBounds("R_8_Organism_A", -1000.0, 1000.0)
 
     # Biomass creation
     model.createReaction(
-        "R_BM_A",
+        "R_BM_A_Organism_A",
         "Biomass reaction of species A",
         reversible=True,
     )
-    model.createReactionReagent("R_BM_A", "BM_c_A", -1)
-    model.createReactionReagent("R_BM_A", "BM_e_A", 1)
-    model.setReactionBounds("R_BM_A", -1000.0, 1000.0)
+    model.createReactionReagent("R_BM_A_Organism_A", "BM_c_A", -1)
+    model.createReactionReagent("R_BM_A_Organism_A", "BM_e_A", 1)
+    model.setReactionBounds("R_BM_A_Organism_A", -1000.0, 1000.0)
 
     # EXchange reactions:
     model.createReaction("S_exchange", reversible=True)
@@ -197,17 +209,21 @@ def build_combined_model():
     model.createReactionReagent("R_2_Organism_B", "X_c_Organism_B", 3)
     model.setReactionBounds("R_2_Organism_B", -1000.0, 1000.0)
 
-    model.createReaction("R_9", "Create BM_c_B from X", reversible=True)
-    model.createReactionReagent("R_9", "X_c_Organism_B", -7)
-    model.createReactionReagent("R_9", "A_c", -3)
-    model.createReactionReagent("R_9", "E_c", 1)
-    model.createReactionReagent("R_9", "BM_c_B", 1)
-    model.setReactionBounds("R_9", -1000.0, 1000.0)
+    model.createReaction(
+        "R_9_Organism_B", "Create BM_c_B from X", reversible=True
+    )
+    model.createReactionReagent("R_9_Organism_B", "X_c_Organism_B", -7)
+    model.createReactionReagent("R_9_Organism_B", "A_c", -3)
+    model.createReactionReagent("R_9_Organism_B", "E_c", 1)
+    model.createReactionReagent("R_9_Organism_B", "BM_c_B", 1)
+    model.setReactionBounds("R_9_Organism_B", -1000.0, 1000.0)
 
-    model.createReaction("R_10", "Import A_c from A_e", reversible=True)
-    model.createReactionReagent("R_10", "A_e", -1)
-    model.createReactionReagent("R_10", "A_c", 1)
-    model.setReactionBounds("R_10", -1000.0, 1000.0)
+    model.createReaction(
+        "R_10_Organism_B", "Import A_c from A_e", reversible=True
+    )
+    model.createReactionReagent("R_10_Organism_B", "A_e", -1)
+    model.createReactionReagent("R_10_Organism_B", "A_c", 1)
+    model.setReactionBounds("R_10_Organism_B", -1000.0, 1000.0)
 
     model.createReaction(
         "R_5_Organism_B", "Create Z from S_c", reversible=True
@@ -225,25 +241,29 @@ def build_combined_model():
     model.setReactionBounds("R_6_Organism_B", -1000.0, 1000.0)
 
     # Import B
-    model.createReaction("R_11", "Export B_c to B_e", reversible=True)
-    model.createReactionReagent("R_11", "B_c_Organism_B", -1)
-    model.createReactionReagent("R_11", "B_e", 1)
-    model.setReactionBounds("R_11", -1000.0, 1000.0)
+    model.createReaction(
+        "R_11_Organism_B", "Export B_c to B_e", reversible=True
+    )
+    model.createReactionReagent("R_11_Organism_B", "B_c_Organism_B", -1)
+    model.createReactionReagent("R_11_Organism_B", "B_e", 1)
+    model.setReactionBounds("R_11_Organism_B", -1000.0, 1000.0)
 
-    model.createReaction("R_12", "Export E_c to E_e", reversible=True)
-    model.createReactionReagent("R_12", "E_c", -1)
-    model.createReactionReagent("R_12", "E_e", 1)
-    model.setReactionBounds("R_12", -1000.0, 1000.0)
+    model.createReaction(
+        "R_12_Organism_B", "Export E_c to E_e", reversible=True
+    )
+    model.createReactionReagent("R_12_Organism_B", "E_c", -1)
+    model.createReactionReagent("R_12_Organism_B", "E_e", 1)
+    model.setReactionBounds("R_12_Organism_B", -1000.0, 1000.0)
 
     # Biomass creation
     model.createReaction(
-        "R_BM_B",
+        "R_BM_B_Organism_B",
         "Biomass reaction of species B",
         reversible=True,
     )
-    model.createReactionReagent("R_BM_B", "BM_c_B", -1)
-    model.createReactionReagent("R_BM_B", "BM_e_B", 1)
-    model.setReactionBounds("R_BM_B", -1000.0, 1000.0)
+    model.createReactionReagent("R_BM_B_Organism_B", "BM_c_B", -1)
+    model.createReactionReagent("R_BM_B_Organism_B", "BM_e_B", 1)
+    model.setReactionBounds("R_BM_B_Organism_B", -1000.0, 1000.0)
 
     # E can't be imported
     model.createReaction("E_exchange", reversible=False)
@@ -263,20 +283,20 @@ def build_combined_model():
     model.createReactionReagent("R_1_Organism_C", "S_c_Organism_C", 1)
     model.setReactionBounds("R_1_Organism_C", -1000, 1000)
 
-    model.createReaction("R_13", reversible=True)
-    model.createReactionReagent("R_13", "S_c_Organism_C", -2)
-    model.createReactionReagent("R_13", "F_c", 3)
-    model.setReactionBounds("R_13", -1000, 1000)
+    model.createReaction("R_13_Organism_C", reversible=True)
+    model.createReactionReagent("R_13_Organism_C", "S_c_Organism_C", -2)
+    model.createReactionReagent("R_13_Organism_C", "F_c", 3)
+    model.setReactionBounds("R_13_Organism_C", -1000, 1000)
 
-    model.createReaction("R_14", reversible=True)
-    model.createReactionReagent("R_14", "F_c", -2)
-    model.createReactionReagent("R_14", "BM_c_C", 1)
-    model.setReactionBounds("R_14", -1000, 1000)
+    model.createReaction("R_14_Organism_C", reversible=True)
+    model.createReactionReagent("R_14_Organism_C", "F_c", -2)
+    model.createReactionReagent("R_14_Organism_C", "BM_c_C", 1)
+    model.setReactionBounds("R_14_Organism_C", -1000, 1000)
 
-    model.createReaction("R_BM_C", reversible=True)
-    model.createReactionReagent("R_BM_C", "BM_c_C", -1)
-    model.createReactionReagent("R_BM_C", "BM_e_C", 1)
-    model.setReactionBounds("R_BM_C", -1000, 1000)
+    model.createReaction("R_BM_C_Organism_C", reversible=True)
+    model.createReactionReagent("R_BM_C_Organism_C", "BM_c_C", -1)
+    model.createReactionReagent("R_BM_C_Organism_C", "BM_e_C", 1)
+    model.setReactionBounds("R_BM_C_Organism_C", -1000, 1000)
 
     model.createReaction("BM_e_C_exchange", reversible=False)
     model.createReactionReagent("BM_e_C_exchange", "BM_e_C", -1)

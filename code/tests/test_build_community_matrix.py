@@ -1,7 +1,7 @@
 import pytest
 import cbmpy
 
-from endPointFBA import build_community_matrix as bcm
+from endPointFBA.helpers import build_community_matrix as bcm
 from toy_models import model_a, model_b, model_c, combined_model
 
 

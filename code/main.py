@@ -4,19 +4,22 @@ import matplotlib.pyplot as plt
 
 from endPointFBA.dynamic_fba import dynamic_fba
 from endPointFBA.jointFBA import create_joint_fba_model
-from endPointFBA.build_community_matrix import combine_models
 from endPointFBA.KineticModel import KineticModel
-from cbmpy.CBModel import Reaction, Reagent, Model
+from endPointFBA.CombinedModel import CombinedModel
+from cbmpy.CBModel import Model
+from endPointFBA.helpers.build_community_matrix import combine_models
 
 model1 = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
 model2: Model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
 
 combined_model = combine_models(
     [model1, model2],
-    ["ecoli_1", "ecoli_2"],
+    ["e_coli_1", "e_coli_2"],
     "R_BIOMASS_Ecoli_core_w_GAM",
 )
 
+cbmpy.saveModel(combined_model, "data/combined_e_coli_core.xml")
+raise Exception
 joint_model = create_joint_fba_model(
     combined_model,
     ["R_BIOMASS_Ecoli_core_w_GAM", "R_BIOMASS_Ecoli_core_w_GAM_ecoli_2"],

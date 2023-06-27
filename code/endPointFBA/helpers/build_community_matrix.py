@@ -30,8 +30,10 @@ def load_n_models(files: list[str]) -> list[Model]:
 
 def combine_models(
     models: list[Model], new_ids: list[str] = [], objective_function: str = ""
-) -> Model:
+):
     """
+    If you just want to combine models without creating a CombinedModel
+    use this function. But it is recomended to create a
     Combine multiple CBModels into a single model by renaming species
     and reactions.
 
@@ -46,7 +48,6 @@ def combine_models(
         Model: The combined CBModel.
 
     """
-
     combined_model = Model("combined_model")
     combined_model.createCompartment("e", "extracellular space")
     duplicate_species = create_duplicate_species_dict(models)
@@ -54,11 +55,13 @@ def combine_models(
     if len(new_ids) > 0 and len(new_ids) < len(models):
         raise Exception("Too few ids were provided")
 
-    new_id = ""
+    if len(new_ids) == 0:
+        for model in models:
+            new_ids.append(model.id)
+
     for i in range(0, len(models)):
         model = models[i]
-        if len(new_ids) > 0:
-            new_id = new_ids[i]
+        new_id = new_ids[i]
         merge_compartments(model, combined_model, new_id)
         merge_species(duplicate_species, model, new_id)
         merge_reactions(model, combined_model, new_id)
@@ -114,15 +117,10 @@ def merge_compartments(model: Model, combined_model: Model, new_id):
     compartment: Compartment
 
     for compartment in model.compartments:
-        if new_id != "":
-            compartment_id = f"{compartment.id}_{new_id}"
-        else:
-            compartment_id = f"{compartment.id}_{model.id}"
-
         if compartment.id != "e":
             combined_model.createCompartment(
-                compartment_id,
-                f"Compartmnet {compartment.name} of model: {model.name}",
+                create_new_id(compartment.id, new_id),
+                f"Compartmnet {compartment.name}",
                 size=compartment.size,
                 dimensions=compartment.dimensions,
             )
@@ -140,36 +138,35 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str):
         None
 
     """
-    if new_id != "":
-        id = new_id
-    else:
-        id = model.id
 
     exchange_reactions = model.getExchangeReactionIds()
     for reaction_id in model.getReactionIds():
-        reaction: Reaction = model.getReaction(reaction_id)
-        # TODO Shoud be fixed in the package
-        res = copyReaction(model, combined_model, reaction.id)
-        # If the response is None the reaction was probably already in the
-        # model. Check if it is an exchange reaction or if it is specfic to
-        # the cellular space of the organisms, and fix accordingly
         is_exchange_reaction: bool = False
+        if reaction_id.startswith("R_EX"):
+            is_exchange_reaction = True
+        if reaction_id in exchange_reactions:
+            is_exchange_reaction = True
 
-        if reaction.id.startswith("R_EX"):
-            is_exchange_reaction = True
-        if reaction.id in exchange_reactions:
-            is_exchange_reaction = True
-        # TODO Expand if there are other cases in which a reaction could be an
-        # exchange reaction
-        if res is None and not is_exchange_reaction:
+        reaction: Reaction = model.getReaction(reaction_id)
+        # if it is an exchange reaction and it is not yet in the model add it
+        if (
+            is_exchange_reaction
+            and reaction_id not in combined_model.getExchangeReactionIds()
+        ):
             copyReaction(
                 model,
                 combined_model,
                 reaction.id,
-                altrid=f"{reaction.id}_{id}",
             )
-        else:
-            continue
+        # Otherwise add the reaction and add the identifier, we give all
+        # reactions a new identifier for consistency
+        elif not is_exchange_reaction:
+            copyReaction(
+                model,
+                combined_model,
+                reaction.id,
+                altrid=create_new_id(reaction_id, new_id),
+            )
 
 
 def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
@@ -194,10 +191,6 @@ def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
         None
     """
 
-    if new_id != "":
-        id = new_id
-    else:
-        id = model.id
     # Get original list, if we retrieve this in the for loop
     # the list is being altered within the function adding the new species
     # this creates inconsistency errors
@@ -206,10 +199,12 @@ def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
         species: Species = model.getSpecies(species_id)
         if species.compartment != "e":
             if species_id in duplicate_species.keys():
-                handle_duplicate_species_reagents(model, species, id)
+                handle_duplicate_species_reagents(model, species, new_id)
                 model.deleteSpecies(species_id)
             else:
-                species.setCompartmentId(f"{species.compartment}_{id}")
+                species.setCompartmentId(
+                    create_new_id(species.compartment, new_id)
+                )
 
 
 def handle_duplicate_species_reagents(model: Model, species: Species, new_id):
@@ -229,11 +224,11 @@ def handle_duplicate_species_reagents(model: Model, species: Species, new_id):
 
     """
 
-    new_species_id = f"{species.id}_{new_id}"
+    new_species_id = create_new_id(species.getId(), new_id)
     new_species = species.clone()
     new_species.setId(new_species_id)
-    new_species.setName(f"{species.name} of {model.name}")
-    new_species.setCompartmentId(f"{species.compartment}_{new_id}")
+    new_species.setName(species.name)
+    new_species.setCompartmentId(create_new_id(species.compartment, new_id))
 
     model.addSpecies(new_species)
 
@@ -259,7 +254,6 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
 
     """
     out = {}
-    targ_exists = False
     if m_src.getReaction(rid) is None:
         print(
             'ERROR: reaction with id "{}" does not exist in source model'.format(
@@ -294,13 +288,11 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
                 )
             )
             out = None
-        else:
-            targ_exists = True
     if out is None:
         return None
     old_reaction: Reaction = m_src.getReaction(rid)
     R: Reaction = old_reaction.clone()
-    if targ_exists and altrid is not None:
+    if altrid is not None:
         R.setId(altrid)
         for re in R.reagents:
             re.setId("{}_{}".format(altrid, re.getSpecies()))
@@ -334,3 +326,22 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
     del R
 
     return out
+
+
+def create_new_id(old_id: str, new_id) -> str:
+    """
+    Function to build new id strings for models
+    If empty string is provided we keep the original id for that model
+
+    Args:
+        old_id (str): The old identifier
+        new_id (_type_): the new id, if "" than use old id otherwise
+        append the old id with the new id
+
+    Returns:
+        str: _description_
+    """
+    if new_id == "":
+        return f"{old_id}"
+
+    return f"{old_id}_{new_id}"
