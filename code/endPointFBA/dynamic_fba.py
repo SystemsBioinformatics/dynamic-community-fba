@@ -11,7 +11,7 @@ def dynamic_fba(
     initial_biomass: float = 0.1,
     user_func=None,
 ):
-    model = kinetic_model.get_model()
+    model = kinetic_model.get_model().clone()
     update_conditions: dict[str, list[float]] = {}
 
     # Use the exchange reaction lower bounds as initial concentrations
@@ -19,7 +19,6 @@ def dynamic_fba(
     # before input, we will use the initial
 
     for exchange in model.getExchangeReactionIds():
-        # print(exchange)
         reaction: Reaction = model.getReaction(exchange)
         species_id: str = reaction.reagents[0].getSpecies()
         update_conditions[species_id] = [-reaction.getLowerBound()]

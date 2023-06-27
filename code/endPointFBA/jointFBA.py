@@ -1,25 +1,31 @@
-from cbmpy.CBModel import Model, Reaction
+from cbmpy.CBModel import Reaction
+from endPointFBA.CombinedModel import CombinedModel
 
 
 def create_joint_fba_model(
-    model: Model, biomass_reaction_ids: list[str]
-) -> Model:
-    new_model = model.clone()
-    new_model.createSpecies("X_c", False, "The community biomass")
+    model: CombinedModel,
+    biomass_reaction_ids: list[str],
+    create_new_model=False,
+) -> CombinedModel:
+    if create_new_model:
+        joint_model = model.clone()
+    else:
+        joint_model = model
+    joint_model.createSpecies("X_c", False, "The community biomass")
 
     for bm_id in biomass_reaction_ids:
-        reaction: Reaction = new_model.getReaction(bm_id)
+        reaction: Reaction = joint_model.getReaction(bm_id)
         reaction.createReagent("X_c", 1)
 
-    new_model.createReaction("Xcomm")
-    out: Reaction = new_model.getReaction("Xcomm")
+    joint_model.createReaction("Xcomm")
+    out: Reaction = joint_model.getReaction("Xcomm")
     out.is_exchange = True
     out.setUpperBound(1000)
     out.setLowerBound(0)
     out.createReagent("X_c", -1)
 
-    new_model.createObjectiveFunction("Xcomm")
+    joint_model.createObjectiveFunction("Xcomm")
 
-    new_model.setActiveObjective("Xcomm_objective")
+    joint_model.setActiveObjective("Xcomm_objective")
 
-    return new_model
+    return joint_model
