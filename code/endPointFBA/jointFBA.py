@@ -1,12 +1,12 @@
 from cbmpy.CBModel import Reaction
-from endPointFBA.CombinedModel import CombinedModel
+from endPointFBA.CommunityModel import CommunityModel
 
 
 def create_joint_fba_model(
-    model: CombinedModel,
+    model: CommunityModel,
     biomass_reaction_ids: list[str],
     create_new_model=False,
-) -> CombinedModel:
+) -> CommunityModel:
     if create_new_model:
         joint_model = model.clone()
     else:

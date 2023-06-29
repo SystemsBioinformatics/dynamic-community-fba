@@ -1,7 +1,7 @@
 import pytest
 import cbmpy
 
-from endPointFBA.CombinedModel import CombinedModel
+from endPointFBA.CommunityModel import CommunityModel
 from toy_models import model_a, model_b, model_c, combined_model
 
 
@@ -41,7 +41,7 @@ def test_if_combined_model_is_created(
     model_C: cbmpy.CBModel.Model,
     defined_combined_model: cbmpy.CBModel.Model,
 ):
-    model = CombinedModel([model_A, model_B, model_C])
+    model = CommunityModel([model_A, model_B, model_C])
 
     compartments_are_copied_correctly = sorted(
         model.getCompartmentIds()
@@ -79,7 +79,7 @@ def test_if_combined_model_is_created(
 
 
 def test_if_ids_are_set(e_coli_core):
-    model = CombinedModel(
+    model = CommunityModel(
         [e_coli_core, e_coli_core.clone()], ["e_coli_1", "e_coli_2"]
     )
 
@@ -93,7 +93,7 @@ def test_if_ids_are_set(e_coli_core):
 
 
 def test_if_objective_function_is_set(e_coli_core):
-    model = CombinedModel(
+    model = CommunityModel(
         [e_coli_core, e_coli_core.clone()],
         ["e_coli_1", "e_coli_2"],
         "R_BIOMASS_Ecoli_core_w_GAM",
@@ -108,9 +108,9 @@ def test_if_objective_function_is_set(e_coli_core):
 def test_if_a_single_model_can_be_added(
     e_coli_core, correctly_combined_e_coli_core
 ):
-    model = CombinedModel([e_coli_core], ["e_coli_1"])
+    model = CommunityModel([e_coli_core], ["e_coli_1"])
 
-    model.add(e_coli_core, "e_coli_2")
+    model.add_model_to_community(e_coli_core, "e_coli_2")
 
     compartments_are_copied_correctly = sorted(
         model.getCompartmentIds()

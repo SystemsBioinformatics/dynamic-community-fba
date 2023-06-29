@@ -60,7 +60,7 @@ def build_model_C():
     )
     model.createReactionReagent("R_BM_C", "BM_c_C", -1)
     model.createReactionReagent("R_BM_C", "BM_e_C", 1)
-    model.setReactionBounds("R_BM_C", -1000.0, 1000.0)
+    model.setReactionBounds("R_BM_C", 0, 1000.0)
 
     # EXchange reactions:
     model.createReaction("S_exchange", reversible=True)
