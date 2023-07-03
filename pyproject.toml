@@ -18,8 +18,8 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/StevenWijnen/endPointFBA"
-"Bug Tracker" = "https://github.com/StevenWijnen/endPointFBA/issues"
+"Homepage" = "https://github.com/SystemsBioinformatics/dynamic-community-fba"
+"Bug Tracker" = "https://github.com/SystemsBioinformatics/dynamic-community-fba/issues"
 
 [tool.pytest.ini_options]
 pythonpath = "./code"
