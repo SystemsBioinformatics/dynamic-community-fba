@@ -1,7 +1,6 @@
 from typing import Tuple
 import cbmpy
 import math
-import pandas as pd
 from cbmpy.CBModel import Model, Reaction, Species, Reagent
 from endPointFBA.CommunityModel import CommunityModel
 from .KineticModel import KineticModel
@@ -70,12 +69,13 @@ class DynamicJointFBA:
 
         used_time = [0]
         step = 1
-
         while True:
             solution = cbmpy.doFBA(self.m_model)
-            if math.isnan(solution) or solution == 0:
+
+            if math.isnan(solution) or solution == 0 or solution < 0.001:
                 break
-            used_time.append(step * dt)
+
+            used_time.append(used_time[-1] + dt)
 
             FBAsol = self.m_model.getSolutionVector(names=True)
             FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
@@ -87,7 +87,9 @@ class DynamicJointFBA:
                 for rid, species_ids in self.m_importers.items():
                     if species_id in species_ids:
                         total += FBAsol[rid]
-                dt = self.m_metabolite_concentrations[species_id][-2] / total
+                dt_hat = (
+                    self.m_metabolite_concentrations[species_id][-2] / total
+                )
 
                 self.m_metabolite_concentrations = {
                     key: lst[:-1]
@@ -97,10 +99,10 @@ class DynamicJointFBA:
                 # than recalculate
                 self.update_concentrations(
                     FBAsol,
-                    dt,
+                    dt_hat,
                 )
 
-                used_time[-1] = used_time[-2] + dt
+                used_time[-1] = used_time[-2] + dt_hat
 
             # update biomass
             for rid in self.m_biomass_reactions:
@@ -109,7 +111,6 @@ class DynamicJointFBA:
                 self.m_biomass_concentrations[mid].append(Xt)
 
             # update lower and upper bounds...
-
             self.update_bounds(user_func)
 
             step += 1
@@ -178,6 +179,7 @@ class DynamicJointFBA:
             reaction.setUpperBound(
                 self.m_initial_bounds[reaction.getId()][1] * X
             )
+            # TODO fix tis
             if km is not None:
                 S = min(importers_reagent_concentrations)
                 reaction.setUpperBound(vmax * (S / (km + S)) * X)
