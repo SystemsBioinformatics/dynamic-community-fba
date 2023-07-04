@@ -41,8 +41,8 @@ model3.getReaction("S_exchange").setLowerBound(-100)
 
 combined_model = CommunityModel(
     [model1],
-    ["ecoli_1"],
     ["R_BIOMASS_Ecoli_core_w_GAM"],
+    ["ecoli_1"],
 )
 
 combined_model.getReaction("R_EX_mal__L_e").setLowerBound(-1000000)

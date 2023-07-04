@@ -11,10 +11,11 @@ class CommunityModel(Model):
     def __init__(
         self,
         models: list[Model],
+        biomass_reaction_ids: list[str],
         ids: list[str] = [],
-        biomass_reaction_ids: list[str] = [],
+        combined_model_id: str = "combined_model",
     ) -> None:
-        super().__init__("combined_model")
+        super().__init__(combined_model_id)
 
         self.createCompartment("e", "extracellular space")
         duplicate_species = cm.create_duplicate_species_dict(models)
@@ -28,16 +29,17 @@ class CommunityModel(Model):
         else:
             self.m_identifiers = ids
 
+        # Save biomass reaction id of old model, make sure
+        # the first reaction is the biomass reaction
+        for i in range(0, len(biomass_reaction_ids)):
+            bm = cm.create_new_id(biomass_reaction_ids[i], self.m_identifiers[i])
+
+            self.m_single_model_biomass_reaction_ids.append(bm)
+
         for i in range(0, len(models)):
             model = models[i]
             new_id = self.m_identifiers[i]
-            "Save biomass reaction id of old model"
-            for rid in biomass_reaction_ids:
-                if rid in model.getReactionIds():
-                    self.m_single_model_biomass_reaction_ids.append(
-                        cm.create_new_id(rid, new_id)
-                    )
-                    break
+
             cm.merge_compartments(model, self, new_id)
             cm.merge_species(duplicate_species, model, new_id)
             cm.merge_reactions(model, self, new_id)
@@ -160,7 +162,7 @@ class CommunityModel(Model):
                 return old_id
         return ""
 
-    def identify_biomass_reaction_for_model(self, mid: str) -> str:
+    def identify_biomass_reaction_for_model(self, mid: str) -> list[str]:
         """Given a model id return the biomass reaction
 
         Args:
@@ -183,7 +185,15 @@ class CommunityModel(Model):
         model_id = self.identify_model_from_reaction(rid)
         return self.identify_biomass_reaction_for_model(model_id)
 
-    def get_model_biomass_ids(self):
-        return dict(
-            zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids)
-        )
+    def get_model_biomass_ids(self) -> dict[str, str]:
+        return dict(zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids))
+
+    # TODO fix these implementations
+    def get_importers(self) -> list[str]:
+        pass
+
+    def get_exporters(self) -> list[str]:
+        pass
+
+    def get_transporters(self) -> list[str]:
+        return self.get_exporters().extend(self.get_importers())

@@ -142,6 +142,8 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str):
     exchange_reactions = model.getExchangeReactionIds()
     for reaction_id in model.getReactionIds():
         is_exchange_reaction: bool = False
+
+        # TODO discuss this
         if reaction_id.startswith("R_EX"):
             is_exchange_reaction = True
         if reaction_id in exchange_reactions:
@@ -174,8 +176,8 @@ def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
     Merge species from a model into a combined model.
     Rules based:
     1) If a species occurs in two or more models in the cytosolic space
-    we append the id of that species with the model id, such that we make
-    a distinguishing between the two species/metabolites in the organisms
+    we append the id of that species with the model id, such that we
+    distinguish between the two species/metabolites in the organisms
     2) If the species on the other lives in the extracellular space
     we don't merge the species, the two model now use the same extracellular
     space species

@@ -1,10 +1,23 @@
 import cbmpy
+from cbmpy.CBModel import Model
+from endPointFBA import CommunityModel
 
-model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
+model1: Model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
+model2: Model = cbmpy.loadModel("data/bigg_models/strep_therm.xml")
 
-reaction = model.getReaction("R_EX_glc__D_e")
-reaction.setLowerBound(0)
 
-model.getReaction("R_EX_mal__L_e").setLowerBound(-1)
+biomass_reaction_model_1 = "R_BIOMASS_Ecoli_core_w_GAM"
+biomass_reaction_model_2 = "R_biomass_STR"
+community_model: CommunityModel = CommunityModel(
+    [model1, model2],
+    [
+        biomass_reaction_model_1,
+        biomass_reaction_model_2,
+    ],
+)
 
-cbmpy.doFBA(model)
+
+print(
+    model1.getActiveObjectiveReactionIds(),
+    model2.getActiveObjectiveReactionIds(),
+)
