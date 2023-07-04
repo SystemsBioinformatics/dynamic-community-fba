@@ -40,5 +40,5 @@ The dynamic-community-fba documentation serves as a valuable resource for resear
    5_djoint/home
    6_endpoint_fba/home   
    7_faq/home
-   8_API/home
+   8_API/endPointFBA
 
