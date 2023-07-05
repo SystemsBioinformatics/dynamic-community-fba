@@ -2,6 +2,7 @@ from cbmpy.CBModel import Reaction
 from endPointFBA.CommunityModel import CommunityModel
 
 
+# TODO will be deleted
 def create_joint_fba_model(
     model: CommunityModel,
     biomass_reaction_ids: list[str],

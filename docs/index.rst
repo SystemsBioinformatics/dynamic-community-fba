@@ -6,7 +6,6 @@
 Dynamic-community-fba's documentation
 ================================================
 
-
 Welcome to the documentation of dynamic-community-fba. The documentation provides you with a comprehensive guidance on using the dynamic-community-fba Python package for modeling dynamic flux balance analysis (FBA) in microbial consortia. By utilizing the Genome Scale Metabolic Models (GSMM’s) of your organisms of interest, our package enables you to analyze and explore the intricate interactions among two or more organisms.
 
 The package covers three different ways for modelling microbial consortia's:

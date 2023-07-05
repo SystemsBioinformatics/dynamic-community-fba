@@ -32,7 +32,9 @@ class CommunityModel(Model):
         # Save biomass reaction id of old model, make sure
         # the first reaction is the biomass reaction
         for i in range(0, len(biomass_reaction_ids)):
-            bm = cm.create_new_id(biomass_reaction_ids[i], self.m_identifiers[i])
+            bm = cm.create_new_id(
+                biomass_reaction_ids[i], self.m_identifiers[i]
+            )
 
             self.m_single_model_biomass_reaction_ids.append(bm)
 
@@ -50,7 +52,18 @@ class CommunityModel(Model):
             f"{[id for id in self.m_single_model_identifiers]}"
         )
 
-    def add_model_to_community(self, model: Model, new_id=None):
+    def add_model_to_community(
+        self, model: Model, biomass_reaction: str, new_id: str = None
+    ):
+        """Adds a model to the CommunityModel
+
+        Args:
+            model (Model): The model that needs to be added
+            biomass_reaction (str): The reaction id of the biomass reaction of
+            the new model
+            new_id (str, optional): The user set identifier. Defaults to None.
+            If set to None the model.id will be used
+        """
         if new_id is None:
             new_id = model.getId()
 
@@ -62,8 +75,20 @@ class CommunityModel(Model):
 
         self.m_identifiers.append(new_id)
         self.m_single_model_identifiers.append(model.id)
+        self.m_single_model_biomass_reaction_ids.append(biomass_reaction)
 
     def get_model_specific_reactions(self, mid: str) -> list[Reaction]:
+        """Returns a list of reaction ids
+
+        Args:
+            mid (str): _description_
+
+        Raises:
+            NotInCombinedModel: _description_
+
+        Returns:
+            list[Reaction]: _description_
+        """
         if mid not in self.m_identifiers:
             raise NotInCombinedModel(
                 "The model id provided was not found in the combined model"
@@ -186,14 +211,42 @@ class CommunityModel(Model):
         return self.identify_biomass_reaction_for_model(model_id)
 
     def get_model_biomass_ids(self) -> dict[str, str]:
-        return dict(zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids))
-
-    # TODO fix these implementations
-    def get_importers(self) -> list[str]:
-        pass
+        return dict(
+            zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids)
+        )
 
     def get_exporters(self) -> list[str]:
-        pass
+        return self.get_transporters()[0]
+
+    def get_importers(self) -> list[str]:
+        return self.get_transporters()[1]
 
     def get_transporters(self) -> list[str]:
-        return self.get_exporters().extend(self.get_importers())
+        """It is convenient to access the importers and exporters quickly
+            therefore we need to know which reactions uptake metabolites
+            from the external space and which are being excreted
+            we define importers and exporters
+            Both are a {rid : [species]}
+        Args:
+            model (Model): _description_
+
+        Returns:
+            _type_: _description_
+        """
+
+        importers: dict[str, list[str]] = {}
+        exporters: dict[str, list[str]] = {}
+        for rid in self.getReactionIds():
+            reaction: Reaction = self.getReaction(rid)
+            if not reaction.is_exchange:
+                for reagent in reaction.reagents:
+                    sid: str = reagent.getSpecies()
+                    species: Species = self.getSpecies(sid)
+                    if species.getCompartmentId() == "e":
+                        if reagent.coefficient == -1:
+                            # Reaction imports external metabolites
+                            importers[rid] = importers.get(rid, []) + [sid]
+                        elif reagent.coefficient == 1:
+                            exporters[rid] = exporters.get(rid, []) + [sid]
+
+        return [exporters, importers]

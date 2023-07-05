@@ -1,44 +1,43 @@
-from typing import Tuple
 import cbmpy
 import math
-from cbmpy.CBModel import Model, Reaction, Species, Reagent
+from cbmpy.CBModel import Model, Reaction
 from endPointFBA.CommunityModel import CommunityModel
-from .KineticModel import KineticModel
 
 
 class DynamicJointFBA:
-    # Maybe save dt here as well??
-
-    m_kinetic_model: KineticModel
     m_model: CommunityModel
-    m_biomass_reactions: list[str]
     m_importers: dict[str, list[str]]
     m_exporters: dict[str, list[str]]
-    m_biomass_concentrations: dict[str, list[float]] = {}
     m_metabolite_concentrations: dict[str, list[float]] = {}
-    m_initial_bounds: dict[str, Tuple[float, float]] = {}
+    m_initial_bounds: dict[str, tuple[float, float]] = {}
+    m_kinetics: dict[str, tuple[float, float]]
 
-    # Usec to set everything in place for the simulation
+    # use to set everything in place for the simulation
     def __init__(
         self,
-        km: KineticModel,
-        initial_biomasses: list[float],
+        model: CommunityModel,
+        biomasses: list[float],
         initial_conditions: dict[str, float] = {},
+        kinetics={},
     ):
-        self.m_kinetic_model = km
-        self.m_model: CommunityModel = km.get_model().clone()
-        model_biomasses = self.m_model.get_model_biomass_ids()
+        model_biomasses = model.get_model_biomass_ids()
 
-        self.m_biomass_reactions = list(model_biomasses.values())
+        self.set_community_biomass_reaction(model)
+
+        initial_biomasses = [[x] for x in biomasses]
+
         self.m_biomass_concentrations = dict(
-            zip(model_biomasses.keys(), [initial_biomasses])
+            zip(model_biomasses.keys(), initial_biomasses)
         )
+
+        self.m_kinetics = kinetics
 
         # Use the exchange reaction lower bounds as initial concentrations
         # If people want to change it they have to change this use inital
         # conditions or change the lower bounds
         # This was implemented in such that you dont need to manually
         # add all external metabolites in the initial conditions
+
         for exchange in self.m_model.getExchangeReactionIds():
             reaction: Reaction = self.m_model.getReaction(exchange)
             species_id: str = reaction.reagents[0].getSpecies()
@@ -50,7 +49,10 @@ class DynamicJointFBA:
                 self.m_metabolite_concentrations[species_id] = [
                     -reaction.getLowerBound()
                 ]
-        self.m_exporters, self.m_importers = self.get_transporters()
+        self.m_exporters = model.get_exporters()
+
+        self.m_importers = model.get_importers()
+
         for rid in self.m_model.getReactionIds():
             reaction: Reaction = self.m_model.getReaction(rid)
             self.m_initial_bounds[rid] = [
@@ -58,9 +60,37 @@ class DynamicJointFBA:
                 reaction.getUpperBound(),
             ]
 
+    def set_community_biomass_reaction(self, model: CommunityModel):
+        # TODO implement clone funciton in CommunirtModel
+        joint_model = model
+        joint_model.createSpecies("X_c", False, "The community biomass")
+
+        for _, biomass_id in model.get_model_biomass_ids().items():
+            reaction: Reaction = joint_model.getReaction(biomass_id)
+            reaction.createReagent("X_c", 1)
+
+        joint_model.createReaction("X_comm")
+        out: Reaction = joint_model.getReaction("X_comm")
+        out.is_exchange = True
+        out.setUpperBound(1000)
+        out.setLowerBound(0)
+        out.createReagent("X_c", -1)
+
+        joint_model.createObjectiveFunction("X_comm")
+
+        joint_model.setActiveObjective("X_comm_objective")
+
+        self.m_model = joint_model
+
+        # we return the joint model such that you can also perform a regular
+        # FBA
+
+        return joint_model
+
     def simulate(
         self,
         dt: float,
+        epsilon=0.001,
         user_func=None,
     ):
         # First update all upper and lower bounds to be rates
@@ -68,12 +98,20 @@ class DynamicJointFBA:
         self.update_bounds(user_func)
 
         used_time = [0]
-        step = 1
+        dt_hat = -1
+        dt_save = dt
+
         while True:
             solution = cbmpy.doFBA(self.m_model)
 
-            if math.isnan(solution) or solution == 0 or solution < 0.001:
+            if math.isnan(solution) or solution == 0 or solution < epsilon:
                 break
+
+            if dt_hat != -1:
+                dt = dt_save - dt_hat
+                dt_hat = -1
+            else:
+                dt = dt_save
 
             used_time.append(used_time[-1] + dt)
 
@@ -105,7 +143,7 @@ class DynamicJointFBA:
                 used_time[-1] = used_time[-2] + dt_hat
 
             # update biomass
-            for rid in self.m_biomass_reactions:
+            for _, rid in self.m_model.get_model_biomass_ids().items():
                 mid = self.m_model.identify_model_from_reaction(rid)
                 Xt = self.m_biomass_concentrations[mid][-1] + FBAsol[rid] * dt
                 self.m_biomass_concentrations[mid].append(Xt)
@@ -113,7 +151,6 @@ class DynamicJointFBA:
             # update lower and upper bounds...
             self.update_bounds(user_func)
 
-            step += 1
         return [
             used_time,
             self.m_metabolite_concentrations,
@@ -168,8 +205,13 @@ class DynamicJointFBA:
                     )
 
     def update_importer_bounds(self, reaction: Reaction, X: float):
-        km = self.m_kinetic_model.get_reaction_km(reaction.getId())
-        vmax = self.m_kinetic_model.get_reaction_vmax(reaction.getId())
+        # TODO this will be fixed with the kineticStruct in place
+        try:
+            km = self.m_kinetics[reaction.getId()][0]
+            vmax = self.m_kinetics[reaction.getId()][1]
+        except:
+            km = None
+            vmax = None
         sids = self.m_importers[reaction.getId()]
         importers_reagent_concentrations = [
             self.m_metabolite_concentrations[id][-1] for id in sids
@@ -187,32 +229,5 @@ class DynamicJointFBA:
         else:
             reaction.setUpperBound(0)
 
-    def get_transporters(self):
-        """The dynamic FBA needs to update all external metabolites
-            therefore we need to know which reactions uptake metabolites
-            from the external space and which are being excreted
-            we define importers and exporters
-            Both are a {rid : [species]}
-        Args:
-            model (Model): _description_
-
-        Returns:
-            _type_: _description_
-        """
-
-        importers: dict[str, list[str]] = {}
-        exporters: dict[str, list[str]] = {}
-        for rid in self.m_model.getReactionIds():
-            reaction: Reaction = self.m_model.getReaction(rid)
-            if not reaction.is_exchange:
-                for reagent in reaction.reagents:
-                    sid: str = reagent.getSpecies()
-                    species: Species = self.m_model.getSpecies(sid)
-                    if species.getCompartmentId() == "e":
-                        if reagent.coefficient == -1:
-                            # Reaction imports external metabolites
-                            importers[rid] = importers.get(rid, []) + [sid]
-                        elif reagent.coefficient == 1:
-                            exporters[rid] = exporters.get(rid, []) + [sid]
-
-        return [exporters, importers]
+    def get_joint_model(self) -> Model:
+        return self.m_model

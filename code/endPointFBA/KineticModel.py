@@ -5,15 +5,13 @@ from cbmpy.CBModel import Model
  additional kinetic information.
 """
 
+# TODO Create a kinetic struct, but donthis with the KineticsReader funciton
 
-class KineticModel:
-    m_model: Model
+
+class KineticStruct:
     m_kinetics: dict[str, tuple[float, float]]
 
-    def __init__(
-        self, model: Model, kinetics: dict[str, tuple[float, float]]
-    ) -> None:
-        self.m_model = model
+    def __init__(self, kinetics: dict[str, tuple[float, float]]) -> None:
         self.m_kinetics = kinetics
 
     def get_model_kinetics(self) -> dict[str, tuple[float, float]]:
