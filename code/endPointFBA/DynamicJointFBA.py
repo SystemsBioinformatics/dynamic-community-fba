@@ -2,9 +2,10 @@ import cbmpy
 import math
 from cbmpy.CBModel import Model, Reaction
 from endPointFBA.CommunityModel import CommunityModel
+from endPointFBA.DynamicFBABase import DynamicFBABase
 
 
-class DynamicJointFBA:
+class DynamicJointFBA(DynamicFBABase):
     m_model: CommunityModel
     m_importers: dict[str, list[str]]
     m_exporters: dict[str, list[str]]
@@ -49,9 +50,9 @@ class DynamicJointFBA:
                 self.m_metabolite_concentrations[species_id] = [
                     -reaction.getLowerBound()
                 ]
-        self.m_exporters = model.get_exporters()
+        self.m_exporters = self.get_exporters(model)
 
-        self.m_importers = model.get_importers()
+        self.m_importers = self.get_importers(model)
 
         for rid in self.m_model.getReactionIds():
             reaction: Reaction = self.m_model.getReaction(rid)
@@ -86,6 +87,9 @@ class DynamicJointFBA:
         # FBA
 
         return joint_model
+
+    def get_joint_model(self) -> CommunityModel:
+        return self.m_model
 
     def simulate(
         self,
@@ -183,6 +187,7 @@ class DynamicJointFBA:
 
         return lowest_species_id
 
+    # TODO implement user_func
     def update_bounds(self, user_func) -> None:
         for rid in self.m_model.getReactionIds():
             reaction: Reaction = self.m_model.getReaction(rid)
@@ -228,6 +233,3 @@ class DynamicJointFBA:
 
         else:
             reaction.setUpperBound(0)
-
-    def get_joint_model(self) -> Model:
-        return self.m_model

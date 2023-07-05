@@ -32,9 +32,7 @@ class CommunityModel(Model):
         # Save biomass reaction id of old model, make sure
         # the first reaction is the biomass reaction
         for i in range(0, len(biomass_reaction_ids)):
-            bm = cm.create_new_id(
-                biomass_reaction_ids[i], self.m_identifiers[i]
-            )
+            bm = cm.create_new_id(biomass_reaction_ids[i], self.m_identifiers[i])
 
             self.m_single_model_biomass_reaction_ids.append(bm)
 
@@ -211,42 +209,4 @@ class CommunityModel(Model):
         return self.identify_biomass_reaction_for_model(model_id)
 
     def get_model_biomass_ids(self) -> dict[str, str]:
-        return dict(
-            zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids)
-        )
-
-    def get_exporters(self) -> list[str]:
-        return self.get_transporters()[0]
-
-    def get_importers(self) -> list[str]:
-        return self.get_transporters()[1]
-
-    def get_transporters(self) -> list[str]:
-        """It is convenient to access the importers and exporters quickly
-            therefore we need to know which reactions uptake metabolites
-            from the external space and which are being excreted
-            we define importers and exporters
-            Both are a {rid : [species]}
-        Args:
-            model (Model): _description_
-
-        Returns:
-            _type_: _description_
-        """
-
-        importers: dict[str, list[str]] = {}
-        exporters: dict[str, list[str]] = {}
-        for rid in self.getReactionIds():
-            reaction: Reaction = self.getReaction(rid)
-            if not reaction.is_exchange:
-                for reagent in reaction.reagents:
-                    sid: str = reagent.getSpecies()
-                    species: Species = self.getSpecies(sid)
-                    if species.getCompartmentId() == "e":
-                        if reagent.coefficient == -1:
-                            # Reaction imports external metabolites
-                            importers[rid] = importers.get(rid, []) + [sid]
-                        elif reagent.coefficient == 1:
-                            exporters[rid] = exporters.get(rid, []) + [sid]
-
-        return [exporters, importers]
+        return dict(zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids))
