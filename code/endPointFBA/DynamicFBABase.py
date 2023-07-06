@@ -2,9 +2,9 @@ from cbmpy.CBModel import Model, Reaction, Species
 
 
 class DynamicFBABase:
-    m_biomass_concentrations: dict[str, list[float]]
-    m_metabolite_concentrations: dict[str, list[float]] = {}
     m_kinetics: dict[str, tuple[float, float]]
+    m_biomass_concentrations: dict[str, list[float]] = {}
+    m_metabolite_concentrations: dict[str, list[float]] = {}
 
     def set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]
@@ -46,6 +46,7 @@ class DynamicFBABase:
     def get_importers(self, model) -> dict[str, list[str]]:
         return self.get_transporters(model)[1]
 
+    # TODO create struct for this tedious datatype
     def get_transporters(self, model: Model) -> list[dict[str, list[str]]]:
         """It is convenient to access the importers and exporters quickly
             therefore we need to know which reactions uptake metabolites

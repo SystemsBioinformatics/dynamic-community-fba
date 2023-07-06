@@ -75,6 +75,7 @@ class DynamicJointFBA(DynamicFBABase):
     def get_joint_model(self) -> CommunityModel:
         return self.m_model
 
+    # TODO add a continue function for time point t
     def simulate(
         self,
         dt: float,
@@ -109,18 +110,31 @@ class DynamicJointFBA(DynamicFBABase):
             species_id = self.update_concentrations(FBAsol, dt)
 
             if species_id != "":
-                total = 0
-                for rid, species_ids in self.m_importers.items():
-                    if species_id in species_ids:
-                        total += FBAsol[rid]
-                dt_hat = (
-                    self.m_metabolite_concentrations[species_id][-2] / total
-                )
+                # TODO This code needs some proper clean up
+                # Same as for DynamicParallelFBA
+
+                # This time point is not be feasible remove all last
+                # concentrations
 
                 self.m_metabolite_concentrations = {
                     key: lst[:-1]
                     for key, lst in self.m_metabolite_concentrations.items()
                 }
+
+                # Maybe some metabolite was exported/created, by an organism
+                # Unfortunately to check what is create we would
+                # have to know the new dt which we don'...
+                # So we accept a small error, but in real life we
+                # also would not know if the exporters would have
+                # Created new metabolites before the importers ran out
+
+                total = 0
+                for rid, species_ids in self.m_importers.items():
+                    if species_id in species_ids:
+                        total += FBAsol[rid]
+                dt_hat = (
+                    self.m_metabolite_concentrations[species_id][-1] / total
+                )
 
                 # than recalculate
                 self.update_concentrations(
@@ -149,15 +163,17 @@ class DynamicJointFBA(DynamicFBABase):
         # Update external metabolites
         lowest_concentration = 1e10
         lowest_species_id = ""
-        # first check what was exported
         for key in self.m_metabolite_concentrations.keys():
             self.m_metabolite_concentrations[key].append(
                 self.m_metabolite_concentrations[key][-1]
             )
-
+        # first check what was exported (created) because new metabolite can
+        # be created
         for rid, species_ids in self.m_exporters.items():
             for sid in species_ids:
                 self.m_metabolite_concentrations[sid][-1] += FBAsol[rid] * dt
+
+        # Next check the importers (consumption)
         for rid, species_ids in self.m_importers.items():
             for sid in species_ids:
                 self.m_metabolite_concentrations[sid][-1] -= FBAsol[rid] * dt
@@ -186,6 +202,7 @@ class DynamicJointFBA(DynamicFBABase):
 
                 # If the reaction is an importer we need to check
                 # if there is substrate they can import
+                # TODO exporters don't have kinetics now!
                 if rid in self.m_importers.keys():
                     self.update_importer_bounds(reaction, X_k_t)
                 else:

@@ -78,7 +78,7 @@ You can now easily plot the solution:
     ts, metabolites, biomasses = dynamic_fba.simulate(0.1)
 
 
-    ax = plt.subplot(1616)
+    ax = plt.subplot(111)
     ax.plot(ts, biomasses["ecoli_1"])
     ax2 = plt.twinx(ax)
     ax2.plot(ts, metabolites["X_c"], color="r")
