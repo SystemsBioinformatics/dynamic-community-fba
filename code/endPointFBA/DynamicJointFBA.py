@@ -9,18 +9,20 @@ class DynamicJointFBA(DynamicFBABase):
     m_model: CommunityModel
     m_importers: dict[str, list[str]]
     m_exporters: dict[str, list[str]]
-    m_metabolite_concentrations: dict[str, list[float]] = {}
     m_initial_bounds: dict[str, tuple[float, float]] = {}
-    m_kinetics: dict[str, tuple[float, float]]
 
     # use to set everything in place for the simulation
     def __init__(
         self,
         model: CommunityModel,
         biomasses: list[float],
-        initial_conditions: dict[str, float] = {},
+        initial_concentrations: dict[str, float] = {},
         kinetics={},
     ):
+        self.m_exporters = self.get_exporters(model)
+
+        self.m_importers = self.get_importers(model)
+
         model_biomasses = model.get_model_biomass_ids()
 
         self.set_community_biomass_reaction(model)
@@ -32,27 +34,7 @@ class DynamicJointFBA(DynamicFBABase):
         )
 
         self.m_kinetics = kinetics
-
-        # Use the exchange reaction lower bounds as initial concentrations
-        # If people want to change it they have to change this use inital
-        # conditions or change the lower bounds
-        # This was implemented in such that you dont need to manually
-        # add all external metabolites in the initial conditions
-
-        for exchange in self.m_model.getExchangeReactionIds():
-            reaction: Reaction = self.m_model.getReaction(exchange)
-            species_id: str = reaction.reagents[0].getSpecies()
-            if species_id in initial_conditions.keys():
-                self.m_metabolite_concentrations[species_id] = [
-                    initial_conditions[species_id]
-                ]
-            else:
-                self.m_metabolite_concentrations[species_id] = [
-                    -reaction.getLowerBound()
-                ]
-        self.m_exporters = self.get_exporters(model)
-
-        self.m_importers = self.get_importers(model)
+        self.set_initial_concentrations(model, initial_concentrations)
 
         for rid in self.m_model.getReactionIds():
             reaction: Reaction = self.m_model.getReaction(rid)
@@ -81,6 +63,8 @@ class DynamicJointFBA(DynamicFBABase):
 
         joint_model.setActiveObjective("X_comm_objective")
 
+        # Set X_C to be exporter since it increases over time
+        self.m_exporters["X_comm"] = ["X_c"]
         self.m_model = joint_model
 
         # we return the joint model such that you can also perform a regular

@@ -27,6 +27,8 @@ To perform joint FBA run the following:
     from endPointFBA.DynamicJointFBA import DynamicJointFBA
 
     model1: Model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
+    model1.getReaction("R_GLCpts").setUpperBound(10)
+
     model_2 = model1.clone()
 
     combined_model = CommunityModel(
