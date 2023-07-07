@@ -75,6 +75,8 @@ class CommunityModel(Model):
         self.m_single_model_identifiers.append(model.id)
         self.m_single_model_biomass_reaction_ids.append(biomass_reaction)
 
+    # TODO Remove a model
+
     def get_model_specific_reactions(self, mid: str) -> list[Reaction]:
         """Returns a list of reaction ids
 

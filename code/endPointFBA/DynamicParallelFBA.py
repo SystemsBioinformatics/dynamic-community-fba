@@ -3,22 +3,23 @@ import math
 from cbmpy.CBModel import Model, Reaction, Species
 
 from endPointFBA.DynamicFBABase import DynamicFBABase
+from endPointFBA.Models.Kinetics import Kinetics
+from endPointFBA.Models.Transporters import Transporters
 
 
 class DynamicParallelFBA(DynamicFBABase):
     m_models: list[Model]
     m_initial_bounds: dict[str, dict[str, tuple[float, float]]] = {}
-    # TODO will be fixed -> see DYnamicFBABase
-    # Here the dict represents a model_id: {rid: ["species_id", "species_id"]}
-    m_importers: dict[str, dict[str, list[str]]] = {}
-    m_exporters: dict[str, dict[str, list[str]]] = {}
+
+    # Here the dict represents a model_id: Transporter
+    m_model_transporters: dict[str, Transporters] = {}
 
     def __init__(
         self,
         models: list[Model],
         biomasses: dict[str, float],
         initial_concentrations: dict[str, float],
-        kinetics={},
+        kinetics: dict[str, Kinetics] = Kinetics({}),
     ) -> None:
         self.m_models = models
         self.m_kinetics = kinetics
@@ -28,8 +29,7 @@ class DynamicParallelFBA(DynamicFBABase):
             mid = model.getId()
             self.set_initial_concentrations(model, initial_concentrations)
             self.m_biomass_concentrations[mid] = [biomasses[i]]
-            self.m_importers[mid] = self.get_importers(model)
-            self.m_exporters[mid] = self.get_exporters(model)
+            self.m_model_transporters[mid] = Transporters(model)
             for rid in model.getReactionIds():
                 reaction: Reaction = model.getReaction(rid)
                 if mid not in self.m_initial_bounds.keys():
@@ -56,7 +56,7 @@ class DynamicParallelFBA(DynamicFBABase):
         dt_hat = -1
         dt_save = dt
 
-        self.update_bounds(user_func)
+        self.update_reaction_bounds(user_func)
 
         while True:
             if dt_hat != -1:
@@ -108,7 +108,9 @@ class DynamicParallelFBA(DynamicFBABase):
                 total = 0
                 for model in self.m_models:
                     mid = model.getId()
-                    for rid, species_ids in self.m_importers[mid].items():
+                    for rid, species_ids in self.m_model_transporters[
+                        mid
+                    ].get_importers(True):
                         if species_id in species_ids:
                             total += FBAsol[rid]
 
@@ -122,12 +124,16 @@ class DynamicParallelFBA(DynamicFBABase):
             # After all models updated the external metabolites
             # update all bounds
 
-            self.update_bounds(user_func)
+            self.update_reaction_bounds(user_func)
 
             step += 1
 
-    def update_bounds(self, user_func):
+    def update_reaction_bounds(self, user_func):
         models = self.m_models
+        if user_func is not None:
+            # TODO Give somethings to the user_func, think about this
+            user_func()
+            return
 
         for model in models:
             mid = model.getId()
@@ -140,30 +146,39 @@ class DynamicParallelFBA(DynamicFBABase):
                     reaction.setLowerBound(
                         self.m_initial_bounds[mid][rid][0] * X_k_t
                     )
-
                     # If the reaction is an importer we need to check
                     # if there is substrate they can import
-                    if rid in self.m_importers[mid].keys():
+                    if self.m_model_transporters[mid].is_importer(rid):
                         self.update_importer_bounds(mid, reaction, X_k_t)
+
+                    elif (
+                        self.m_kinetics is not None
+                        and self.m_kinetics.Exists(rid)
+                    ):
+                        self.update_kinetics(
+                            reaction, X_k_t, self.m_model_transporters[mid]
+                        )
+
                     else:
                         reaction.setUpperBound(
                             self.m_initial_bounds[mid][rid][1] * X_k_t
                         )
 
     def update_importer_bounds(self, mid: str, reaction: Reaction, X: float):
-        sids = self.m_importers[mid][reaction.getId()]
+        sids = self.m_model_transporters[mid].get_importers_species(
+            reaction.getId()
+        )
         importers_reagent_concentrations = [
             self.m_metabolite_concentrations[id][-1] for id in sids
         ]
 
         if all(x > 0 for x in importers_reagent_concentrations):
-            reaction.setUpperBound(
-                self.m_initial_bounds[mid][reaction.getId()][1] * X
-            )
-            # TODO fix tis
-            # if km is not None:
-            #     S = min(importers_reagent_concentrations)
-            #     reaction.setUpperBound(vmax * (S / (km + S)) * X)
+            if self.m_kinetics.Exists(reaction.getId()):
+                self.update_kinetics(reaction, X)
+            else:
+                reaction.setUpperBound(
+                    self.m_initial_bounds[mid][reaction.getId()][1] * X
+                )
 
         else:
             reaction.setUpperBound(0)
@@ -176,20 +191,14 @@ class DynamicParallelFBA(DynamicFBABase):
                     self.m_metabolite_concentrations[key][-1]
                 )
 
-        for rid, species_ids in self.m_exporters[mid].items():
+        for rid, species_ids in self.m_model_transporters[mid].get_exporters(
+            True
+        ):
             for sid in species_ids:
                 self.m_metabolite_concentrations[sid][-1] += FBAsol[rid] * dt
 
-        for rid, species_ids in self.m_importers[mid].items():
+        for rid, species_ids in self.m_model_transporters[mid].get_importers(
+            True
+        ):
             for sid in species_ids:
                 self.m_metabolite_concentrations[sid][-1] -= FBAsol[rid] * dt
-
-    def check_solution_feasibility(self):
-        low = 1e10
-        name = ""
-        for key, value in self.m_metabolite_concentrations.items():
-            if value[-1] < 0 and value[-1] < low:
-                low = value[-1]
-                name = key
-
-        return name

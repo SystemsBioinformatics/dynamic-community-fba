@@ -1,8 +1,10 @@
 from cbmpy.CBModel import Model, Reaction, Species
+from endPointFBA.Models.Kinetics import Kinetics
+from endPointFBA.Models.Transporters import Transporters
 
 
 class DynamicFBABase:
-    m_kinetics: dict[str, tuple[float, float]]
+    m_kinetics: Kinetics
     m_biomass_concentrations: dict[str, list[float]] = {}
     m_metabolite_concentrations: dict[str, list[float]] = {}
 
@@ -31,7 +33,7 @@ class DynamicFBABase:
     def simulate(self, dt, epsilon=0.001) -> None:
         pass
 
-    def update_bounds(self):
+    def update_reaction_bounds(self):
         pass
 
     def update_importer_bounds(self):
@@ -40,39 +42,28 @@ class DynamicFBABase:
     def update_concentrations(self):
         pass
 
-    def get_exporters(self, model) -> dict[str, list[str]]:
-        return self.get_transporters(model)[0]
+    def check_solution_feasibility(self) -> str:
+        low = 1e10
+        name = ""
+        for key, value in self.m_metabolite_concentrations.items():
+            if value[-1] < 0 and value[-1] < low:
+                low = value[-1]
+                name = key
 
-    def get_importers(self, model) -> dict[str, list[str]]:
-        return self.get_transporters(model)[1]
+        return name
 
-    # TODO create struct for this tedious datatype
-    def get_transporters(self, model: Model) -> list[dict[str, list[str]]]:
-        """It is convenient to access the importers and exporters quickly
-            therefore we need to know which reactions uptake metabolites
-            from the external space and which are being excreted
-            we define importers and exporters
-            Both are a {rid : [species]}
-        Args:
-            model (Model): _description_
+    def importers_species_concentration(
+        self, rid: str, transporters: Transporters
+    ):
+        sids = transporters.get_importers_species(rid)
+        return [self.m_metabolite_concentrations[id][-1] for id in sids]
 
-        Returns:
-            _type_: _description_
-        """
-
-        importers: dict[str, list[str]] = {}
-        exporters: dict[str, list[str]] = {}
-        for rid in model.getReactionIds():
-            reaction: Reaction = model.getReaction(rid)
-            if not reaction.is_exchange:
-                for reagent in reaction.reagents:
-                    sid: str = reagent.getSpecies()
-                    species: Species = model.getSpecies(sid)
-                    if species.getCompartmentId() == "e":
-                        if reagent.coefficient == -1:
-                            # Reaction imports external metabolites
-                            importers[rid] = importers.get(rid, []) + [sid]
-                        elif reagent.coefficient == 1:
-                            exporters[rid] = exporters.get(rid, []) + [sid]
-
-        return [exporters, importers]
+    def update_kinetics(
+        self, reaction: Reaction, X: float, transporters: Transporters
+    ):
+        rid: str = reaction.getId()
+        km, vmax = self.m_kinetics.get_kinetics(
+            rid,
+        )
+        S = min(self.importers_species_concentration(rid, transporters))
+        reaction.setUpperBound(vmax * (S / (km + S)) * X)
