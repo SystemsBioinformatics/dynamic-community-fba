@@ -82,24 +82,25 @@ class DynamicJointFBA(DynamicFBABase):
         user_func=None,
     ):
         # First update all upper and lower bounds to be rates
-        # (Corrected for biomass),
-        self.update_reaction_bounds(user_func)
 
         used_time = [0]
         dt_hat = -1
         dt_save = dt
 
         while True:
-            solution = cbmpy.doFBA(self.m_model)
-
-            if math.isnan(solution) or solution == 0 or solution < epsilon:
-                break
-
             if dt_hat != -1:
-                dt = dt_save - dt_hat
+                dt = dt_hat
                 dt_hat = -1
             else:
                 dt = dt_save
+
+            # update lower and upper bounds...
+            self.update_reaction_bounds(user_func)
+
+            solution = cbmpy.doFBA(self.m_model)
+
+            if math.isnan(solution) or solution < epsilon:
+                break
 
             used_time.append(used_time[-1] + dt)
 
@@ -107,55 +108,24 @@ class DynamicJointFBA(DynamicFBABase):
             FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
             self.update_concentrations(FBAsol, dt)
+            if dt != 0.1:
+                print(self.m_metabolite_concentrations)
 
             species_id = self.check_solution_feasibility()
-
+            print("---------------")
+            print(self.m_metabolite_concentrations["M_glc__D_e"])
+            print(dt)
+            print("---------------")
             if species_id != "":
-                # TODO This code needs some proper clean up
-                # Same as for DynamicParallelFBA
-
-                # This time point is not be feasible remove all last
-                # concentrations
-
-                self.m_metabolite_concentrations = {
-                    key: lst[:-1]
-                    for key, lst in self.m_metabolite_concentrations.items()
-                }
-
-                # Maybe some metabolite was exported/created, by an organism
-                # Unfortunately to check what is create we would
-                # have to know the new dt which we don'...
-                # So we accept a small error, but in real life we
-                # also would not know if the exporters would have
-                # Created new metabolites before the importers ran out
-
-                total = 0
-                for (
-                    rid,
-                    species_ids,
-                ) in self.m_transporters.get_importers(True):
-                    if species_id in species_ids:
-                        total += FBAsol[rid]
-                dt_hat = (
-                    self.m_metabolite_concentrations[species_id][-1] / total
-                )
-
-                # than recalculate
-                self.update_concentrations(
-                    FBAsol,
-                    dt_hat,
-                )
-
-                used_time[-1] = used_time[-2] + dt_hat
+                dt_hat = self.reset_dt(species_id, FBAsol)
+                used_time = used_time[:-1]
+                continue
 
             # update biomass
             for _, rid in self.m_model.get_model_biomass_ids().items():
                 mid = self.m_model.identify_model_from_reaction(rid)
                 Xt = self.m_biomass_concentrations[mid][-1] + FBAsol[rid] * dt
                 self.m_biomass_concentrations[mid].append(Xt)
-
-            # update lower and upper bounds...
-            self.update_reaction_bounds(user_func)
 
         return [
             used_time,
@@ -173,12 +143,20 @@ class DynamicJointFBA(DynamicFBABase):
         # be created
         for rid, species_ids in self.m_transporters.get_exporters(True):
             for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] += FBAsol[rid] * dt
+                self.m_metabolite_concentrations[sid][-1] = round(
+                    self.m_metabolite_concentrations[sid][-1]
+                    + FBAsol[rid] * dt,
+                    8,
+                )
 
         # Next check the importers (consumption)
         for rid, species_ids in self.m_transporters.get_importers(True):
             for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] -= FBAsol[rid] * dt
+                self.m_metabolite_concentrations[sid][-1] = round(
+                    self.m_metabolite_concentrations[sid][-1]
+                    - FBAsol[rid] * dt,
+                    8,
+                )
 
     def update_reaction_bounds(self, user_func) -> None:
         if user_func is not None:
@@ -224,3 +202,29 @@ class DynamicJointFBA(DynamicFBABase):
                 )
         else:
             reaction.setUpperBound(0)
+
+    def reset_dt(self, species_id: str, FBAsol):
+        # This time point is not be feasible remove all last
+        # concentrations
+
+        self.m_metabolite_concentrations = {
+            key: lst[:-1]
+            for key, lst in self.m_metabolite_concentrations.items()
+        }
+
+        # Maybe some metabolite was exported/created, by an organism
+        # Unfortunately to check what is create we would
+        # have to know the new dt which we don'...
+        # So we accept a small error, but in real life we
+        # also would not know if the exporters would have
+        # Created new metabolites before the importers ran out
+
+        total = 0
+        for (
+            rid,
+            species_ids,
+        ) in self.m_transporters.get_importers(True):
+            if species_id in species_ids:
+                total += FBAsol[rid]
+
+        return self.m_metabolite_concentrations[species_id][-1] / total

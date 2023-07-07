@@ -30,7 +30,7 @@ class DynamicFBABase:
                         -reaction.getLowerBound()
                     ]
 
-    def simulate(self, dt, epsilon=0.001) -> None:
+    def simulate(self):
         pass
 
     def update_reaction_bounds(self):
@@ -40,6 +40,12 @@ class DynamicFBABase:
         pass
 
     def update_concentrations(self):
+        pass
+
+    def update_biomasses(self):
+        pass
+
+    def reset_dt(self):
         pass
 
     def check_solution_feasibility(self) -> str:

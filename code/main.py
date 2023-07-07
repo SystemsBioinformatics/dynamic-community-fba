@@ -58,10 +58,9 @@ print(biomasses)
 #     combined_model,
 #     [0.1, 0.1],
 #     {"M_glc__D_e": 10},
-#     Kinetics({"R_GLCpts_ecoli_1": [5, 10], "R_GLCpts_ecoli_2": [5, 10]}),
 # )
 
-
+#    Kinetics({"R_GLCpts_ecoli_1": [5, 10], "R_GLCpts_ecoli_2": [5, 10]}),
 # ts, metabolites, biomasses = dynamic_fba.simulate(0.1)
 # print(metabolites["M_glc__D_e"])
 # print()
