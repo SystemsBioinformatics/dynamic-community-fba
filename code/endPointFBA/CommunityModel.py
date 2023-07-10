@@ -92,7 +92,7 @@ class CommunityModel(Model):
         for sid in self.getSpeciesIds():
             species: Species = self.getSpecies(sid)
             if species.getCompartmentId().endswith(mid):
-                self.deleteSpecies(sid)
+                self.deleteSpecies(sid)w
 
         self.m_identifiers.remove(mid)
         del self.m_single_model_ids[index]
