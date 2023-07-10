@@ -1,8 +1,7 @@
 import pytest
 import cbmpy
-
-from endPointFBA.CommunityModel import CommunityModel
-from toy_models import model_a, model_b, model_c, combined_model
+from DCFBA.Models import CommunityModel
+from DCFBA.ToyModels import model_a, model_b, model_c, combined_model
 
 
 @pytest.fixture

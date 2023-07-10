@@ -9,7 +9,7 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath("../code"))
+sys.path.insert(0, os.path.abspath("../"))
 
 project = "dynamic-community-fba"
 copyright = "2023, S.C.M.A. Wijnen, F. Moro"

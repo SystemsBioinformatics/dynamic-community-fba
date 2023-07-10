@@ -1,10 +1,9 @@
 import cbmpy
 import math
-from cbmpy.CBModel import Model, Reaction, Species
-
-from endPointFBA.DynamicFBABase import DynamicFBABase
-from endPointFBA.Models.Kinetics import Kinetics
-from endPointFBA.Models.Transporters import Transporters
+from cbmpy.CBModel import Model, Reaction
+from .DynamicFBABase import DynamicFBABase
+from ..Models.Kinetics import Kinetics
+from ..Models.Transporters import Transporters
 
 
 class DynamicParallelFBA(DynamicFBABase):
@@ -49,14 +48,16 @@ class DynamicParallelFBA(DynamicFBABase):
         self,
         dt,
         epsilon=0.001,
-        user_func=None,
+        kinetics_func=None,
+        deviate=None,
+        deviation_time=0,
     ):
         step = 1
         used_time = [0]
         dt_hat = -1
         dt_save = dt
 
-        self.update_reaction_bounds(user_func)
+        self.update_reaction_bounds(kinetics_func)
 
         while True:
             if dt_hat != -1:
@@ -65,8 +66,15 @@ class DynamicParallelFBA(DynamicFBABase):
             else:
                 dt = dt_save
 
+            if deviate is not None and deviation_time == used_time[-1] + dt:
+                deviate(
+                    self.m_model,
+                    self.m_biomass_concentrations,
+                    self.m_metabolite_concentrations,
+                    dt,
+                )
             # update all bounds
-            self.update_reaction_bounds(user_func)
+            self.update_reaction_bounds(kinetics_func)
 
             used_time.append(used_time[-1] + dt)
 
@@ -94,11 +102,11 @@ class DynamicParallelFBA(DynamicFBABase):
 
             step += 1
 
-    def update_reaction_bounds(self, user_func):
+    def update_reaction_bounds(self, kinetics_func) -> None:
         models = self.m_models
-        if user_func is not None:
-            # TODO Give somethings to the user_func, think about this
-            user_func()
+        if kinetics_func is not None:
+            # TODO Give somethings to the kinetics_func, think about this
+            kinetics_func()
             return
 
         for model in models:
@@ -121,7 +129,7 @@ class DynamicParallelFBA(DynamicFBABase):
                         self.m_kinetics is not None
                         and self.m_kinetics.Exists(rid)
                     ):
-                        self.update_kinetics(
+                        self.mm_kinetics(
                             reaction, X_k_t, self.m_model_transporters[mid]
                         )
 
@@ -130,7 +138,9 @@ class DynamicParallelFBA(DynamicFBABase):
                             self.m_initial_bounds[mid][rid][1] * X_k_t
                         )
 
-    def update_importer_bounds(self, mid: str, reaction: Reaction, X: float):
+    def update_importer_bounds(
+        self, mid: str, reaction: Reaction, X: float
+    ) -> None:
         sids = self.m_model_transporters[mid].get_importers_species(
             reaction.getId()
         )
@@ -140,7 +150,7 @@ class DynamicParallelFBA(DynamicFBABase):
 
         if all(x > 0 for x in importers_reagent_concentrations):
             if self.m_kinetics.Exists(reaction.getId()):
-                self.update_kinetics(reaction, X)
+                self.mm_kinetics(reaction, X)
             else:
                 reaction.setUpperBound(
                     self.m_initial_bounds[mid][reaction.getId()][1] * X
@@ -149,7 +159,7 @@ class DynamicParallelFBA(DynamicFBABase):
         else:
             reaction.setUpperBound(0)
 
-    def update_concentrations(self, model: Model, dt, FBAsol, step):
+    def update_concentrations(self, model: Model, dt, FBAsol, step) -> None:
         mid = model.getId()
         # first check what was exported
         if len(next(iter(self.m_metabolite_concentrations.values()))) == step:
@@ -178,7 +188,7 @@ class DynamicParallelFBA(DynamicFBABase):
                     8,
                 )
 
-    def update_biomasses(self, model: Model, dt, FBAsol, step):
+    def update_biomasses(self, model: Model, dt, FBAsol, step) -> None:
         mid = model.getId()
         Xt = (
             self.m_biomass_concentrations[mid][step - 1]

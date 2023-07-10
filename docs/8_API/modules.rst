@@ -1,7 +1,8 @@
-endPointFBA
+DCFBA
 ===========
 
 .. toctree::
    :maxdepth: 4
 
-   endPointFBA
+   DCFBA
+

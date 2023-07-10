@@ -1,10 +1,8 @@
 import cbmpy
 import math
 from cbmpy.CBModel import Model, Reaction
-from endPointFBA.CommunityModel import CommunityModel
-from endPointFBA.DynamicFBABase import DynamicFBABase
-from endPointFBA.Models.Kinetics import Kinetics
-from endPointFBA.Models.Transporters import Transporters
+from .DynamicFBABase import DynamicFBABase
+from ..Models import Kinetics, Transporters, CommunityModel
 
 
 class DynamicJointFBA(DynamicFBABase):
@@ -74,15 +72,14 @@ class DynamicJointFBA(DynamicFBABase):
     def get_joint_model(self) -> CommunityModel:
         return self.m_model
 
-    # TODO add a continue function for time point t
     def simulate(
         self,
         dt: float,
         epsilon=0.001,
-        user_func=None,
+        kinetics_func=None,
+        deviate=None,
+        deviation_time=0,
     ):
-        # First update all upper and lower bounds to be rates
-
         used_time = [0]
         dt_hat = -1
         dt_save = dt
@@ -94,8 +91,15 @@ class DynamicJointFBA(DynamicFBABase):
             else:
                 dt = dt_save
 
+            if deviate is not None and deviation_time == used_time[-1] + dt:
+                deviate(
+                    self.m_model,
+                    self.m_biomass_concentrations,
+                    self.m_metabolite_concentrations,
+                    dt,
+                )
             # update lower and upper bounds...
-            self.update_reaction_bounds(user_func)
+            self.update_reaction_bounds(kinetics_func)
 
             solution = cbmpy.doFBA(self.m_model)
 
@@ -112,10 +116,7 @@ class DynamicJointFBA(DynamicFBABase):
                 print(self.m_metabolite_concentrations)
 
             species_id = self.check_solution_feasibility()
-            print("---------------")
-            print(self.m_metabolite_concentrations["M_glc__D_e"])
-            print(dt)
-            print("---------------")
+
             if species_id != "":
                 dt_hat = self.reset_dt(species_id, FBAsol)
                 used_time = used_time[:-1]
@@ -139,6 +140,7 @@ class DynamicJointFBA(DynamicFBABase):
             self.m_metabolite_concentrations[key].append(
                 self.m_metabolite_concentrations[key][-1]
             )
+
         # first check what was exported (created) because new metabolite can
         # be created
         for rid, species_ids in self.m_transporters.get_exporters(True):
@@ -158,12 +160,16 @@ class DynamicJointFBA(DynamicFBABase):
                     8,
                 )
 
-    def update_reaction_bounds(self, user_func) -> None:
-        if user_func is not None:
-            # TODO Give somethings to the user_func, think about this
-            user_func()
-            return
+    def update_reaction_bounds(self, kinetics_func) -> None:
         for rid in self.m_model.getReactionIds():
+            if kinetics_func is not None:
+                kinetics_func(
+                    rid,
+                    self.m_model,
+                    self.m_biomass_concentrations,
+                    self.m_biomass_concentrations,
+                )
+                continue
             reaction: Reaction = self.m_model.getReaction(rid)
             # Don't change the exchange reactions bounds
             if not reaction.is_exchange:
@@ -180,7 +186,7 @@ class DynamicJointFBA(DynamicFBABase):
                     self.update_importer_bounds(reaction, X_k_t)
 
                 elif self.m_kinetics.Exists(rid):
-                    self.update_kinetics(reaction, X_k_t, self.m_transporters)
+                    self.mm_kinetics(reaction, X_k_t, self.m_transporters)
 
                 else:
                     reaction.setUpperBound(
@@ -195,7 +201,7 @@ class DynamicJointFBA(DynamicFBABase):
             )
         ):
             if self.m_kinetics.Exists(reaction.getId()):
-                self.update_kinetics(reaction, X, self.m_transporters)
+                self.mm_kinetics(reaction, X, self.m_transporters)
             else:
                 reaction.setUpperBound(
                     self.m_initial_bounds[reaction.getId()][1] * X
@@ -203,7 +209,7 @@ class DynamicJointFBA(DynamicFBABase):
         else:
             reaction.setUpperBound(0)
 
-    def reset_dt(self, species_id: str, FBAsol):
+    def reset_dt(self, species_id: str, FBAsol) -> float:
         # This time point is not be feasible remove all last
         # concentrations
 

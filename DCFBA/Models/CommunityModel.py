@@ -1,6 +1,6 @@
 from cbmpy.CBModel import Model, Species, Reaction
-import endPointFBA.helpers.build_community_matrix as cm
-from endPointFBA.Exceptions.NotInCombinedModel import NotInCombinedModel
+from ..Helpers import build_community_matrix as cm
+from ..Exceptions import NotInCombinedModel
 
 
 class CommunityModel(Model):
@@ -32,7 +32,9 @@ class CommunityModel(Model):
         # Save biomass reaction id of old model, make sure
         # the first reaction is the biomass reaction
         for i in range(0, len(biomass_reaction_ids)):
-            bm = cm.create_new_id(biomass_reaction_ids[i], self.m_identifiers[i])
+            bm = cm.create_new_id(
+                biomass_reaction_ids[i], self.m_identifiers[i]
+            )
 
             self.m_single_model_biomass_reaction_ids.append(bm)
 
@@ -57,8 +59,10 @@ class CommunityModel(Model):
 
         Args:
             model (Model): The model that needs to be added
+
             biomass_reaction (str): The reaction id of the biomass reaction of
             the new model
+
             new_id (str, optional): The user set identifier. Defaults to None.
             If set to None the model.id will be used
         """
@@ -92,7 +96,7 @@ class CommunityModel(Model):
         for sid in self.getSpeciesIds():
             species: Species = self.getSpecies(sid)
             if species.getCompartmentId().endswith(mid):
-                self.deleteSpecies(sid)w
+                self.deleteSpecies(sid)
 
         self.m_identifiers.remove(mid)
         del self.m_single_model_ids[index]
@@ -233,4 +237,6 @@ class CommunityModel(Model):
         return self.identify_biomass_reaction_for_model(model_id)
 
     def get_model_biomass_ids(self) -> dict[str, str]:
-        return dict(zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids))
+        return dict(
+            zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids)
+        )
