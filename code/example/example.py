@@ -1,5 +1,4 @@
 import cbmpy
-from endPointFBA.dynamic_fba import dynamic_fba
 
 
 def add_one(number: int) -> int:

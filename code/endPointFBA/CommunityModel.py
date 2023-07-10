@@ -5,7 +5,7 @@ from endPointFBA.Exceptions.NotInCombinedModel import NotInCombinedModel
 
 class CommunityModel(Model):
     m_identifiers: list[str]
-    m_single_model_identifiers: list[str]
+    m_single_model_ids: list[str]
     m_single_model_biomass_reaction_ids: list[str] = []
 
     def __init__(
@@ -20,12 +20,12 @@ class CommunityModel(Model):
         self.createCompartment("e", "extracellular space")
         duplicate_species = cm.create_duplicate_species_dict(models)
 
-        self.m_single_model_identifiers = [model.id for model in models]
+        self.m_single_model_ids = [model.id for model in models]
 
         if len(ids) > 0 and len(ids) < len(models):
             raise Exception("Too few ids were provided")
         if len(ids) == 0:
-            self.m_identifiers = self.m_single_model_identifiers.copy()
+            self.m_identifiers = self.m_single_model_ids.copy()
         else:
             self.m_identifiers = ids
 
@@ -47,7 +47,7 @@ class CommunityModel(Model):
     def __str__(self) -> str:
         return (
             f"Model: {self.getId()} was build from "
-            f"{[id for id in self.m_single_model_identifiers]}"
+            f"{[id for id in self.m_single_model_ids]}"
         )
 
     def add_model_to_community(
@@ -72,10 +72,32 @@ class CommunityModel(Model):
         cm.merge_reactions(model, self, new_id)
 
         self.m_identifiers.append(new_id)
-        self.m_single_model_identifiers.append(model.id)
+        self.m_single_model_ids.append(model.id)
         self.m_single_model_biomass_reaction_ids.append(biomass_reaction)
 
-    # TODO Remove a model
+    def remove_model_from_community(self, mid: str) -> None:
+        if mid in self.m_single_model_ids:
+            index = self.m_single_model_ids.index(mid)
+        elif mid in self.m_identifiers:
+            index = self.m_identifiers.index(mid)
+        else:
+            raise Exception("Model not in community")
+
+        mid = self.m_identifiers[index]
+
+        for rid in self.getReactionIds():
+            if rid.endswith(mid):
+                self.deleteReactionAndBounds(rid)
+
+        for sid in self.getSpeciesIds():
+            species: Species = self.getSpecies(sid)
+            if species.getCompartmentId().endswith(mid):
+                self.deleteSpecies(sid)
+
+        self.m_identifiers.remove(mid)
+        del self.m_single_model_ids[index]
+
+        del self.m_single_model_biomass_reaction_ids[index]
 
     def get_model_specific_reactions(self, mid: str) -> list[Reaction]:
         """Returns a list of reaction ids
@@ -94,9 +116,9 @@ class CommunityModel(Model):
                 "The model id provided was not found in the combined model"
             )
         ans = []
-        for reaction_id in self.m_model.getReactionIds():
-            if mid in reaction_id:
-                ans.append(reaction_id)
+        for rid in self.getReactionIds():
+            if rid.endswith(mid):
+                ans.append(rid)
         return ans
 
     def get_model_specific_species(self, mid: str) -> list[Species]:
