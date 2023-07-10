@@ -10,13 +10,15 @@ CommunityModel
    :undoc-members:
    :show-inheritance:
 
-KineticModel
+
+DynamicParallelFBA
 -------------------------------
 
-.. automodule:: endPointFBA.KineticModel
+.. automodule:: endPointFBA.DynamicParallelFBA
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 DynamicJointFba
 -------------------------------
@@ -26,6 +28,21 @@ DynamicJointFba
    :undoc-members:
    :show-inheritance:
 
+KineticModel
+-------------------------------
+
+.. automodule:: endPointFBA.Models.Kinetics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Transporters
+-------------------------------
+
+.. automodule:: endPointFBA.Models.Transporters
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
