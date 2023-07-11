@@ -187,6 +187,7 @@ def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
     Args:
         models (list[Model]): The list of the models that need to be in the
                               combined model
+
         combined_model (Model): The new combined model
 
     Returns:
@@ -201,7 +202,7 @@ def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
         species: Species = model.getSpecies(species_id)
         if species.compartment != "e":
             if species_id in duplicate_species.keys():
-                handle_duplicate_species_reagents(model, species, new_id)
+                copy_species_and_reagents(model, species, new_id)
                 model.deleteSpecies(species_id)
             else:
                 species.setCompartmentId(
@@ -209,7 +210,7 @@ def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
                 )
 
 
-def handle_duplicate_species_reagents(model: Model, species: Species, new_id):
+def copy_species_and_reagents(model: Model, species: Species, new_id):
     """
     Handle duplicate species reagents when merging models.
     If the species exists in one of the base models, add new instance of that
@@ -219,6 +220,7 @@ def handle_duplicate_species_reagents(model: Model, species: Species, new_id):
 
     Args:
         model (Model): The CBModel.
+
         species (Species): The species to handle.
 
     Returns:
@@ -241,7 +243,6 @@ def handle_duplicate_species_reagents(model: Model, species: Species, new_id):
         reaction.deleteReagentWithSpeciesRef(species.id)
 
 
-# TODO should be imported from package when available
 def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
     """
     Copy a reaction from a source model to a target model, if the required

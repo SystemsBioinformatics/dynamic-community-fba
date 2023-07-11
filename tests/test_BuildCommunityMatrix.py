@@ -1,7 +1,7 @@
 import pytest
 import cbmpy
 
-from DCFBA.Helpers import build_community_matrix as bcm
+from DCFBA.Helpers import BuildCommunityMatrix as bcm
 from DCFBA.ToyModels import model_a, model_b, model_c, combined_model
 
 

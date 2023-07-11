@@ -1,5 +1,5 @@
 from cbmpy.CBModel import Model, Species, Reaction
-from ..Helpers import build_community_matrix as cm
+from ..Helpers import BuildCommunityMatrix as cm
 from ..Exceptions import NotInCombinedModel
 
 
@@ -52,6 +52,8 @@ class CommunityModel(Model):
             f"{[id for id in self.m_single_model_ids]}"
         )
 
+    # TODO maybe implement __eq__() method
+
     def add_model_to_community(
         self, model: Model, biomass_reaction: str, new_id: str = None
     ):
@@ -90,12 +92,12 @@ class CommunityModel(Model):
         mid = self.m_identifiers[index]
 
         for rid in self.getReactionIds():
-            if rid.endswith(mid):
+            if mid in rid:
                 self.deleteReactionAndBounds(rid)
 
         for sid in self.getSpeciesIds():
             species: Species = self.getSpecies(sid)
-            if species.getCompartmentId().endswith(mid):
+            if mid in species.getCompartmentId():
                 self.deleteSpecies(sid)
 
         self.m_identifiers.remove(mid)
@@ -121,7 +123,7 @@ class CommunityModel(Model):
             )
         ans = []
         for rid in self.getReactionIds():
-            if rid.endswith(mid):
+            if mid in rid:
                 ans.append(rid)
         return ans
 
@@ -209,7 +211,7 @@ class CommunityModel(Model):
             str: id of the old model
         """
         for old_id in self.m_identifiers:
-            if rid.endswith(old_id):
+            if old_id in rid:
                 return old_id
         return ""
 
@@ -234,6 +236,8 @@ class CommunityModel(Model):
 
     def identify_biomass_of_model_from_reaction_id(self, rid) -> str:
         model_id = self.identify_model_from_reaction(rid)
+        if model_id == "":
+            return ""
         return self.identify_biomass_reaction_for_model(model_id)
 
     def get_model_biomass_ids(self) -> dict[str, str]:

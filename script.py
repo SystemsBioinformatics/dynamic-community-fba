@@ -1,56 +1,64 @@
-"""Just a small script file to easily run
-"""
-
 import cbmpy
+import cobra
+from cobra.io import save_json_model, read_sbml_model
 
-from cbmpy.CBModel import Model
-from DCFBA.Models.CommunityModel import CommunityModel
-from DCFBA.DynamicModels import DynamicJointFBA
+from DCFBA.DynamicModels import EndPointFBA
+from DCFBA.Models import CommunityModel
+from DCFBA.ToyModels import model_a, model_b, model_c
 
-model1: Model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
-model1.getReaction("R_GLCpts").setUpperBound(10)
+# model_a = model_a.build_model_A()
+# model_b = model_b.build_model_B()
 
-model_2 = model1.clone()
-
-combined_model = CommunityModel(
-    [model1, model_2],
-    ["R_BIOMASS_Ecoli_core_w_GAM", "R_BIOMASS_Ecoli_core_w_GAM"],
-    ["ecoli_1", "ecoli_2"],
-)  # Create a CommunityModel of two  E. coli strains competing for resources
+# community_model: CommunityModel = CommunityModel(
+#     [model_a, model_b], ["R_BM_A", "R_BM_B"]
+# )
+# efb = EndPointFBA()
 
 
-# Create the joint FBA object with initial biomasses and the initial
-# concentration of glucose
-dynamic_fba = DynamicJointFBA(
-    combined_model,
-    [0.1, 0.1],
-    {"M_glc__D_e": 10},
+model_c_1 = model_c.build_model_C()
+model_c_1.getReaction("R_1").setUpperBound(10)
+
+community_model = CommunityModel([model_c_1], ["R_BM_C"])
+efb = EndPointFBA(community_model, 3, {"Organism_C": 1}, 1)
+
+efb.m_model.createReaction(
+    "final_biomass", "FInal time point to biomass", reversible=False
 )
 
-#    Kinetics({"R_GLCpts_ecoli_1": [5, 10], "R_GLCpts_ecoli_2": [5, 10]}),
-ts, metabolites, biomasses = dynamic_fba.simulate(0.1)
-print(ts)
-# print(metabolites["M_glc__D_e"])
-# print()
-# print(biomasses["ecoli_1"])
-# print()
-# print(biomasses["ecoli_2"])
+reaction: cbmpy.CBModel.Reaction = efb.m_model.getReaction("final_biomass")
+reaction.createReagent("BM_e_C_time3", -1)
+reaction.setUpperBound(1e10)
+reaction.setLowerBound(-1)
+reaction.is_exchange = False
+efb.m_model.createObjectiveFunction("final_biomass")
+
+reaction = efb.m_model.getReaction("BM_e_C_exchange")
+reaction.setLowerBound(-1)
+
+r: cbmpy.CBModel.Reaction
+for r in efb.m_model.reactions:
+    print("----------")
+    print(r.getId())
+    print("-")
+    for id in r.getSpeciesIds():
+        print(r.getReagentWithSpeciesRef(id).coefficient, id)
+    print([r.getLowerBound(), r.getUpperBound()])
+    print()
+    print("----------")
+
+cbmpy.doFBA(efb.m_model)
+FBAsol = efb.m_model.getSolutionVector(names=True)
+FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+
+print(FBAsol)
 
 
-# ax = plt.subplot(111)
-# ax.plot(ts, metabolites["M_glc__D_e"])
-# ax2 = plt.twinx(ax)
-# ax2.plot(ts, biomasses["ecoli_2"], color="r")
+# TODO Ecoli core below
 
-# ax.set_ylabel("glucose", color="b")
-# ax2.set_ylabel("ecoli_2", color="r")
+# textbook = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
+# community_model = CommunityModel([textbook], ["R_BIOMASS_Ecoli_core_w_GAM"])
+# efb = EndPointFBA(community_model, 3)
 
-# ax3 = plt.twinx(ax)
-# ax3.plot(ts, biomasses["ecoli_2"], color="y")
-# ax3.set_ylabel("Biomass ecoli 2", color="y")
 
-# plt.show()
-
-# # Perform FBA on the new joint FBA model object
-# solution = cbmpy.doFBA(dynamic_fba.get_joint_model())
-# print(solution)
+# for reaction in efb.m_model.reactions:
+#     print(reaction.getId())

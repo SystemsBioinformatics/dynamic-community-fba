@@ -162,6 +162,7 @@ class DynamicJointFBA(DynamicFBABase):
 
     def update_reaction_bounds(self, kinetics_func) -> None:
         for rid in self.m_model.getReactionIds():
+            # TODO discuss this
             if kinetics_func is not None:
                 kinetics_func(
                     rid,
