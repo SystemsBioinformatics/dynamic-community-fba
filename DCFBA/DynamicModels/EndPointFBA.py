@@ -13,14 +13,18 @@ class EndPointFBA:
         initial_biomasses: dict[str, float],
         dt: float = 0.1,
     ) -> None:
-        self.m_model = build_time_model(community_model, n)
-
-        self.set_constraints(n, initial_biomasses, dt)
-
-    def set_constraints(self, n: int, initial_biomasses, dt: float):
         width = len(str(n))
-        times = [f"_time{i:0{width}d}" for i in range(n + 1)]
+        times = [f"_time{i:0{width}d}" for i in range(n)]
 
+        self.add_biomass_species(community_model)
+        self.m_model = build_time_model(community_model, times)
+
+        self.set_constraints(n, initial_biomasses, dt, times)
+        self.set_objective(times[-1])
+
+    def set_constraints(
+        self, n: int, initial_biomasses, dt: float, times: list[str]
+    ):
         rids_t0 = self.m_model.getReactionIds(times[0])
         for rid in rids_t0:
             reaction = self.m_model.getReaction(rid)
@@ -33,7 +37,7 @@ class EndPointFBA:
             reaction.setUpperBound(reaction.getUpperBound() * biomass * dt)
 
         # From time 1 to last time point
-        for i in range(1, n + 1):
+        for i in range(1, n):
             rids = self.m_model.getReactionIds(times[i])
             for rid in rids:
                 reaction: Reaction = self.m_model.getReaction(rid)
@@ -58,3 +62,24 @@ class EndPointFBA:
                     0.0,
                 )
                 reaction.setUpperBound(1e10)
+
+    def add_biomass_species(self, model: CommunityModel):
+        model.createSpecies(
+            "X_c", False, "The community biomass", compartment="e"
+        )
+
+        for _, biomass_id in model.get_model_biomass_ids().items():
+            reaction: Reaction = model.getReaction(biomass_id)
+            reaction.createReagent("X_c", 1)
+
+    def set_objective(self, time_id):
+        self.m_model.createReaction("X_comm")
+        out: Reaction = self.m_model.getReaction("X_comm")
+        out.is_exchange = True
+        out.setUpperBound(1e10)
+        out.setLowerBound(0)
+        out.createReagent("X_c" + time_id, -1)
+
+        self.m_model.createObjectiveFunction("X_comm")
+
+        self.m_model.setActiveObjective("X_comm_objective")

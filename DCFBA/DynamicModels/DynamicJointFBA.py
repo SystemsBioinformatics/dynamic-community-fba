@@ -22,7 +22,9 @@ class DynamicJointFBA(DynamicFBABase):
 
         model_biomasses = model.get_model_biomass_ids()
 
-        self.set_community_biomass_reaction(model)
+        # Set X_C to be exporter since it increases over time
+        self.m_model = self.set_community_biomass_reaction()
+        self.m_transporters.add_exporter("X_comm", ["X_c"])
 
         initial_biomasses = [[x] for x in biomasses]
 
@@ -40,37 +42,28 @@ class DynamicJointFBA(DynamicFBABase):
                 reaction.getUpperBound(),
             ]
 
-    def set_community_biomass_reaction(self, model: CommunityModel):
-        # TODO implement clone funciton in CommunirtModel
-        joint_model = model
-        joint_model.createSpecies("X_c", False, "The community biomass")
+    def get_joint_model(self) -> None:
+        return self.m_model
 
-        for _, biomass_id in model.get_model_biomass_ids().items():
-            reaction: Reaction = joint_model.getReaction(biomass_id)
+    def set_community_biomass_reaction(self):
+        self.m_model.createSpecies(
+            "X_c", False, "The community biomass", compartment="e"
+        )
+
+        for _, biomass_id in self.m_model.get_model_biomass_ids().items():
+            reaction: Reaction = self.m_model.getReaction(biomass_id)
             reaction.createReagent("X_c", 1)
 
-        joint_model.createReaction("X_comm")
-        out: Reaction = joint_model.getReaction("X_comm")
+        self.m_model.createReaction("X_comm")
+        out: Reaction = self.m_model.getReaction("X_comm")
         out.is_exchange = True
         out.setUpperBound(1000)
         out.setLowerBound(0)
         out.createReagent("X_c", -1)
 
-        joint_model.createObjectiveFunction("X_comm")
+        self.m_model.createObjectiveFunction("X_comm")
 
-        joint_model.setActiveObjective("X_comm_objective")
-
-        # Set X_C to be exporter since it increases over time
-        self.m_transporters.add_exporter("X_comm", ["X_c"])
-        self.m_model = joint_model
-
-        # we return the joint model such that you can also perform a regular
-        # FBA
-
-        return joint_model
-
-    def get_joint_model(self) -> CommunityModel:
-        return self.m_model
+        self.m_model.setActiveObjective("X_comm_objective")
 
     def simulate(
         self,
