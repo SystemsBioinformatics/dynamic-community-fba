@@ -13,6 +13,7 @@ class EndPointFBA(DynamicFBABase):
         community_model: CommunityModel,
         n: int,
         initial_biomasses: dict[str, float],
+        dt: float = 0.1,
     ) -> None:
         width = len(str(n))
         times = [f"_time{i:0{width}d}" for i in range(n)]
@@ -25,7 +26,6 @@ class EndPointFBA(DynamicFBABase):
 
     def simulate(
         self,
-        dt: float = 0.1,
     ):
         return cbmpy.doFBA(self.m_model)
 
