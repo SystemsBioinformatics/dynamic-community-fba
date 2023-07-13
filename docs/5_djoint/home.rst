@@ -94,7 +94,7 @@ You can now easily plot the solution:
 
 
 .. admonition:: Tip
-   :class: tip
+    :class: tip
     If you create a ``DynamicJointFBA`` object with a ``CommunityModel`` build from just one organism and call the simulate function you
     perform just regular dynamic FBA!
 

@@ -28,6 +28,14 @@ DynamicJointFba
    :undoc-members:
    :show-inheritance:
 
+EndPointFBA
+---------------
+
+.. automodule:: DCFBA.DynamicModels.EndPointFBA
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 KineticModel
 -------------------------------
 
@@ -44,10 +52,3 @@ Transporters
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: DCFBA
-   :members:
-   :undoc-members:
-   :show-inheritance:
