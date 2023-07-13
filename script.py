@@ -1,86 +1,27 @@
 import cbmpy
-import cobra
-from cobra.io import save_json_model, read_sbml_model
+from cbmpy.CBModel import Model
+from DCFBA.ToyModels import model_a, model_b
+from DCFBA.Models.CommunityModel import CommunityModel
+from DCFBA.DynamicModels.DynamicJointFBA import DynamicJointFBA
 
-from DCFBA.DynamicModels import EndPointFBA
-from DCFBA.Models import CommunityModel
-from DCFBA.ToyModels import model_a, model_b, model_c
-from DCFBA.DynamicModels import DynamicJointFBA
+m_a: Model = model_a.build_joint_fba_model_A()
+m_a.getReaction("R_1").setUpperBound(10)
+m_a.getReaction("R_3").setUpperBound(3)
+m_a.getReaction("R_5").setUpperBound(1)
 
-model_a = model_a.build_model_A()
-model_b = model_b.build_model_B()
 
-model_a.getReaction("B_exchange").setLowerBound(0)
-model_a.getReaction("A_exchange").setLowerBound(0)
+m_b: Model = model_b.build_joint_fba_model_B()
+m_b.getReaction("R_1").setUpperBound(10)
+m_b.getReaction("R_3").setUpperBound(1)
+m_b.getReaction("R_5").setUpperBound(1)
 
-community_model: CommunityModel = CommunityModel(
-    [model_a, model_b], ["R_BM_A", "R_BM_B"]
+community_model = CommunityModel(
+    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
 )
 
-efb = EndPointFBA(community_model, 3, {"Organism_A": 1, "Organism_B": 1}, 0.1)
-efb.simulate()
-FBAsol = efb.m_model.getSolutionVector(names=True)
-FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+dj = DynamicJointFBA(community_model, [1, 1])
+T, metabolites, biomasses = dj.simulate(0.1)
 
-print(FBAsol)
-
-# model_c_1 = model_c.build_model_C()
-# model_c_1.getReaction("R_1").setUpperBound(10)
-
-# community_model = CommunityModel([model_c_1], ["R_BM_C"])
-# efb = EndPointFBA(community_model, 3, {"Organism_C": 1}, 1)
-
-# efb.m_model.createReaction(
-#     "final_biomass", "FInal time point to biomass", reversible=False
-# )
-
-# reaction: cbmpy.CBModel.Reaction = efb.m_model.getReaction("final_biomass")
-# reaction.createReagent("BM_e_C_time3", -1)
-# reaction.setUpperBound(1e10)
-# reaction.setLowerBound(-1)
-# reaction.is_exchange = False
-# efb.m_model.createObjectiveFunction("final_biomass")
-
-# reaction = efb.m_model.getReaction("BM_e_C_exchange")
-# reaction.setLowerBound(-1)
-
-# r: cbmpy.CBModel.Reaction
-# for r in efb.m_model.reactions:
-#     print("----------")
-#     print(r.getId())
-#     print("-")
-#     for id in r.getSpeciesIds():
-#         print(r.getReagentWithSpeciesRef(id).coefficient, id)
-#     print([r.getLowerBound(), r.getUpperBound()])
-#     print()
-#     print("----------")
-
-# cbmpy.doFBA(efb.m_model)
-# FBAsol = efb.m_model.getSolutionVector(names=True)
-# FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-
-# print(FBAsol)
-
-
-# TODO Ecoli core below
-
-# textbook = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
-# textbook.getReaction("R_GLCpts").setUpperBound(10)
-# textbook.getReaction("R_EX_glc__D_e").setLowerBound(-1000)
-
-# community_model = CommunityModel(
-#     [textbook, textbook.clone()],
-#     ["R_BIOMASS_Ecoli_core_w_GAM", "R_BIOMASS_Ecoli_core_w_GAM"],
-#     ["ecoli_1", "ecoli_2"],
-# )
-
-# efb = EndPointFBA(community_model, 2, {"ecoli_1": 1, "ecoli_2": 1}, 1)
-
-
-# cbmpy.doFBA(efb.m_model)
-
-# FBAsol = efb.m_model.getSolutionVector(names=True)
-# FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-# print(FBAsol)
-# for reaction in efb.m_model.reactions:
-#     print(reaction.getId())
+print(T)
+print(metabolites)
+print(biomasses)

@@ -21,9 +21,10 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         self.m_transporters = Transporters(model)
 
         model_biomasses = model.get_model_biomass_ids()
+        self.m_model = model
 
         # Set X_C to be exporter since it increases over time
-        self.m_model = self.set_community_biomass_reaction()
+        self.set_community_biomass_reaction()
         self.m_transporters.add_exporter("X_comm", ["X_c"])
 
         initial_biomasses = [[x] for x in biomasses]
@@ -33,7 +34,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         )
 
         self.m_kinetics = kinetics
-        self.set_initial_concentrations(model, initial_concentrations)
+        self.set_initial_concentrations(self.m_model, initial_concentrations)
 
         for rid in self.m_model.getReactionIds():
             reaction: Reaction = self.m_model.getReaction(rid)

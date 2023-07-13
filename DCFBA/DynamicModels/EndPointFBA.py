@@ -1,4 +1,5 @@
 import cbmpy
+import numpy
 from cbmpy.CBModel import Reaction
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
@@ -68,7 +69,7 @@ class EndPointFBA(DynamicFBABase):
                     "<=",
                     0.0,
                 )
-                reaction.setUpperBound(1e10)
+                reaction.setUpperBound(numpy.inf)
 
     def add_biomass_species(self, model: CommunityModel):
         model.createSpecies(
