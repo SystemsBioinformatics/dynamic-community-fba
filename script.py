@@ -7,14 +7,22 @@ from DCFBA.Models import CommunityModel
 from DCFBA.ToyModels import model_a, model_b, model_c
 from DCFBA.DynamicModels import DynamicJointFBA
 
-# model_a = model_a.build_model_A()
-# model_b = model_b.build_model_B()
+model_a = model_a.build_model_A()
+model_b = model_b.build_model_B()
 
-# community_model: CommunityModel = CommunityModel(
-#     [model_a, model_b], ["R_BM_A", "R_BM_B"]
-# )
-# efb = EndPointFBA()
+model_a.getReaction("B_exchange").setLowerBound(0)
+model_a.getReaction("A_exchange").setLowerBound(0)
 
+community_model: CommunityModel = CommunityModel(
+    [model_a, model_b], ["R_BM_A", "R_BM_B"]
+)
+
+efb = EndPointFBA(community_model, 3, {"Organism_A": 1, "Organism_B": 1}, 0.1)
+efb.simulate()
+FBAsol = efb.m_model.getSolutionVector(names=True)
+FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+
+print(FBAsol)
 
 # model_c_1 = model_c.build_model_C()
 # model_c_1.getReaction("R_1").setUpperBound(10)
@@ -56,23 +64,23 @@ from DCFBA.DynamicModels import DynamicJointFBA
 
 # TODO Ecoli core below
 
-textbook = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
-textbook.getReaction("R_GLCpts").setUpperBound(10)
-textbook.getReaction("R_EX_glc__D_e").setLowerBound(-1000)
+# textbook = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
+# textbook.getReaction("R_GLCpts").setUpperBound(10)
+# textbook.getReaction("R_EX_glc__D_e").setLowerBound(-1000)
 
-community_model = CommunityModel(
-    [textbook, textbook.clone()],
-    ["R_BIOMASS_Ecoli_core_w_GAM", "R_BIOMASS_Ecoli_core_w_GAM"],
-    ["ecoli_1", "ecoli_2"],
-)
+# community_model = CommunityModel(
+#     [textbook, textbook.clone()],
+#     ["R_BIOMASS_Ecoli_core_w_GAM", "R_BIOMASS_Ecoli_core_w_GAM"],
+#     ["ecoli_1", "ecoli_2"],
+# )
 
-efb = EndPointFBA(community_model, 2, {"ecoli_1": 1, "ecoli_2": 1}, 1)
+# efb = EndPointFBA(community_model, 2, {"ecoli_1": 1, "ecoli_2": 1}, 1)
 
 
-cbmpy.doFBA(efb.m_model)
+# cbmpy.doFBA(efb.m_model)
 
-FBAsol = efb.m_model.getSolutionVector(names=True)
-FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-print(FBAsol)
+# FBAsol = efb.m_model.getSolutionVector(names=True)
+# FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+# print(FBAsol)
 # for reaction in efb.m_model.reactions:
 #     print(reaction.getId())

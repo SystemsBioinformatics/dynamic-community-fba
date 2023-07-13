@@ -1,12 +1,12 @@
 import cbmpy
 import math
 from cbmpy.CBModel import Model, Reaction
-from .DynamicFBABase import DynamicFBABase
+from .TimeStepDynamicFBABase import TimeStepDynamicFBABase
 from ..Models.Kinetics import Kinetics
 from ..Models.Transporters import Transporters
 
 
-class DynamicParallelFBA(DynamicFBABase):
+class DynamicParallelFBA(TimeStepDynamicFBABase):
     m_models: list[Model]
     m_initial_bounds: dict[str, dict[str, tuple[float, float]]] = {}
 

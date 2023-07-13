@@ -1,11 +1,11 @@
 import cbmpy
 import math
 from cbmpy.CBModel import Model, Reaction
-from .DynamicFBABase import DynamicFBABase
+from .TimeStepDynamicFBABase import TimeStepDynamicFBABase
 from ..Models import Kinetics, Transporters, CommunityModel
 
 
-class DynamicJointFBA(DynamicFBABase):
+class DynamicJointFBA(TimeStepDynamicFBABase):
     m_model: CommunityModel
     m_transporters: Transporters
     m_initial_bounds: dict[str, tuple[float, float]] = {}

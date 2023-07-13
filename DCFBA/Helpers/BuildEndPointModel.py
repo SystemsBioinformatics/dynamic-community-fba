@@ -131,7 +131,7 @@ def add_final_exchange(
 
     # Irreversible, we don't want to import new species in the final step
     final_model.createReaction(
-        id, "final exchange " + exchange_reaction.name, False
+        id, "final exchange " + exchange_reaction.id, False
     )
 
     final_exchange = final_model.getReaction(id)

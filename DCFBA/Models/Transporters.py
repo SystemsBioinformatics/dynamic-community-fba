@@ -1,17 +1,35 @@
-"""It is convenient to access the importers and exporters quickly
-    therefore we need to know which reactions uptake metabolites
-    from the external space and which are being excreted
-    we define importers and exporters
-    Both are a {rid : [species]}
-
-    Here with transporters we mean every reaction that is coupled to 
-    an external species
-"""
-
 from cbmpy.CBModel import Model, Reaction, Species
 
 
 class Transporters:
+    """Accessing Importers, Exporters, and Transporters
+
+    The purpose of this class is to provide easy access to importers,
+    exporters, and transporters within a system. Importers represent reactions
+    that uptake metabolites from the external space, while exporters represent
+    reactions that excrete metabolites to the external space. Both importers
+    and exporters are stored as dictionaries, where the
+    reaction identifiers (rid) serve as keys, and the associated species are
+    stored as values.
+
+    This class helps users identify, work with, and analyze importers,
+    exporters, and transporters, which are frequently accessed during various
+    computational tasks.
+
+    Usage:
+    Add new importers or exporters using the add_importer() and add_exporter()
+    Retrieve the combined importers and exporters dictionary using get_transporters()
+    Retrieve importers using the get_importers() method,
+    and optionally iterate over the results using the iterable flag.
+    Retrieve exporters using the get_exporters() method, and optionally
+    iterate over the results using the iterable flag.
+    Obtain the species associated with a specific reaction using the
+    get_reaction_species() method.
+    Check if a reaction is an importer or exporter using the is_importer() and
+    is_exporter() methods.
+    Access specific lists of importers or exporters using the provided methods.
+    """
+
     m_importers: dict[str, list[str]] = {}
     m_exporters: dict[str, list[str]] = {}
 

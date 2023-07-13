@@ -1,9 +1,11 @@
+import cbmpy
 from cbmpy.CBModel import Reaction
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
+from .DynamicFBABase import DynamicFBABase
 
 
-class EndPointFBA:
+class EndPointFBA(DynamicFBABase):
     m_model = CommunityModel
 
     def __init__(
@@ -11,7 +13,6 @@ class EndPointFBA:
         community_model: CommunityModel,
         n: int,
         initial_biomasses: dict[str, float],
-        dt: float = 0.1,
     ) -> None:
         width = len(str(n))
         times = [f"_time{i:0{width}d}" for i in range(n)]
@@ -21,6 +22,12 @@ class EndPointFBA:
 
         self.set_constraints(n, initial_biomasses, dt, times)
         self.set_objective(times[-1])
+
+    def simulate(
+        self,
+        dt: float = 0.1,
+    ):
+        return cbmpy.doFBA(self.m_model)
 
     def set_constraints(
         self, n: int, initial_biomasses, dt: float, times: list[str]
