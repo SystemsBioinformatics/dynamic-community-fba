@@ -180,11 +180,11 @@ def build_joint_fba_model_B():
     model.createReactionReagent("R_2", "X_c", 3)
     model.setReactionBounds("R_2", -1000.0, 1000.0)
 
-    model.createReaction("R_3", "Create BM_c_B from X and A", reversible=True)
+    model.createReaction("R_3", "Create BM_c_B from X and A", reversible=False)
     model.createReactionReagent("R_3", "X_c", -7)
     model.createReactionReagent("R_3", "A_c", -3)
     model.createReactionReagent("R_3", "BM_c_B", 1)
-    model.setReactionBounds("R_3", -1000.0, 1000.0)
+    model.setReactionBounds("R_3", 0, 1000.0)
 
     model.createReaction("R_4", "Create Z from A and S", reversible=True)
     model.createReactionReagent("R_4", "A_c", -1)
@@ -192,22 +192,22 @@ def build_joint_fba_model_B():
     model.createReactionReagent("R_4", "Z_c", 1)
     model.setReactionBounds("R_4", -1000.0, 1000.0)
 
-    model.createReaction("R_5", "Create BM_c_B and B from Z", reversible=True)
+    model.createReaction("R_5", "Create BM_c_B and B from Z", reversible=False)
     model.createReactionReagent("R_5", "Z_c", -3)
     model.createReactionReagent("R_5", "B_c", 1)
     model.createReactionReagent("R_5", "BM_c_B", 1)
-    model.setReactionBounds("R_5", -1000.0, 1000.0)
+    model.setReactionBounds("R_5", -0.0, 1000.0)
 
     # Import B
-    model.createReaction("R_import_1", "Export B_c to B_e", reversible=True)
-    model.createReactionReagent("R_import_1", "B_c", -1)
-    model.createReactionReagent("R_import_1", "B_e", 1)
-    model.setReactionBounds("R_import_1", -1000.0, 1000.0)
+    model.createReaction("R_export_B", "Export B_c to B_e", reversible=True)
+    model.createReactionReagent("R_export_B", "B_c", -1)
+    model.createReactionReagent("R_export_B", "B_e", 1)
+    model.setReactionBounds("R_export_B", -1000.0, 1000.0)
 
-    model.createReaction("R_import_2", "Import A_c from A_e", reversible=True)
-    model.createReactionReagent("R_import_2", "A_e", -1)
-    model.createReactionReagent("R_import_2", "A_c", 1)
-    model.setReactionBounds("R_import_2", -1000.0, 1000.0)
+    model.createReaction("R_import_A", "Import A_c from A_e", reversible=True)
+    model.createReactionReagent("R_import_A", "A_e", -1)
+    model.createReactionReagent("R_import_A", "A_c", 1)
+    model.setReactionBounds("R_import_A", -1000.0, 1000.0)
 
     model.createReaction("R_BM_B", "Biomass organism B", reversible=True)
     model.createReactionReagent("R_BM_B", "BM_c_B", -1)

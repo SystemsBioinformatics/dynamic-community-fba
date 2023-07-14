@@ -77,7 +77,7 @@ def build_model_A():
     model.createReactionReagent("R_6", "Z_c", -8)
     model.createReactionReagent("R_6", "B_c", -3)
     model.createReactionReagent("R_6", "BM_c_A", 1)
-    model.setReactionBounds("R_6", -1000.0, 1000.0)
+    model.setReactionBounds("R_6" - 1000.0, 1000.0)
 
     # Import B
     model.createReaction("R_7", "Import B_e to B_c", reversible=True)
@@ -181,12 +181,12 @@ def build_joint_fba_model_A():
 
     model.createReactionReagent("R_1", "S_e", -1)
     model.createReactionReagent("R_1", "S_c", 1)
-    model.setReactionBounds("R_1", 0.0, 1000.0)
+    model.setReactionBounds("R_1", -1000.0, 1000.0)
 
     model.createReaction("R_2", "Create X from S_c", reversible=True)
     model.createReactionReagent("R_2", "S_c", -2)
     model.createReactionReagent("R_2", "X_c", 1)
-    model.setReactionBounds("R_2", 0.0, 1000.0)
+    model.setReactionBounds("R_2", -1000.0, 1000.0)
 
     model.createReaction("R_3", "Create Y_c and A_e from S_c", reversible=True)
     model.createReactionReagent("R_3", "X_c", -1)
@@ -195,35 +195,35 @@ def build_joint_fba_model_A():
     model.setReactionBounds("R_3", -1000.0, 1000.0)
 
     model.createReaction(
-        "R_4", "Create Biomass from Y_c and B_c", reversible=True
+        "R_4", "Create Biomass from Y_c and B_c", reversible=False
     )
     model.createReactionReagent("R_4", "Y_c", -10)
     model.createReactionReagent("R_4", "B_c", -1)
     model.createReactionReagent("R_4", "BM_c_A", 1)
-    model.setReactionBounds("R_4", -1000.0, 1000.0)
+    model.setReactionBounds("R_4", 0.0, 1000.0)
 
     model.createReaction("R_5", "Create Z from S_int", reversible=True)
     model.createReactionReagent("R_5", "S_c", -1)
     model.createReactionReagent("R_5", "Z_c", 1)
     model.setReactionBounds("R_5", -1000.0, 1000.0)
 
-    model.createReaction("R_6", "Create BM_c_A from Z and B", reversible=True)
+    model.createReaction("R_6", "Create BM_c_A from Z and B", reversible=False)
     model.createReactionReagent("R_6", "Z_c", -8)
     model.createReactionReagent("R_6", "B_c", -3)
     model.createReactionReagent("R_6", "BM_c_A", 1)
-    model.setReactionBounds("R_6", -1000.0, 1000.0)
+    model.setReactionBounds("R_6", 0.0, 1000.0)
 
     # Import B
-    model.createReaction("R_7", "Import B_e to B_c", reversible=True)
-    model.createReactionReagent("R_7", "B_e", -1)
-    model.createReactionReagent("R_7", "B_c", 1)
-    model.setReactionBounds("R_7", -1000.0, 1000.0)
+    model.createReaction("R_import_B", "Import B_e to B_c", reversible=True)
+    model.createReactionReagent("R_import_B", "B_e", -1)
+    model.createReactionReagent("R_import_B", "B_c", 1)
+    model.setReactionBounds("R_import_B", -1000.0, 1000.0)
 
-    # Import B
-    model.createReaction("R_8", "Import A_e to A_c", reversible=True)
-    model.createReactionReagent("R_8", "A_e", -1)
-    model.createReactionReagent("R_8", "A_c", 1)
-    model.setReactionBounds("R_8", -1000.0, 1000.0)
+    # Import A
+    model.createReaction("R_export_A", "Export A_c to A_e", reversible=True)
+    model.createReactionReagent("R_export_A", "A_c", -1)
+    model.createReactionReagent("R_export_A", "A_e", 1)
+    model.setReactionBounds("R_export_A", -1000.0, 1000.0)
 
     # Import B
     model.createReaction("R_BM_A", "Biomass reaction", reversible=True)

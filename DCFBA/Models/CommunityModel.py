@@ -45,6 +45,8 @@ class CommunityModel(Model):
             cm.merge_compartments(model, self, new_id)
             cm.merge_species(duplicate_species, model, new_id)
             cm.merge_reactions(model, self, new_id)
+        # TODO User Constraints arent added to the new community model,
+        # should we implement this?
 
     def __str__(self) -> str:
         return (
