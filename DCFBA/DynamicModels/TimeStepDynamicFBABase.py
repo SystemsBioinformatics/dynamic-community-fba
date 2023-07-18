@@ -2,12 +2,12 @@ from cbmpy.CBModel import Model, Reaction
 from ..Models.Kinetics import Kinetics
 from ..Models.Transporters import Transporters
 from .DynamicFBABase import DynamicFBABase
+from ..Exceptions import NoLimitingSubstrateFound
 
 
 class TimeStepDynamicFBABase:
     """The base class for Dynamic FBA"""
 
-    m_kinetics: Kinetics
     m_biomass_concentrations: dict[str, list[float]] = {}
     m_metabolite_concentrations: dict[str, list[float]] = {}
 
@@ -142,7 +142,11 @@ class TimeStepDynamicFBABase:
         return [self.m_metabolite_concentrations[id][-1] for id in sids]
 
     def mm_kinetics(
-        self, reaction: Reaction, X: float, transporters: Transporters
+        self,
+        reaction: Reaction,
+        X: float,
+        transporters: Transporters,
+        kinetics: Kinetics,
     ) -> None:
         """Given a reaction calculate the Michaelis Menten
         Kinetics
@@ -156,8 +160,20 @@ class TimeStepDynamicFBABase:
             transporters (Transporters): A Transporters object of the model
         """
         rid: str = reaction.getId()
-        km, vmax = self.m_kinetics.get_kinetics(
+        sid, km, vmax = kinetics.get_kinetics(
             rid,
         )
-        S = min(self.importers_species_concentration(rid, transporters))
+
+        # If the reaction is an importer and no limiting substrate
+        # was supplied use the min of all substrates
+        if transporters.is_importer(rid) and (
+            sid not in self.m_metabolite_concentrations.keys()
+        ):
+            S = min(self.importers_species_concentration(rid, transporters))
+        elif sid in self.m_metabolite_concentrations.keys():
+            S = self.m_metabolite_concentrations[sid][-1]
+        else:
+            raise NoLimitingSubstrateFound(
+                "The limiting substrate was not an external species"
+            )
         reaction.setUpperBound(vmax * (S / (km + S)) * X)

@@ -143,7 +143,7 @@ def build_model_A():
     return model
 
 
-def build_joint_fba_model_A():
+def build_toy_model_fba_A():
     model = cbmpy.CBModel.Model("Organism_A")
 
     model.createSpecies(

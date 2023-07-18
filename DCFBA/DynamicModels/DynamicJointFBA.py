@@ -69,7 +69,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
     def simulate(
         self,
         dt: float,
-        epsilon=0.001,
+        epsilon=0.01,
         kinetics_func=None,
         deviate=None,
         deviation_time=0,
@@ -78,7 +78,13 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         dt_hat = -1
         dt_save = dt
         fluxes = []
-
+        self.update_reaction_bounds(kinetics_func)
+        # for rid in self.m_model.getReactionIds():
+        #     reaction: Reaction = self.m_model.getReaction(rid)
+        #     print(rid)
+        #     print(reaction.getUpperBound())
+        #     print()
+        # input()
         while True:
             if dt_hat != -1:
                 dt = dt_hat
@@ -95,16 +101,24 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 )
             # update lower and upper bounds...
             self.update_reaction_bounds(kinetics_func)
-
             solution = cbmpy.doFBA(self.m_model)
 
             if math.isnan(solution) or solution < epsilon:
+                print(dt)
                 break
 
+            print(dt)
             used_time.append(used_time[-1] + dt)
 
             FBAsol = self.m_model.getSolutionVector(names=True)
             FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+            print(FBAsol)
+            print("S!:", self.m_metabolite_concentrations["S_e"])
+            print("A_e", self.m_metabolite_concentrations["A_e"])
+
+            print("B_e", self.m_metabolite_concentrations["B_e"])
+
+            print("X_c", self.m_metabolite_concentrations["X_c"])
             fluxes.append(FBAsol)
 
             self.update_concentrations(FBAsol, dt)
@@ -182,7 +196,9 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                     self.update_importer_bounds(reaction, X_k_t)
 
                 elif self.m_kinetics.Exists(rid):
-                    self.mm_kinetics(reaction, X_k_t, self.m_transporters)
+                    self.mm_kinetics(
+                        reaction, X_k_t, self.m_transporters, self.m_kinetics
+                    )
 
                 else:
                     reaction.setUpperBound(
@@ -197,7 +213,9 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
             )
         ):
             if self.m_kinetics.Exists(reaction.getId()):
-                self.mm_kinetics(reaction, X, self.m_transporters)
+                self.mm_kinetics(
+                    reaction, X, self.m_transporters, self.m_kinetics
+                )
             else:
                 reaction.setUpperBound(
                     self.m_initial_bounds[reaction.getId()][1] * X
