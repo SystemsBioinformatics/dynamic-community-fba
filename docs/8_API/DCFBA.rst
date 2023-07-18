@@ -7,16 +7,27 @@ CommunityModel
 
 .. automodule:: DCFBA.Models.CommunityModel
    :members:
-   :undoc-members:
    :show-inheritance:
 
+DynamicFBABAse
+-------------------------------
+
+.. automodule:: DCFBA.DynamicModels.DynamicFBABase
+   :members:
+   :show-inheritance:
+
+TimeStepDynamicFBABase
+-------------------------------
+
+.. automodule:: DCFBA.DynamicModels.TimeStepDynamicFBABase
+   :members:
+   :show-inheritance:
 
 DynamicParallelFBA
 -------------------------------
 
 .. automodule:: DCFBA.DynamicModels.DynamicParallelFBA
    :members:
-   :undoc-members:
    :show-inheritance:
 
 
@@ -25,7 +36,6 @@ DynamicJointFba
 
 .. automodule:: DCFBA.DynamicModels.DynamicJointFBA
    :members:
-   :undoc-members:
    :show-inheritance:
 
 EndPointFBA
@@ -33,7 +43,6 @@ EndPointFBA
 
 .. automodule:: DCFBA.DynamicModels.EndPointFBA
    :members:
-   :undoc-members:
    :show-inheritance:
 
 KineticModel
@@ -41,7 +50,6 @@ KineticModel
 
 .. automodule:: DCFBA.Models.Kinetics
    :members:
-   :undoc-members:
    :show-inheritance:
 
 Transporters
@@ -49,6 +57,5 @@ Transporters
 
 .. automodule:: DCFBA.Models.Transporters
    :members:
-   :undoc-members:
    :show-inheritance:
 
