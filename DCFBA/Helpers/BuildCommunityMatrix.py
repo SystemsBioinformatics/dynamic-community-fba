@@ -1,3 +1,6 @@
+"""Helper functions for building the CommunityModel 
+"""
+
 from cbmpy.CBModel import Model, Species, Reaction, Reagent, Compartment
 import cbmpy
 
@@ -30,12 +33,10 @@ def load_n_models(files: list[str]) -> list[Model]:
 
 def combine_models(
     models: list[Model], new_ids: list[str] = [], objective_function: str = ""
-):
+) -> Model:
     """
-    If you just want to combine models without creating a CombinedModel
-    use this function. But it is recomended to create a
-    Combine multiple CBModels into a single model by renaming species
-    and reactions.
+    Combine N models into a single model.
+    For further information see Models.CombinedModel
 
     Args:
         models (list[Model]): A list of CBModels to combine.
@@ -101,7 +102,6 @@ def create_duplicate_species_dict(models: list[Model]) -> dict[str, int]:
     return {k: v for k, v in species_dict.items() if v >= 2}
 
 
-# TODO if two the same models are given this one fails
 def merge_compartments(model: Model, combined_model: Model, new_id):
     """
     Merge compartments from a model into a combined model.
@@ -126,9 +126,9 @@ def merge_compartments(model: Model, combined_model: Model, new_id):
             )
 
 
-def merge_reactions(model: Model, combined_model: Model, new_id: str):
+def merge_reactions(model: Model, combined_model: Model, new_id: str) -> None:
     """
-    Merge reactions from a model into a combined model.
+    Merge reactions from a model into the combined model.
 
     Args:
         model (Model): The source CBModel.
@@ -171,7 +171,9 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str):
             )
 
 
-def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
+def merge_species(
+    duplicate_species: dict[str, int], model: Model, new_id
+) -> None:
     """
     Merge species from a model into a combined model.
     Rules based:
@@ -194,9 +196,6 @@ def merge_species(duplicate_species: dict[str, int], model: Model, new_id):
         None
     """
 
-    # Get original list, if we retrieve this in the for loop
-    # the list is being altered within the function adding the new species
-    # this creates inconsistency errors
     ls_species_ids = model.getSpeciesIds()
     for species_id in ls_species_ids:
         species: Species = model.getSpecies(species_id)
@@ -331,15 +330,15 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
     return out
 
 
-def create_new_id(old_id: str, new_id) -> str:
+def create_new_id(old_id: str, new_id: str) -> str:
     """
     Function to build new id strings for models
     If empty string is provided we keep the original id for that model
 
     Args:
         old_id (str): The old identifier
-        new_id (_type_): the new id, if "" than use old id otherwise
-        append the old id with the new id
+        new_id (str): the new id, if "" than use old id otherwise
+            append the old id with the new id
 
     Returns:
         str: _description_

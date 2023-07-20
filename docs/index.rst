@@ -38,6 +38,7 @@ The dynamic-community-fba documentation serves as a valuable resource for resear
    4_community_matrix/home
    5_djoint/home
    6_endpoint_fba/home   
-   7_faq/home
-   8_API/DCFBA
+   7_Advanced/home
+   8_faq/home
+   9_API/DCFBA
 

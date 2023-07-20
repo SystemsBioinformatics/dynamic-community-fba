@@ -15,7 +15,7 @@ Joint FBA
 
 After defining the ``CommunityModel`` it is easy to refine it in such a way that we can perform a Joint FBA
 The only thing left to do is append the biomass reaction of each individual model to create the so called `Community biomass`.
-So now we can define the reaction :literal:`X_c -> ` where `X_c` is the community biomass.
+We can now define the reaction :literal:`X_c ->` where  ``X_c`` is the total sum of the individual models' biomasses.
 
 To perform joint FBA run the following: 
 
@@ -23,13 +23,16 @@ To perform joint FBA run the following:
    
     import cbmpy
     from cbmpy.CBModel import Model
-    from endPointFBA.CommunityModel import CommunityModel
-    from endPointFBA.DynamicJointFBA import DynamicJointFBA
+    from DCFBA.Models import CommunityModel
+    from DCFBA.DynamicModels import DynamicJointFBA
 
     model1: Model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
     model1.getReaction("R_GLCpts").setUpperBound(10)
 
     model_2 = model1.clone()
+    
+    # Ecoli 2 imports glucose slower
+    model_2.getReaction("R_GLCpts").setUpperBound(8)
 
     combined_model = CommunityModel(
         [model1, model_2],
@@ -67,44 +70,39 @@ To perform the joint FBA over time using the ``DynamicJointFBA`` model:
 
 .. code-block:: python
 
-    dynamic_fba.simulate(0.1)
+    T, metabolites, biomasses, fluxes = dynamic_fba.simulate(0.1)
 
-You can now easily plot the solution:
+The ``simulate`` method returns a tuple with four elements. First, it provides a list of time points for the simulation. 
+Second, it returns a ``Dictionary`` containing the species_ids and their corresponding concentrations at each time point. Third, we get a 
+``Dictionary`` containing the biomasses of the models, accessed through their IDs. Lastly we get the fluxes of all reactions for each time point.
+
+You can now easily plot the species concentration over time:
 
 .. code-block:: python
 
-    import matplotlib.pyplot as plt
+    plt.plot(T, metabolites["M_glc__D_e"], color="blue", label="[Glucose]")
+    
+    plt.xlabel("Time")
+    plt.ylabel("Concentration")
+    plt.legend()
+    plt.show()
+  
+And the biomasses of both species
 
-    ts, metabolites, biomasses = dynamic_fba.simulate(0.1)
+.. code-block:: python
+    
+    plt.plot(T, biomasses["ecoli_1"], color="blue", label="Biomass model 1")
+    plt.plot(T, biomasses["ecoli_2"], color="orange", label="Biomass model 2")
 
-
-    ax = plt.subplot(111)
-    ax.plot(ts, biomasses["ecoli_1"])
-    ax2 = plt.twinx(ax)
-    ax2.plot(ts, metabolites["X_c"], color="r")
-
-    ax.set_ylabel("Biomass ecoli 1", color="b")
-    ax2.set_ylabel("X_comm", color="r")
-
-    ax3 = plt.twinx(ax)
-    ax3.plot(ts, biomasses["ecoli_2"], color="y")
-    ax3.set_ylabel("Biomass ecoli 2", color="y")
-
+    
+    plt.xlabel("Time")
+    plt.ylabel("Concentration")
+    plt.legend()
     plt.show()
 
+.. tip::
 
-.. admonition:: Tip
-    :class: tip
     If you create a ``DynamicJointFBA`` object with a ``CommunityModel`` build from just one organism and call the simulate function you
     perform just regular dynamic FBA!
-
-Add reaction kinetics
----------------------
-In construction
-
-Write your own kinetics!
-************************
-In construction
-
 
 

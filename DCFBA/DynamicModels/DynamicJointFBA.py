@@ -1,16 +1,22 @@
 import cbmpy
 import math
-from cbmpy.CBModel import Model, Reaction
+from cbmpy.CBModel import Reaction
 from .TimeStepDynamicFBABase import TimeStepDynamicFBABase
 from ..Models import Kinetics, Transporters, CommunityModel
 
 
 class DynamicJointFBA(TimeStepDynamicFBABase):
+    """A class representing a dynamic joint Flux Balance Analysis simulation.
+
+    This class extends the TimeStepDynamicFBABase and provides functionality
+    for performing dynamic joint FBA simulations on a community model.
+
+    """
+
     m_model: CommunityModel
     m_transporters: Transporters
     m_initial_bounds: dict[str, tuple[float, float]] = {}
 
-    # use to set everything in place for the simulation
     def __init__(
         self,
         model: CommunityModel,
@@ -18,6 +24,18 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         initial_concentrations: dict[str, float] = {},
         kinetics: Kinetics = Kinetics({}),
     ):
+        """Initialize the DynamicJointFBA class.
+
+        Args:
+            model (CommunityModel): The community model to simulate.
+            biomasses (list[float]): Initial biomass concentrations for each
+                organism.
+            initial_concentrations (dict[str, float], optional): Initial
+                metabolite concentrations. Defaults to an empty dictionary.
+            kinetics (Kinetics, optional): Kinetic parameters for reactions.
+                Defaults to an empty Kinetics object.
+
+        """
         self.m_transporters = Transporters(model)
 
         model_biomasses = model.get_model_biomass_ids()
@@ -43,10 +61,24 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 reaction.getUpperBound(),
             ]
 
-    def get_joint_model(self) -> None:
+    def get_joint_model(self) -> CommunityModel:
+        """Get the community model appended with the Community
+        Biomass function.
+
+        Returns:
+            CommunityModel: The community model used for the simulation.
+
+        """
         return self.m_model
 
     def set_community_biomass_reaction(self):
+        """Create and set up the community biomass reaction.
+
+        This method creates the community biomass species 'X_c' which
+        will be created in each model's biomass reaction. Next the
+        community biomass exchange reaction (X_comm) is created and set to be
+        the objective function of the model.
+        """
         self.m_model.createSpecies(
             "X_c", False, "The community biomass", compartment="e"
         )
@@ -72,19 +104,19 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         epsilon=0.01,
         kinetics_func=None,
         deviate=None,
-        deviation_time=0,
     ):
+        """Perform a dynamic joint FBA simulation.
+
+        Returns:
+            list: A list containing the simulation results -
+                [used_time, metabolite_concentrations, biomass_concentrations, fluxes].
+        """
         used_time = [0]
         dt_hat = -1
         dt_save = dt
         fluxes = []
-        self.update_reaction_bounds(kinetics_func)
-        # for rid in self.m_model.getReactionIds():
-        #     reaction: Reaction = self.m_model.getReaction(rid)
-        #     print(rid)
-        #     print(reaction.getUpperBound())
-        #     print()
-        # input()
+        run_condition = 0
+
         while True:
             if dt_hat != -1:
                 dt = dt_hat
@@ -92,33 +124,24 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
             else:
                 dt = dt_save
 
-            if deviate is not None and deviation_time == used_time[-1] + dt:
-                deviate(
-                    self.m_model,
-                    self.m_biomass_concentrations,
-                    self.m_metabolite_concentrations,
-                    dt,
+            if deviate is not None:
+                run_condition = deviate(
+                    self,
+                    used_time,
+                    run_condition,
                 )
-            # update lower and upper bounds...
+
             self.update_reaction_bounds(kinetics_func)
             solution = cbmpy.doFBA(self.m_model)
 
             if math.isnan(solution) or solution < epsilon:
-                print(dt)
                 break
 
-            print(dt)
             used_time.append(used_time[-1] + dt)
 
             FBAsol = self.m_model.getSolutionVector(names=True)
             FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-            print(FBAsol)
-            print("S!:", self.m_metabolite_concentrations["S_e"])
-            print("A_e", self.m_metabolite_concentrations["A_e"])
 
-            print("B_e", self.m_metabolite_concentrations["B_e"])
-
-            print("X_c", self.m_metabolite_concentrations["X_c"])
             fluxes.append(FBAsol)
 
             self.update_concentrations(FBAsol, dt)
@@ -126,6 +149,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
             species_id = self.check_solution_feasibility()
 
             if species_id != "":
+                print("GEKK")
                 dt_hat = self.reset_dt(species_id, FBAsol)
                 used_time = used_time[:-1]
                 continue
@@ -144,14 +168,20 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         ]
 
     def update_concentrations(self, FBAsol, dt):
+        """Update metabolite concentrations after an FBA step.
+
+        Args:
+            FBAsol (dict): The solution vector from the FBA.
+            dt (float): The time step for the simulation.
+
+        """
+
         # Update external metabolites
         for key in self.m_metabolite_concentrations.keys():
             self.m_metabolite_concentrations[key].append(
                 self.m_metabolite_concentrations[key][-1]
             )
 
-        # first check what was exported (created) because new metabolite can
-        # be created
         for rid, species_ids in self.m_transporters.get_exporters(True):
             for sid in species_ids:
                 self.m_metabolite_concentrations[sid][-1] = round(
@@ -160,7 +190,6 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                     8,
                 )
 
-        # Next check the importers (consumption)
         for rid, species_ids in self.m_transporters.get_importers(True):
             for sid in species_ids:
                 self.m_metabolite_concentrations[sid][-1] = round(
@@ -170,6 +199,13 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 )
 
     def update_reaction_bounds(self, kinetics_func) -> None:
+        """Update the reaction bounds for the simulation.
+
+        Args:
+            kinetics_func (function): A custom function to update reaction
+                bounds based on kinetics. If None, standard bounds are used.
+
+        """
         for rid in self.m_model.getReactionIds():
             # TODO discuss this
             if kinetics_func is not None:
@@ -181,16 +217,17 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 )
                 continue
             reaction: Reaction = self.m_model.getReaction(rid)
+
             # Don't change the exchange reactions bounds
             if not reaction.is_exchange:
                 mid_for_reaction = self.m_model.identify_model_from_reaction(
                     rid
                 )
-                # Organism specific biomass
+                # Organism specific biomass at last time point
                 X_k_t = self.m_biomass_concentrations[mid_for_reaction][-1]
                 reaction.setLowerBound(self.m_initial_bounds[rid][0] * X_k_t)
 
-                # If the reaction is an importer we need to check
+                # If the reaction is an importer check
                 # if there is substrate they can import
                 if self.m_transporters.is_importer(rid):
                     self.update_importer_bounds(reaction, X_k_t)
@@ -206,6 +243,14 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                     )
 
     def update_importer_bounds(self, reaction: Reaction, X: float):
+        """Update bounds for importer reactions.
+
+        Args:
+            reaction (Reaction): The reaction to update bounds for.
+            X (float): Biomass concentration for the organism associated with
+                the reaction.
+
+        """
         if all(
             x > 0
             for x in self.importers_species_concentration(
@@ -224,9 +269,18 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
             reaction.setUpperBound(0)
 
     def reset_dt(self, species_id: str, FBAsol) -> float:
-        # This time point is not be feasible remove all last
-        # concentrations
+        """Recalculate the time step if a species becomes infeasible.
 
+        Args:
+            species_id (str): The ID of the species to reset the time step for.
+            FBAsol (dict): The solution vector from the FBA.
+
+        Returns:
+            float: The updated time step.
+
+        """
+
+        # Remove last metabolite concentration
         self.m_metabolite_concentrations = {
             key: lst[:-1]
             for key, lst in self.m_metabolite_concentrations.items()
@@ -235,9 +289,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         # Maybe some metabolite was exported/created, by an organism
         # Unfortunately to check what is create we would
         # have to know the new dt which we don'...
-        # So we accept a small error, but in real life we
-        # also would not know if the exporters would have
-        # Created new metabolites before the importers ran out
+        # So we accept a small error.
 
         total = 0
         for (

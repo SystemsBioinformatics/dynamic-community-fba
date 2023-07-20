@@ -6,26 +6,29 @@ from ..Exceptions import NoLimitingSubstrateFound
 
 
 class TimeStepDynamicFBABase:
-    """The base class for Dynamic FBA"""
+    """Base class for handling dynamic flux balance analysis simulations
+    using time steps to track biomass and metabolite concentrations over time.
+
+    """
 
     m_biomass_concentrations: dict[str, list[float]] = {}
     m_metabolite_concentrations: dict[str, list[float]] = {}
 
     def set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]
-    ):
-        """Set the initial concentrations of the metabolites
+    ) -> None:
+        """Sets the initial concentrations of the metabolites.
 
-        Uses the exchange reaction lower bounds as initial concentrations
-        If people want to change it they have to change this use initial
-        conditions or change the lower bounds
-        This was implemented in such that you dont need to manually
-        add all external metabolites in the initial conditions
+        The method uses the exchange reaction lower bounds as initial
+        concentrations. If you want to change the initial concentrations,
+        you can modify either the initial concentrations or the lower bounds of
+        exchange reactions.
 
         Args:
-            model (Model): A cbmpy.CBModel
-            initial_concentrations (dict[str, float]): dictionary containing
-            the initial concentrations as key value pairs
+            model (Model): A cbmpy.CBModel instance.
+            initial_concentrations (dict[str, float]): Dictionary containing
+                the initial concentrations as key-value pairs for different
+                metabolites.
         """
 
         for exchange in model.getExchangeReactionIds():
@@ -49,51 +52,42 @@ class TimeStepDynamicFBABase:
         deviate=None,
         deviation_time=0,
     ):
-        """The simulation methods, calculates the fluxes for each dt
-        as specified in the function call.
+        """Simulates the dynamic flux balance analysis (dFBA) over specified time steps.
 
-        Each specific dynamic FBA implementation performs it's own simulation
-        with their own set of rules
+        This method should be implemented in the subclasses with their own rules for simulation.
 
         Args:
-            dt (float): The time step
-
-            epsilon (float, optional): When the solution < epsilon stop the
-
-            simulation. Defaults to 0.001.
-
-            kinetics_func (_type_, optional): A user function that can be used.
-            to calculate kinetics.  Defaults to None.
-
-            deviate (_type_, optional): If you want to apply changes during
-            simulation you can provide a function which should accept
-            the model
-            the dictionary of biomass concentrations
-            the dictionary of metabolite concentrations
-            dt.
-            Defaults to None.
-
-            deviation_time (int, optional): the time step the deviation
-            function should be called. Defaults to 0.
+            dt (float): The time step for simulation.
+            epsilon (float, optional): The tolerance value. When the solution
+                or time step is less than epsilon, the simulation stops.
+                Defaults to 0.001.
+            kinetics_func (function, optional): A user-defined function to
+                calculate kinetics. Defaults to None.
+            deviate (function, optional): A user-defined function to apply
+                changes during the simulation. It should accept the model,
+                a dictionary of biomass concentrations, a dictionary of
+                metabolite concentrations, and dt.
+                Defaults to None.
+            deviation_time (int, optional): The time step when the deviation
+                function should be called.
+                Defaults to 0.
         """
         pass
 
     def update_reaction_bounds(self, kinetics_func) -> None:
-        """Update all reaction bounds using the new
-        concentrations.
+        """Updates all reaction bounds using the new concentrations.
 
         Args:
-            kinetics_func (_type_): A user defined function
-            that calculates the new upper bound for a reaction.
-            The function should accept a cbmpy.CBmodel, a
-            string (reaction_id) a dictionary of biomasses concentrations
-            and a dictionary of metabolite
-            concentrations
+            kinetics_func (function): A user-defined function that calculates
+                the new upper bound for a reaction. It should accept:
+                - cbmpy.CBModel, a string (reaction_id),
+                - dictionary of biomass concentrations,
+                - a dictionary of metabolite concentrations.
         """
         pass
 
     def update_importer_bounds(self) -> None:
-        """Update the upper bounds of the importer reaction"""
+        """Update the upper bounds of the importer reactions"""
         pass
 
     def update_concentrations(self) -> None:
@@ -101,20 +95,24 @@ class TimeStepDynamicFBABase:
         pass
 
     def update_biomasses(self) -> None:
-        """Update all Biomass concentration"""
+        """Update all biomass concentration"""
         pass
 
     def reset_dt(self) -> float:
-        """Reset the simulation and calculate dt_hat"""
+        """Resets the simulation and calculates dt_hat (smaller time step)."""
         pass
 
     def check_solution_feasibility(self) -> str:
-        """If the current solution isn't feasible due to
-        a lack of metabolite concentrations return the
-        metabolite which dropped furthest below zero
-        the concentration of this metabolite will be used
-        to calculate dt_hat.
+        """Checks the feasibility of the current solution.
+
+        If the current solution isn't feasible due to a lack of metabolite
+        concentrations.
+
+        Returns:
+            str: The name of the metabolite with the lowest concentration
+                below zero.
         """
+
         low = 1e10
         name = ""
         for key, value in self.m_metabolite_concentrations.items():
@@ -127,16 +125,15 @@ class TimeStepDynamicFBABase:
     def importers_species_concentration(
         self, rid: str, transporters: Transporters
     ) -> list[float]:
-        """Given an importer reaction get the
-        species concentrations that this importer imports
+        """Given an importer reaction, returns the species concentrations that
+        this importer imports.
 
         Args:
-            rid (str): the reaction id of the importer
-
-            transporters (Transporters): A Transporters object
+            rid (str): The reaction id of the importer.
+            transporters (Transporters): A Transporters object.
 
         Returns:
-            list[float]: list of species ids
+            list[float]: List of species concentrations.
         """
         sids = transporters.get_importers_species(rid)
         return [self.m_metabolite_concentrations[id][-1] for id in sids]
@@ -148,16 +145,18 @@ class TimeStepDynamicFBABase:
         transporters: Transporters,
         kinetics: Kinetics,
     ) -> None:
-        """Given a reaction calculate the Michaelis Menten
-        Kinetics
-
+        """Calculates the Michaelis Menten Kinetics for a given reaction.
 
         Args:
-            reaction (Reaction): A reaction objet
-
-            X (float): The biomass of the species the reaction belongs to
-
-            transporters (Transporters): A Transporters object of the model
+            reaction (Reaction): A reaction object.
+            X (float): The biomass of the species the reaction belongs to.
+            transporters (Transporters): A Transporters object of the model.
+            kinetics (Kinetics): A Kinetics object for kinetic parameter
+            retrieval.
+        Raises:
+            NoLimitingSubstrateFound: If the reaction is not an importer and no
+            limiting substrate was supplied, or if the limiting substrate was
+            not an external species.
         """
         rid: str = reaction.getId()
         sid, km, vmax = kinetics.get_kinetics(
@@ -166,6 +165,9 @@ class TimeStepDynamicFBABase:
 
         # If the reaction is an importer and no limiting substrate
         # was supplied use the min of all substrates
+        # this is only possible for importers
+        # If the reaciton is not an import reaction and no limiting substrate
+        # Was set Raise an error
         if transporters.is_importer(rid) and (
             sid not in self.m_metabolite_concentrations.keys()
         ):

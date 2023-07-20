@@ -4,6 +4,18 @@ from ..Exceptions import NotInCombinedModel
 
 
 class CommunityModel(Model):
+    """
+    A CommunityModel represents a combined model built from multiple individual models
+    to simulate a community of organisms.
+
+    Attributes:
+        m_identifiers (list[str]): List of user-specified identifiers for the
+            individual models.
+        m_single_model_ids (list[str]): List of IDs of the individual models.
+        m_single_model_biomass_reaction_ids (list[str]): List of biomass
+            reaction IDs of the individual models.
+    """
+
     m_identifiers: list[str]
     m_single_model_ids: list[str]
     m_single_model_biomass_reaction_ids: list[str] = []
@@ -15,6 +27,24 @@ class CommunityModel(Model):
         ids: list[str] = [],
         combined_model_id: str = "combined_model",
     ) -> None:
+        """
+        Initialize a CommunityModel instance.
+
+        Args:
+            models (list[Model]): List of individual models to combine.
+            biomass_reaction_ids (list[str]): List of biomass reaction IDs for
+                each individual model.
+            ids (list[str], optional): List of user-specified identifiers for
+                the individual models.
+                Defaults to an empty list.
+            combined_model_id (str, optional): The ID for the combined CommunityModel.
+                Defaults to "combined_model".
+
+        Raises:
+            Exception: If too few IDs are provided compared to the number of
+                models.
+
+        """
         super().__init__(combined_model_id)
 
         self.createCompartment("e", "extracellular space")
@@ -45,10 +75,18 @@ class CommunityModel(Model):
             cm.merge_compartments(model, self, new_id)
             cm.merge_species(duplicate_species, model, new_id)
             cm.merge_reactions(model, self, new_id)
-        # TODO User Constraints arent added to the new community model,
+
+        # TODO Old User Constraints arent added to the new community model,
         # should we implement this?
 
     def __str__(self) -> str:
+        """
+        Return a string representation of the CommunityModel.
+
+        Returns:
+            str: A string representation of the CommunityModel.
+
+        """
         return (
             f"Model: {self.getId()} was build from "
             f"{[id for id in self.m_single_model_ids]}"
@@ -58,17 +96,17 @@ class CommunityModel(Model):
 
     def add_model_to_community(
         self, model: Model, biomass_reaction: str, new_id: str = None
-    ):
-        """Adds a model to the CommunityModel
+    ) -> None:
+        """
+        Adds a model to the CommunityModel.
 
         Args:
-            model (Model): The model that needs to be added
+            model (Model): The model to be added.
+            biomass_reaction (str): The reaction ID of the biomass reaction of
+                the new model.
+            new_id (str, optional): The user-set identifier for the model.
+                Defaults to None. If set to None, the model ID will be used.
 
-            biomass_reaction (str): The reaction id of the biomass reaction of
-            the new model
-
-            new_id (str, optional): The user set identifier. Defaults to None.
-            If set to None the model.id will be used
         """
         if new_id is None:
             new_id = model.getId()
@@ -84,6 +122,16 @@ class CommunityModel(Model):
         self.m_single_model_biomass_reaction_ids.append(biomass_reaction)
 
     def remove_model_from_community(self, mid: str) -> None:
+        """
+        Remove a model from the CommunityModel.
+
+        Args:
+            mid (str): The identifier of the model to be removed.
+
+        Raises:
+            Exception: If the provided model ID is not in the CommunityModel.
+
+        """
         if mid in self.m_single_model_ids:
             index = self.m_single_model_ids.index(mid)
         elif mid in self.m_identifiers:
@@ -108,17 +156,21 @@ class CommunityModel(Model):
         del self.m_single_model_biomass_reaction_ids[index]
 
     def get_model_specific_reactions(self, mid: str) -> list[Reaction]:
-        """Returns a list of reaction ids
+        """
+        Returns a list of reaction IDs specific to the given model.
 
         Args:
-            mid (str): _description_
+            mid (str): The identifier of the model.
 
         Raises:
-            NotInCombinedModel: _description_
+            NotInCombinedModel: If the provided model ID is not in the
+            CommunityModel.
 
         Returns:
-            list[Reaction]: _description_
+            list[Reaction]: A list of reaction IDs specific to the given model.
+
         """
+
         if mid not in self.m_identifiers:
             raise NotInCombinedModel(
                 "The model id provided was not found in the combined model"
@@ -130,6 +182,20 @@ class CommunityModel(Model):
         return ans
 
     def get_model_specific_species(self, mid: str) -> list[Species]:
+        """
+        Returns a list of species IDs specific to the given model.
+
+        Args:
+            mid (str): The identifier of the model.
+
+        Raises:
+            NotInCombinedModel: If the provided model ID is not in the
+            CommunityModel.
+
+        Returns:
+            list[Species]: A list of species IDs specific to the given model.
+
+        """
         if mid not in self.m_identifiers:
             raise NotInCombinedModel(
                 "The model id provided was not found in the combined model"
@@ -142,7 +208,7 @@ class CommunityModel(Model):
         return ans
 
     def get_reaction_bigg_ids(self, mid="") -> list[str]:
-        """Get the reaction bigg ids of all reactions
+        """Get the reaction BIGG IDs of all reactions
 
         Args:
             mid (str, optional): If a model id is provided only reactions from
@@ -153,7 +219,7 @@ class CommunityModel(Model):
             NotInCombinedModel: the id provided was not in the combined model
 
         Returns:
-            list[str]: list containing the bigg ids
+            list[str]: list containing the BIGG ids
         """
         if mid != "":
             if mid not in self.m_identifiers:

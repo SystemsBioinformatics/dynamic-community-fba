@@ -104,7 +104,7 @@ the compartment which it is in.
 
 
 
-.. note:: 
+.. warning:: 
     It is crucial to verify that the identical reactions and species within different models have consistent IDs before 
     creating the community model. This is particularly significant for exchange reactions and species localized in the 
     extracellular space. If these IDs are not uniform, despite referring to the same reactions or species, the CommunityModel 
