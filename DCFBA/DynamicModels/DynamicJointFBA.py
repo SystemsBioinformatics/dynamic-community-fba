@@ -132,7 +132,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 )
 
             self.update_reaction_bounds(kinetics_func)
-            solution = cbmpy.doFBA(self.m_model)
+            solution = cbmpy.doFBA(self.m_model, quiet=True)
 
             if math.isnan(solution) or solution < epsilon:
                 break

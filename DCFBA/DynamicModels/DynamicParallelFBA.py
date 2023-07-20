@@ -128,7 +128,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
             used_time.append(used_time[-1] + dt)
 
             for model in self.m_models:
-                solution = cbmpy.doFBA(model)
+                solution = cbmpy.doFBA(model, quiet=True)
                 FBAsol = model.getSolutionVector(names=True)
                 FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
                 if math.isnan(solution) or solution < epsilon or dt < epsilon:

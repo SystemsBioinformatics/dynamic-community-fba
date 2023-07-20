@@ -51,8 +51,8 @@ community_model = CommunityModel(
     [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
 )
 
-community_model.getReaction("B_exchange").setLowerBound(-0.0)
-community_model.getReaction("A_exchange").setLowerBound(-0.0)
+community_model.getReaction("B_exchange").setLowerBound(-0.001)
+community_model.getReaction("A_exchange").setLowerBound(-0.001)
 community_model.getReaction("S_exchange").setLowerBound(-100)
 
 
@@ -60,7 +60,7 @@ community_model.getReaction("S_exchange").setLowerBound(-100)
 # print(community_model.getReaction("R_1_modelB").getUpperBound())
 # print(community_model.getReaction("R_5_modelB").getUpperBound())
 
-dj = DynamicJointFBA(community_model, [1, 1], {"S_e": 100}, kinetics=kin)
+dj = DynamicJointFBA(community_model, [1, 1], {"S_e": 100})
 T, metabolites, biomasses, fluxes = dj.simulate(0.1)
 
 rv1 = list(map(lambda d: d["R_1_modelA"], fluxes))
@@ -90,8 +90,8 @@ rv6 = list(map(lambda d: d["R_6_modelA"], fluxes))
 
 plt.plot(T, metabolites["A_e"], color="blue", label="model a")
 
-plt.show()  # plt.plot(T, biomasses["modelA"], color="blue", label="model a")
-# plt.plot(T, biomasses["modelB"], color="orange", label="model b")
+plt.show()
+
 
 # Adding labels and title
 plt.xlabel("Time")
