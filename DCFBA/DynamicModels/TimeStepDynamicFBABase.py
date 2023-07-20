@@ -50,7 +50,6 @@ class TimeStepDynamicFBABase:
         epsilon=0.001,
         kinetics_func=None,
         deviate=None,
-        deviation_time=0,
     ):
         """Simulates the dynamic flux balance analysis (dFBA) over specified time steps.
 

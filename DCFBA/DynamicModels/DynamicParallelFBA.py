@@ -79,7 +79,6 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
         epsilon: float = 0.001,
         kinetics_func=None,
         deviate=None,
-        deviation_time: float = 0,
     ) -> list[list[float], dict[str, list[float]], dict[str, list[float]]]:
         """Perform a dynamic parallel FBA simulation.
 
@@ -106,6 +105,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
         used_time = [0]
         dt_hat = math.nan
         dt_save = dt
+        run_condition = 0
 
         while True:
             if not math.isnan(dt_hat):
@@ -114,12 +114,11 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
             else:
                 dt = dt_save
 
-            if deviate is not None and deviation_time == used_time[-1] + dt:
-                deviate(
-                    self.m_model,
-                    self.m_biomass_concentrations,
-                    self.m_metabolite_concentrations,
-                    dt,
+            if deviate is not None:
+                run_condition += deviate(
+                    self,
+                    used_time,
+                    run_condition,
                 )
 
             self.update_reaction_bounds(kinetics_func)
