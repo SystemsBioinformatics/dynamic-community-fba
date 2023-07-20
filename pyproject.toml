@@ -1,29 +1,36 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+
+[tool.setuptools.packages.find]
+where = [""]
+
+
 [project]
-name = "endPointFBA"
+name = "DCFBA"
 version = "0.0.1"
 authors = [
   { name="Steven Wijnen", email="steven.wijnen@icloud.com" },
   { name="Francesco Moro", email="f.moro@vu.nl"}
 ]
-description = "Python package for endPointFBA"
+description = "Python package for Dynamic Community FBA"
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  "cbmpy",
+  "numpy",
+  "cobra"
+]
+
 
 [project.urls]
 "Homepage" = "https://github.com/SystemsBioinformatics/dynamic-community-fba"
 "Bug Tracker" = "https://github.com/SystemsBioinformatics/dynamic-community-fba/issues"
 
-[tool.pytest.ini_options]
-pythonpath = "./code"
-addopts = [
-    "--import-mode=importlib",
-]
+
 

@@ -88,22 +88,23 @@ rv6 = list(map(lambda d: d["R_6_modelA"], fluxes))
 #     plt.plot(T, r, color=label_colors[index], label=f"r{index}")
 #     index += 1
 
-plt.plot(T, metabolites["A_e"], color="blue", label="model a")
-
-plt.show()
-
-
-# Adding labels and title
+plt.plot(T, metabolites["A_e"], color="blue", label="Species A")
 plt.xlabel("Time")
-plt.ylabel("Value")
-plt.title("Plotting Two Lines")
-plt.plot(T, metabolites["S_e"], color="blue", label="Se")
-plt.show()
-# Adding legend
+plt.ylabel("Concentration")
 plt.legend()
+
+plt.show()
+
+plt.plot(T, metabolites["S_e"], color="blue", label="Se")
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
+plt.show()
 
 plt.plot(T, biomasses["modelA"], color="blue", label="modelA")
 plt.plot(T, biomasses["modelB"], color="orange", label="modelB")
-
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
 # Displaying the plot
 plt.show()

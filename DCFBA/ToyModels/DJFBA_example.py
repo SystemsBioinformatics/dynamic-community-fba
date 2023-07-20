@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model
-from DCFBA.ToyModels import model_a, model_b
-from DCFBA.Models.CommunityModel import CommunityModel
-from DCFBA.DynamicModels.DynamicJointFBA import DynamicJointFBA
-from DCFBA.Models.Kinetics import Kinetics
+from ..ToyModels import model_a, model_b
+from ..Models.CommunityModel import CommunityModel
+from ..DynamicModels.DynamicJointFBA import DynamicJointFBA
+from ..Models.Kinetics import Kinetics
 
 m_a: Model = model_a.build_toy_model_fba_A()
 m_a.getReaction("R_1").setUpperBound(10)
