@@ -54,11 +54,7 @@ and a ``condition`` which we will explain in a minute.
 
 .. code-block:: python
 
-    def deviate_func(
-        DFBA: DynamicJointFBA,
-        used_time,
-        condition: int,
-    ) -> int:
+    def deviate_func(DFBA: DynamicJointFBA, used_time, condition) -> int:
     if (
         DFBA.m_metabolite_concentrations["M_pyr_e"][-1] <= 5.0
         and condition < 1
@@ -72,7 +68,7 @@ and a ``condition`` which we will explain in a minute.
     return condition
 
 Here we define the ``deviate_func`` as follows, run the function when the concentration of the dynamic FBA object runs under 5.0 and run it only once. If the concentration is 
-not below oir equal to 5.0 return the condition. The ``condition`` parameter is an ``int`` which is set to zero at the start of the simulation and is always passed to the deviate function.
+not below oir equal to 5.0 return the condition. The ``condition`` parameter is by default set to 0 at the start of the simulation and is always passed to the deviate function.
 This is done such that for example you can rerun the function for consecutive time steps. The value returned by the function will always be added to the global condition variable. 
 By doing so we can for example add Glucose to the system for N consecutive runs by modifying the conditional statement. 
 You can also skip on using the condition and define your own conditions when the function should run. 
@@ -108,9 +104,21 @@ We can now pass the function to the simulation method and plot the results:
 
     plt.show()
 
+.. image:: ../_static/images/Deviate_function_metabolites.png
+    :width: 500px
+    :align: center
+    :alt: Metabolite concentrations   
+
+.. image:: ../_static/images/deviation_function_biomasses.png
+    :width: 500px
+    :align: center
+    :alt: Metabolite concentrations 
+
 
 The Kinetics Object for Michaelis Menten
 ----------------------------------------
+
+
 
 The Kinetics function
 ---------------------
