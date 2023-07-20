@@ -125,7 +125,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 dt = dt_save
 
             if deviate is not None:
-                run_condition = deviate(
+                run_condition += deviate(
                     self,
                     used_time,
                     run_condition,
@@ -149,7 +149,6 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
             species_id = self.check_solution_feasibility()
 
             if species_id != "":
-                print("GEKK")
                 dt_hat = self.reset_dt(species_id, FBAsol)
                 used_time = used_time[:-1]
                 continue
