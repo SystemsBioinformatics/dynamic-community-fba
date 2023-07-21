@@ -1,0 +1,37 @@
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{\numberline {1}1. Installation and Requirements}{3}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Prerequisites}{3}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Dynamic Community FBA}{3}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Escher}{3}{section.1.3}%
+\contentsline {chapter}{\numberline {2}2. Getting Started}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}2.1. Loading a model using cbmpy}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}2.2. SBML and cobra models}{5}{section.2.2}%
+\contentsline {section}{\numberline {2.3}2.3. Saving a model}{6}{section.2.3}%
+\contentsline {section}{\numberline {2.4}2.4. Reactions, Reagents and Species}{6}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Reactions}{6}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Reagents}{7}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Species}{7}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Objective function}{8}{subsection.2.4.4}%
+\contentsline {section}{\numberline {2.5}2.5. Transitioning to cbmpy from cobrapy}{8}{section.2.5}%
+\contentsline {chapter}{\numberline {3}3. Parallel dynamic FBA}{9}{chapter.3}%
+\contentsline {chapter}{\numberline {4}4. The community model}{11}{chapter.4}%
+\contentsline {section}{\numberline {4.1}4.1. Definition}{11}{section.4.1}%
+\contentsline {section}{\numberline {4.2}4.2. Creating and modifying the community model}{11}{section.4.2}%
+\contentsline {section}{\numberline {4.3}4.3. Rules}{12}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Compartments:}{12}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Reactions:}{12}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Reagents and species}{13}{subsection.4.3.3}%
+\contentsline {chapter}{\numberline {5}5. Dynamic Joint FBA}{15}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Joint FBA}{15}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Making it dynamic}{16}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Add reaction kinetics}{16}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Write your own kinetics!}{17}{subsection.5.3.1}%
+\contentsline {chapter}{\numberline {6}6. EndpointFBA}{19}{chapter.6}%
+\contentsline {chapter}{\numberline {7}7. FAQ}{21}{chapter.7}%
+\contentsline {chapter}{\numberline {8}8. API}{23}{chapter.8}%
+\contentsline {section}{\numberline {8.1}CommunityModel}{23}{section.8.1}%
+\contentsline {section}{\numberline {8.2}KineticModel}{24}{section.8.2}%
+\contentsline {section}{\numberline {8.3}DynamicJointFba}{25}{section.8.3}%
+\contentsline {section}{\numberline {8.4}Module contents}{25}{section.8.4}%
+\contentsline {chapter}{Python Module Index}{27}{section*.39}%
+\contentsline {chapter}{Index}{29}{section*.40}%

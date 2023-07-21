@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>8. API &mdash; dynamic-community-fba  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="7. FAQ" href="../7_faq/home.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dynamic-community-fba
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../1_installation/home.html">1. Installation and Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_parallel_dfba/home.html">3. Parallel dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_endpoint_fba/home.html">6. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_faq/home.html">7. FAQ</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">8. API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#communitymodel">CommunityModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamicparallelfba">DynamicParallelFBA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamicjointfba">DynamicJointFba</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#endpointfba">EndPointFBA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.Models.Kinetics">KineticModel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics"><code class="docutils literal notranslate"><span class="pre">Kinetics</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.Add"><code class="docutils literal notranslate"><span class="pre">Kinetics.Add()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.Exists"><code class="docutils literal notranslate"><span class="pre">Kinetics.Exists()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.Kinetics"><code class="docutils literal notranslate"><span class="pre">Kinetics.Kinetics</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.Remove"><code class="docutils literal notranslate"><span class="pre">Kinetics.Remove()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.get_kinetics"><code class="docutils literal notranslate"><span class="pre">Kinetics.get_kinetics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.get_km"><code class="docutils literal notranslate"><span class="pre">Kinetics.get_km()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.get_limiting_substrate"><code class="docutils literal notranslate"><span class="pre">Kinetics.get_limiting_substrate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Kinetics.Kinetics.get_vmax"><code class="docutils literal notranslate"><span class="pre">Kinetics.get_vmax()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.Models.Transporters">Transporters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters"><code class="docutils literal notranslate"><span class="pre">Transporters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.add_exporter"><code class="docutils literal notranslate"><span class="pre">Transporters.add_exporter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.add_importer"><code class="docutils literal notranslate"><span class="pre">Transporters.add_importer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_exporter_species"><code class="docutils literal notranslate"><span class="pre">Transporters.get_exporter_species()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_exporters"><code class="docutils literal notranslate"><span class="pre">Transporters.get_exporters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_exports_reactions"><code class="docutils literal notranslate"><span class="pre">Transporters.get_exports_reactions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_importers"><code class="docutils literal notranslate"><span class="pre">Transporters.get_importers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_importers_reactions"><code class="docutils literal notranslate"><span class="pre">Transporters.get_importers_reactions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_importers_species"><code class="docutils literal notranslate"><span class="pre">Transporters.get_importers_species()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_reaction_species"><code class="docutils literal notranslate"><span class="pre">Transporters.get_reaction_species()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.get_transporters"><code class="docutils literal notranslate"><span class="pre">Transporters.get_transporters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.is_exporter"><code class="docutils literal notranslate"><span class="pre">Transporters.is_exporter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.is_importer"><code class="docutils literal notranslate"><span class="pre">Transporters.is_importer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.m_exporters"><code class="docutils literal notranslate"><span class="pre">Transporters.m_exporters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.Models.Transporters.Transporters.m_importers"><code class="docutils literal notranslate"><span class="pre">Transporters.m_importers</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dynamic-community-fba</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">8. API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/8_API/DCFBA.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<h1>8. API<a class="headerlink" href="#api" title="Permalink to this heading"></a></h1>
+<section id="communitymodel">
+<h2>CommunityModel<a class="headerlink" href="#communitymodel" title="Permalink to this heading"></a></h2>
+</section>
+<section id="dynamicparallelfba">
+<h2>DynamicParallelFBA<a class="headerlink" href="#dynamicparallelfba" title="Permalink to this heading"></a></h2>
+</section>
+<section id="dynamicjointfba">
+<h2>DynamicJointFba<a class="headerlink" href="#dynamicjointfba" title="Permalink to this heading"></a></h2>
+</section>
+<section id="endpointfba">
+<h2>EndPointFBA<a class="headerlink" href="#endpointfba" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-DCFBA.Models.Kinetics">
+<span id="kineticmodel"></span><h2>KineticModel<a class="headerlink" href="#module-DCFBA.Models.Kinetics" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.Models.Kinetics.</span></span><span class="sig-name descname"><span class="pre">Kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="linemarker linemarker-1">This class represents a collection of reaction kinetics data. It stores
+the kinetics information as a dictionary, where the reaction identifier
+(rid) is the key, and the associated tuple of vmax and km values is the
+value.</p>
+<p class="linemarker linemarker-6">Kinetics reaction_id =&gt; tuple(limiting_species, km. vmax)</p>
+<p class="linemarker linemarker-8">Usage:
+- Add kinetics data for a reaction using the Add() method.
+- Remove kinetics data for a reaction using the Remove() method.
+- Check if kinetics data exists for a reaction using the Exists() method.
+- Retrieve km value for a reaction using the get_km() method.
+- Retrieve vmax value for a reaction using the get_vmax() method.
+- Retrieve the tuple of vmax and km values for a reaction using the
+get_kinetics() method.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.Add">
+<span class="sig-name descname"><span class="pre">Add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">km</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limiting_substrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.Add" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.Exists">
+<span class="sig-name descname"><span class="pre">Exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.Exists" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.Kinetics">
+<span class="sig-name descname"><span class="pre">Kinetics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.Kinetics" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.Remove">
+<span class="sig-name descname"><span class="pre">Remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.Remove" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.get_kinetics">
+<span class="sig-name descname"><span class="pre">get_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.get_kinetics" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.get_km">
+<span class="sig-name descname"><span class="pre">get_km</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.get_km" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.get_limiting_substrate">
+<span class="sig-name descname"><span class="pre">get_limiting_substrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.get_limiting_substrate" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Kinetics.Kinetics.get_vmax">
+<span class="sig-name descname"><span class="pre">get_vmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#DCFBA.Models.Kinetics.Kinetics.get_vmax" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-DCFBA.Models.Transporters">
+<span id="transporters"></span><h2>Transporters<a class="headerlink" href="#module-DCFBA.Models.Transporters" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.Models.Transporters.</span></span><span class="sig-name descname"><span class="pre">Transporters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="linemarker linemarker-1">Accessing Importers, Exporters, and Transporters</p>
+<p class="linemarker linemarker-3">The purpose of this class is to provide easy access to importers,
+exporters, and transporters within a system. Importers represent reactions
+that uptake metabolites from the external space, while exporters represent
+reactions that excrete metabolites to the external space. Both importers
+and exporters are stored as dictionaries, where the
+reaction identifiers (rid) serve as keys, and the associated species are
+stored as values.</p>
+<p class="linemarker linemarker-11">This class helps users identify, work with, and analyze importers,
+exporters, and transporters, which are frequently accessed during various
+computational tasks.</p>
+<p class="linemarker linemarker-15">Usage:
+Add new importers or exporters using the add_importer() and add_exporter()
+Retrieve the combined importers and exporters dictionary using get_transporters()
+Retrieve importers using the get_importers() method,
+and optionally iterate over the results using the iterable flag.
+Retrieve exporters using the get_exporters() method, and optionally
+iterate over the results using the iterable flag.
+Obtain the species associated with a specific reaction using the
+get_reaction_species() method.
+Check if a reaction is an importer or exporter using the is_importer() and
+is_exporter() methods.
+Access specific lists of importers or exporters using the provided methods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.add_exporter">
+<span class="sig-name descname"><span class="pre">add_exporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.add_exporter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.add_importer">
+<span class="sig-name descname"><span class="pre">add_importer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.add_importer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_exporter_species">
+<span class="sig-name descname"><span class="pre">get_exporter_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_exporter_species" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_exporters">
+<span class="sig-name descname"><span class="pre">get_exporters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_exporters" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Get the exporters of the model</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p class="linemarker linemarker-4">dict[str, list[str]]:: The dictionary containing the export
+reactions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_exports_reactions">
+<span class="sig-name descname"><span class="pre">get_exports_reactions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_exports_reactions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_importers">
+<span class="sig-name descname"><span class="pre">get_importers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_importers" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Get all the import reactions of the model</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p class="linemarker linemarker-4">dict[str, list[str]]: Return the entire dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_importers_reactions">
+<span class="sig-name descname"><span class="pre">get_importers_reactions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_importers_reactions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_importers_species">
+<span class="sig-name descname"><span class="pre">get_importers_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_importers_species" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_reaction_species">
+<span class="sig-name descname"><span class="pre">get_reaction_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_reaction_species" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Given a reaction id return the species belonging to it</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p class="linemarker linemarker-4">rid (_type_): reaction id</p>
+</dd>
+<dt>Returns:</dt><dd><p class="linemarker linemarker-7">list[str] | None: the species or None if rid was not in the model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.get_transporters">
+<span class="sig-name descname"><span class="pre">get_transporters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.get_transporters" title="Permalink to this definition"></a></dt>
+<dd><p class="linemarker linemarker-1">Get the combined importers and exporters</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p class="linemarker linemarker-4">dict[str, list[str]]: dict with reactions and all species</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.is_exporter">
+<span class="sig-name descname"><span class="pre">is_exporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.is_exporter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.is_importer">
+<span class="sig-name descname"><span class="pre">is_importer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.is_importer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.m_exporters">
+<span class="sig-name descname"><span class="pre">m_exporters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.m_exporters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="DCFBA.Models.Transporters.Transporters.m_importers">
+<span class="sig-name descname"><span class="pre">m_importers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#DCFBA.Models.Transporters.Transporters.m_importers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../7_faq/home.html" class="btn btn-neutral float-left" title="7. FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, S.C.M.A. Wijnen, F. Moro.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
