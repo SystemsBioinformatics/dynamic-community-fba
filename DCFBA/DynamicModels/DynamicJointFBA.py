@@ -101,6 +101,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
     def simulate(
         self,
         dt: float,
+        n: int = 500,
         epsilon=0.01,
         kinetics_func=None,
         deviate=None,
@@ -117,7 +118,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         fluxes = []
         run_condition = 0
 
-        while True:
+        for i in range(1, n):
             if dt_hat != -1:
                 dt = dt_hat
                 dt_hat = -1
@@ -130,9 +131,9 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                     used_time,
                     run_condition,
                 )
-
             self.update_reaction_bounds(kinetics_func)
-            solution = cbmpy.doFBA(self.m_model, quiet=True)
+
+            solution = cbmpy.doFBA(self.m_model, quiet=False)
 
             if math.isnan(solution) or solution < epsilon:
                 break
@@ -153,7 +154,6 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 used_time = used_time[:-1]
                 continue
 
-            # update biomass
             for _, rid in self.m_model.get_model_biomass_ids().items():
                 mid = self.m_model.identify_model_from_reaction(rid)
                 Xt = self.m_biomass_concentrations[mid][-1] + FBAsol[rid] * dt

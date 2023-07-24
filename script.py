@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from cbmpy.CBModel import Model
+from cbmpy.CBModel import Model, Reaction
 from DCFBA.ToyModels import model_a, model_b
 from DCFBA.Models.CommunityModel import CommunityModel
 from DCFBA.DynamicModels.DynamicJointFBA import DynamicJointFBA
@@ -10,7 +10,7 @@ m_a.getReaction("R_1").setUpperBound(10)
 m_a.getReaction("R_4").setUpperBound(3)
 m_a.getReaction("R_6").setUpperBound(1)
 
-# m_a.getReaction("R_import_B").setUpperBound(1)
+m_a.getReaction("R_import_B").setUpperBound(1)
 
 m_a.getReaction("R_1").setLowerBound(0)
 m_a.getReaction("R_4").setLowerBound(0)
@@ -21,11 +21,11 @@ m_b.getReaction("R_1").setUpperBound(10)
 m_b.getReaction("R_3").setUpperBound(1)
 m_b.getReaction("R_5").setUpperBound(1)
 
+m_b.getReaction("R_import_A").setUpperBound(6)
+
 m_b.getReaction("R_1").setLowerBound(0)
 m_b.getReaction("R_3").setLowerBound(0)
 m_b.getReaction("R_5").setLowerBound(0)
-
-# m_b.getReaction("R_import_A").setUpperBound(3)
 
 
 # TODO discuss kinetics.
@@ -47,21 +47,43 @@ kin = Kinetics(
     }
 )
 
+kin = Kinetics(
+    {
+        "R_1_modelA": ["", 10, 10],
+        "R_4_modelA": ["B_e", 5, 3],
+        "R_6_modelA": ["B_e", 3, 1],
+        # B
+        "R_1_modelB": ["", 10, 10],
+        "R_3_modelB": ["A_e", 2, 1],
+    }
+)
+
+
 community_model = CommunityModel(
     [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
 )
 
-community_model.getReaction("B_exchange").setLowerBound(-0.001)
-community_model.getReaction("A_exchange").setLowerBound(-0.001)
-community_model.getReaction("S_exchange").setLowerBound(-100)
+
+community_model.getReaction("B_exchange").setLowerBound(-10000)
+community_model.getReaction("A_exchange").setLowerBound(-10000)
+
+
+community_model.getReaction("S_exchange").setLowerBound(-10000)
 
 
 # # print(community_model.getReaction("R_1_modelA").getUpperBound())
 # print(community_model.getReaction("R_1_modelB").getUpperBound())
 # print(community_model.getReaction("R_5_modelB").getUpperBound())
 
-dj = DynamicJointFBA(community_model, [1, 1], {"S_e": 100})
+dj = DynamicJointFBA(
+    community_model, [1, 1], {"S_e": 100, "A_e": 0.0001, "B_e": 0.0001}
+)
 T, metabolites, biomasses, fluxes = dj.simulate(0.1)
+index = 0
+
+# for a in fluxes:
+#     print(metabolites["A_e"][index], a["A_exchange"])
+#     index += 1
 
 rv1 = list(map(lambda d: d["R_1_modelA"], fluxes))
 rv2 = list(map(lambda d: d["R_2_modelA"], fluxes))
@@ -87,17 +109,39 @@ rv6 = list(map(lambda d: d["R_6_modelA"], fluxes))
 # for r in [rv1, rv2, rv3, rv4, rv5, rv6]:
 #     plt.plot(T, r, color=label_colors[index], label=f"r{index}")
 #     index += 1
+# print(len(T))
 
-plt.plot(T, metabolites["A_e"], color="blue", label="Species A")
+# print(T)
+# print("S")
+# print(metabolites["S_e"][170])
+# print("A")
+# print(metabolites["A_e"][65])
+# print("B")
+# print(metabolites["B_e"][65])
+
+# print()
+# print("-----")
+# print(biomasses["modelA"][65])
+# print(biomasses["modelB"][65])
+
+# print()
+# print(fluxes[65])
+# raise Exception(metabolites["A_e"][80])
+
+
+plt.plot(T, metabolites["A_e"], color="blue", label="Metabolite a")
 plt.xlabel("Time")
 plt.ylabel("Concentration")
 plt.legend()
-
 plt.show()
 
-plt.plot(T, metabolites["S_e"], color="blue", label="Se")
+
+# Adding labels and title
+
+plt.plot(T, metabolites["B_e"], color="blue", label="Metabolite B")
 plt.xlabel("Time")
 plt.ylabel("Concentration")
+# Adding legend
 plt.legend()
 plt.show()
 
@@ -106,5 +150,4 @@ plt.plot(T, biomasses["modelB"], color="orange", label="modelB")
 plt.xlabel("Time")
 plt.ylabel("Concentration")
 plt.legend()
-# Displaying the plot
 plt.show()
