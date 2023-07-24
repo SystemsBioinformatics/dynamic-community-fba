@@ -101,7 +101,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
     def simulate(
         self,
         dt: float,
-        n: int = 500,
+        n: int = 10000,
         epsilon=0.01,
         kinetics_func=None,
         deviate=None,
@@ -118,7 +118,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         fluxes = []
         run_condition = 0
 
-        for i in range(1, n):
+        for _ in range(1, n):
             if dt_hat != -1:
                 dt = dt_hat
                 dt_hat = -1

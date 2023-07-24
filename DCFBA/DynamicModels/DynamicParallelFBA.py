@@ -76,6 +76,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
     def simulate(
         self,
         dt: float,
+        n: int = 10000,
         epsilon: float = 0.001,
         kinetics_func=None,
         deviate=None,
@@ -101,13 +102,12 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
 
         """
 
-        step = 1
         used_time = [0]
         dt_hat = math.nan
         dt_save = dt
         run_condition = 0
 
-        while True:
+        for step in range(1, n):
             if not math.isnan(dt_hat):
                 dt = dt_hat
                 dt_hat = math.nan

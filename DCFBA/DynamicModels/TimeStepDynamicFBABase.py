@@ -47,6 +47,7 @@ class TimeStepDynamicFBABase:
     def simulate(
         self,
         dt: float,
+        n: int = 10000,
         epsilon=0.001,
         kinetics_func=None,
         deviate=None,
@@ -57,6 +58,8 @@ class TimeStepDynamicFBABase:
 
         Args:
             dt (float): The time step for simulation.
+            n (int, optional): number of simulation
+                Defaults to 10000
             epsilon (float, optional): The tolerance value. When the solution
                 or time step is less than epsilon, the simulation stops.
                 Defaults to 0.001.
