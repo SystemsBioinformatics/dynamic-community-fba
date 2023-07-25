@@ -1,7 +1,7 @@
 """Helper function for the creation of the EndPointFBA model
 For further information see DynamicModels.EndPointFBA
 """
-
+import numpy
 import re
 from cbmpy.CBModel import Model, Compartment, Reaction, Reagent, Species
 from ..Models.CommunityModel import CommunityModel
@@ -23,6 +23,7 @@ def build_time_model(
 
     """
 
+    # TODO clone initial+_model
     final_model = CommunityModel(
         [],
         [],
@@ -35,29 +36,10 @@ def build_time_model(
         initial_model.m_single_model_biomass_reaction_ids
     )
     final_model.m_single_model_ids = initial_model.m_single_model_ids
+    add_biomass_species(initial_model)
 
-    # Exchanges only exchange through the first time point
-    for exchange in initial_model.getExchangeReactionIds():
-        reaction: Reaction = initial_model.getReaction(exchange)
-
-        # Exchange only has one species
-        sid = reaction.getSpeciesIds()[0]
-        species: Species = initial_model.getSpecies(sid)
-        final_model.createReaction(exchange, reaction.name, reversible=True)
-        new_reaction = final_model.getReaction(exchange)
-        new_reaction.setLowerBound(reaction.getLowerBound())
-        new_reaction.setUpperBound(reaction.getUpperBound())
-        new_reaction.is_exchange = True
-
-        new_species = species.clone()
-        new_species.setId(f"{sid}_time0")
-
-        new_species.setCompartmentId(f"{species.getCompartmentId()}_time0")
-        new_reaction.createReagent(new_species.getId(), -1)
-
-        # Also create an exchange in the final time point. Such that
-        # metabolites can flow out of the system
-        add_final_exchange(final_model, new_reaction, times[-1])
+    set_exchanges(initial_model, final_model, times)
+    # create_biomass_exchanges(initial_model, final_model, times)
 
     for time_id in times:
         copy_compartments(initial_model, final_model, time_id)
@@ -65,7 +47,51 @@ def build_time_model(
         copy_species_and_reagents(initial_model, final_model, time_id)
 
     create_time_links(final_model, times)
+    set_objective(final_model, times[-1])
+
     return final_model
+
+
+def set_exchanges(
+    initial_model: CommunityModel, final_model: CommunityModel, times
+):
+    # Exchanges only exchange through the first time point
+    for exchange in initial_model.getExchangeReactionIds():
+        reaction: Reaction = initial_model.getReaction(exchange)
+
+        # Exchange only has one species
+        sid = reaction.getSpeciesIds()[0]
+        species: Species = initial_model.getSpecies(sid)
+        final_model.createReaction(
+            exchange, reaction.name, reversible=True, silent=True
+        )
+        new_reaction = final_model.getReaction(exchange)
+        new_reaction.setLowerBound(reaction.getLowerBound())
+        new_reaction.setUpperBound(reaction.getUpperBound())
+        new_reaction.is_exchange = True
+
+        new_species = species.clone()
+        new_species.setId(f"{sid}{times[0]}")
+
+        new_species.setCompartmentId(f"{species.getCompartmentId()}{times[0]}")
+        new_reaction.createReagent(new_species.getId(), -1)
+
+        # Also create an exchange in the final time point. Such that
+        # metabolites can flow out of the system
+        add_final_exchange(final_model, new_reaction, times[-1])
+
+
+# def create_biomass_exchanges(
+#     initial_model: CommunityModel,
+#     final_model: CommunityModel,
+#     times: list[str],
+# ):
+#     biomasses: list[str] = initial_model.get_model_biomass_ids()
+#     for _, bm_rid in biomasses.items():
+#         final_model.createReaction(f"{bm_rid}_exchange{times[0]}")
+#         final_model.createReactionReagent("R_11", "B_c", -1)
+#         final_model.createReactionReagent("R_11", "B_e", 1)
+#         final_model.setReactionBounds("R_11", -1000.0, 1000.0)
 
 
 def copy_compartments(
@@ -113,12 +139,52 @@ def copy_reactions(
         if not reaction.is_exchange:
             new_id = rid + time_id
             final_model.createReaction(
-                new_id, reaction.name, reaction.reversible
+                new_id, reaction.name, reaction.reversible, silent=True
             )
             new_reaction: Reaction = final_model.getReaction(new_id)
 
             new_reaction.setLowerBound(reaction.getLowerBound())
             new_reaction.setUpperBound(reaction.getUpperBound())
+
+
+def add_biomass_species(initial_model: CommunityModel) -> None:
+    initial_model.createSpecies(
+        "BM_c", False, "The community biomass", compartment="e"
+    )
+
+    for mid, biomass_id in initial_model.get_model_biomass_ids().items():
+        reaction: Reaction = initial_model.getReaction(biomass_id)
+        # Create one model biomass and one community biomass
+        initial_model.createSpecies(
+            f"BM_{mid}", False, f"Biomass of {mid}", compartment="e"
+        )
+        reaction.createReagent(f"BM_{mid}", 1)
+
+        exchange_reaction = Reaction(
+            f"BM_{mid}_exchange", f"Exchange of biomass {mid}", reversible=True
+        )
+        exchange_reaction.is_exchange = True
+        exchange_reaction.createReagent(f"BM_{mid}", -1)
+
+        initial_model.addReaction(exchange_reaction, False, silent=True)
+        exchange_reaction.setLowerBound(0)
+        exchange_reaction.setUpperBound(0)
+
+        # Add community biomass
+        reaction.createReagent("BM_c", 1)
+
+
+def set_objective(final_model: CommunityModel, time_id):
+    final_model.createReaction("X_comm", silent=True)
+    out: Reaction = final_model.getReaction("X_comm")
+    out.is_exchange = True
+    out.setUpperBound(numpy.inf)
+    out.setLowerBound(0)
+    out.createReagent("BM_c" + time_id, -1)
+
+    final_model.createObjectiveFunction("X_comm")
+
+    final_model.setActiveObjective("X_comm_objective")
 
 
 def copy_species_and_reagents(
@@ -189,24 +255,20 @@ def create_time_links(
                 or old_id in final_model.m_single_model_biomass_reaction_ids
             ):
                 rid = f"{sid}{time_ids[index+1]}"
-                print(rid)
                 linking_reaction = final_model.createReaction(
-                    rid,
-                    reversible=False,
+                    rid, reversible=False, silent=True
                 )
 
-                linking_reaction = final_model.getReaction(rid)
+                linking_reaction: Reaction = final_model.getReaction(rid)
                 linking_reaction.createReagent(sid, -1)
                 linking_reaction.createReagent(
                     f"{old_id}{time_ids[index+1]}", 1
                 )
+                linking_reaction.setLowerBound(0)
                 linking_reaction.setUpperBound(1e10)
 
         index += 1
         t = time_ids[index]
-
-    print(final_model.getReactionIds("ecoli_1"))
-    raise Exception()
 
 
 def add_final_exchange(
@@ -226,17 +288,20 @@ def add_final_exchange(
     """
     # Exchanges only have one species
     sid = exchange_reaction.getSpeciesIds()[0]
-    print(sid)
-    print(time_id)
+
     id = exchange_reaction.getId() + "_final"
 
     # Irreversible, no new species will be imported in the final time step
     final_model.createReaction(
-        id, "final exchange " + exchange_reaction.id, False
+        id,
+        "final exchange " + exchange_reaction.id,
+        reversible=False,
+        silent=True,
     )
 
     final_exchange = final_model.getReaction(id)
 
-    final_exchange.setUpperBound(exchange_reaction.getUpperBound())
+    final_exchange.setUpperBound(1e10)
 
     final_exchange.createReagent(re.sub(r"_time\d*", time_id, sid), -1)
+    final_exchange.is_exchange = True

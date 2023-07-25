@@ -39,6 +39,7 @@ class TimeStepDynamicFBABase:
                     self.m_metabolite_concentrations[species_id] = [
                         initial_concentrations[species_id]
                     ]
+                    # TODO set species exchange to this value
                 else:
                     self.m_metabolite_concentrations[species_id] = [
                         -reaction.getLowerBound()

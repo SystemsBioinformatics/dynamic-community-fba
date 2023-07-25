@@ -271,7 +271,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                 self.m_metabolite_concentrations[key].append(
                     self.m_metabolite_concentrations[key][-1]
                 )
-
+        # TODO Use exchanges?
         for rid, species_ids in self.m_model_transporters[mid].get_exporters(
             True
         ):

@@ -1,6 +1,6 @@
 import cbmpy
 import numpy
-from cbmpy.CBModel import Reaction
+from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
 from .DynamicFBABase import DynamicFBABase
@@ -14,16 +14,19 @@ class EndPointFBA(DynamicFBABase):
         community_model: CommunityModel,
         n: int,
         initial_biomasses: dict[str, float],
+        initial_concentrations: dict[str, float] = {},
         dt: float = 0.1,
     ) -> None:
         width = len(str(n))
+        # TODO times should not hold the under score
         times = [f"_time{i:0{width}d}" for i in range(n)]
 
-        self.add_biomass_species(community_model)
         self.m_model = build_time_model(community_model, times)
 
         self.set_constraints(n, initial_biomasses, dt, times)
-        self.set_objective(times[-1])
+        self.set_initial_concentrations(
+            initial_biomasses, initial_concentrations, times
+        )
 
     def simulate(
         self,
@@ -41,6 +44,7 @@ class EndPointFBA(DynamicFBABase):
             if reaction.is_exchange or mid == "":
                 continue
             biomass = initial_biomasses[mid]
+
             reaction.setLowerBound(reaction.getLowerBound() * biomass * dt)
             reaction.setUpperBound(reaction.getUpperBound() * biomass * dt)
 
@@ -49,16 +53,17 @@ class EndPointFBA(DynamicFBABase):
             rids = self.m_model.getReactionIds(times[i])
             for rid in rids:
                 reaction: Reaction = self.m_model.getReaction(rid)
-                biomass_rid = (
-                    self.m_model.identify_biomass_of_model_from_reaction_id(
-                        rid
-                    )
-                )
+                mid = self.m_model.identify_model_from_reaction(rid)
 
-                if reaction.is_exchange or biomass_rid == "":
+                # If the reaction is exchange, a linking layer reaction skip
+                # (BM_) is for the biomass linking reactions
+                if reaction.is_exchange or mid == "" or rid.startswith("BM_"):
                     continue
 
-                r_x_t = biomass_rid + times[i - 1]
+                # Bm of model id
+                r_x_t = f"BM_{mid}{times[i-1]}{times[i]}"
+
+                # r_x_t = biomass_rid + times[i - 1]
                 ub = reaction.getUpperBound()
                 self.m_model.addUserConstraint(
                     f"{rid}_ub",
@@ -69,25 +74,24 @@ class EndPointFBA(DynamicFBABase):
                     "<=",
                     0.0,
                 )
-                reaction.setUpperBound(numpy.inf)
+                reaction.setUpperBound(1e10)
 
-    def add_biomass_species(self, model: CommunityModel):
-        model.createSpecies(
-            "X_c", False, "The community biomass", compartment="e"
-        )
+    def set_initial_concentrations(
+        self,
+        initial_biomasses: dict[str, float],
+        initial_concentrations: dict[str, float],
+        times,
+    ):
+        for key, value in initial_concentrations.items():
+            # get species and it's corresponding exchange reaction
+            species: Species = self.m_model.getSpecies(key + times[0])
+            rids = species.getReagentOf()
+            for rid in rids:
+                reaction: Reaction = self.m_model.getReaction(rid)
+                if reaction.is_exchange:
+                    reaction.setLowerBound(-value)
 
-        for _, biomass_id in model.get_model_biomass_ids().items():
-            reaction: Reaction = model.getReaction(biomass_id)
-            reaction.createReagent("X_c", 1)
-
-    def set_objective(self, time_id):
-        self.m_model.createReaction("X_comm")
-        out: Reaction = self.m_model.getReaction("X_comm")
-        out.is_exchange = True
-        out.setUpperBound(1e10)
-        out.setLowerBound(0)
-        out.createReagent("X_c" + time_id, -1)
-
-        self.m_model.createObjectiveFunction("X_comm")
-
-        self.m_model.setActiveObjective("X_comm_objective")
+        for key, value in initial_biomasses.items():
+            self.m_model.setReactionBounds(
+                f"BM_{key}_exchange", -value, -value
+            )

@@ -279,7 +279,7 @@ class CommunityModel(Model):
             str: id of the old model
         """
         for old_id in self.m_identifiers:
-            if old_id in rid:
+            if f"_{old_id}" in rid:
                 return old_id
         return ""
 

@@ -176,6 +176,9 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         """
 
         # Update external metabolites
+
+        # TODO just use exchange reactions?
+
         for key in self.m_metabolite_concentrations.keys():
             self.m_metabolite_concentrations[key].append(
                 self.m_metabolite_concentrations[key][-1]
