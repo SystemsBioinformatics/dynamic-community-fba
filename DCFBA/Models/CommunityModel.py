@@ -312,3 +312,6 @@ class CommunityModel(Model):
         return dict(
             zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids)
         )
+
+    def get_model_ids(self):
+        return self.m_identifiers
