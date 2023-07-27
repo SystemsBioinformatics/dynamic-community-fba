@@ -1,7 +1,7 @@
 import cbmpy
 import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model, Reaction
-from DCFBA.ToyModels import model_a, model_b
+from DCFBA.ToyModels import model_a, model_b, model_d
 from DCFBA.Models.CommunityModel import CommunityModel
 from DCFBA.Models.Kinetics import Kinetics
 from DCFBA.DynamicModels import EndPointFBA
@@ -28,16 +28,30 @@ m_b: Model = model_b.build_toy_model_fba_B()
 m_b.getReaction("R_1").setUpperBound(10)
 m_b.getReaction("R_3").setUpperBound(1)
 m_b.getReaction("R_5").setUpperBound(1)
-# Need to delete biomass model, since it is created in the endPoint model
-reaction: Reaction = m_b.getReaction("R_BM_B").deleteReagentWithSpeciesRef(
-    "BM_e_B"
-)
 
 
 m_b.getReaction("R_1").setLowerBound(0)
 m_b.getReaction("R_3").setLowerBound(0)
 m_b.getReaction("R_5").setLowerBound(0)
 
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_b.getReaction("R_BM_B").deleteReagentWithSpeciesRef(
+    "BM_e_B"
+)
+
+m_d: Model = model_d.build_toy_model_fba_D()
+m_d.getReaction("R_1").setUpperBound(10)
+m_d.getReaction("R_3").setUpperBound(1)
+m_d.getReaction("R_5").setUpperBound(1)
+
+m_d.getReaction("R_1").setLowerBound(0)
+m_d.getReaction("R_3").setLowerBound(0)
+m_d.getReaction("R_5").setLowerBound(0)
+
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_d.getReaction("R_BM_D").deleteReagentWithSpeciesRef(
+    "BM_e_D"
+)
 
 kin = Kinetics(
     {
@@ -52,12 +66,15 @@ kin = Kinetics(
 
 
 community_model = CommunityModel(
-    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+    [m_a, m_b, m_d],
+    ["R_BM_A", "R_BM_B", "R_BM_D"],
+    ["modelA", "modelB", "modelD"],
 )
 
 # Are set by the model as often required by other GSMM
 community_model.deleteReactionAndBounds("BM_e_A_exchange")
 community_model.deleteReactionAndBounds("BM_e_B_exchange")
+community_model.deleteReactionAndBounds("BM_e_D_exchange")
 
 # community_model.getReaction("B_exchange").setLowerBound(-100)
 # community_model.getReaction("A_exchange").setLowerBound(-100)
@@ -65,17 +82,21 @@ community_model.deleteReactionAndBounds("BM_e_B_exchange")
 
 # community_model.getReaction("S_exchange").setLowerBound(-100)
 
-n = 21
+n = 27
 dj = EndPointFBA(
     community_model,
     n,
-    {"modelA": 0.9, "modelB": 2.1},
+    {"modelA": 1.0, "modelB": 1.0, "modelD": 1.0},
     {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
     0.1,
 )
 
 
 solution = dj.simulate()
+
+FBAsol = dj.m_model.getSolutionVector(names=True)
+FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+print(FBAsol)
 
 plot_biomasses(dj, n)
 plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0}, n)

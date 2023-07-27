@@ -61,6 +61,81 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
                 reaction.getUpperBound(),
             ]
 
+    def simulate(
+        self,
+        dt: float,
+        n: int = 10000,
+        epsilon=0.001,
+        kinetics_func=None,
+        deviate=None,
+    ):
+        """Perform a dynamic joint FBA simulation.
+
+        Returns:
+            list: A list containing the simulation results -
+                [used_time, metabolite_concentrations, biomass_concentrations, fluxes].
+        """
+        used_time = [0]
+        dt_hat = -1
+        dt_save = dt
+        fluxes = []
+        run_condition = 0
+
+        for _ in range(1, n):
+            if dt_hat != -1:
+                dt = dt_hat
+                dt_hat = -1
+            else:
+                dt = dt_save
+
+            if deviate is not None:
+                run_condition += deviate(
+                    self,
+                    used_time,
+                    run_condition,
+                )
+            self.update_reaction_bounds(kinetics_func)
+
+            solution = cbmpy.doFBA(self.m_model, quiet=True)
+
+            if math.isnan(solution) or solution <= epsilon or dt < epsilon:
+                break
+
+            used_time.append(used_time[-1] + dt)
+
+            FBAsol = self.m_model.getSolutionVector(names=True)
+            FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+            print(self.m_biomass_concentrations)
+            print(self.m_metabolite_concentrations)
+
+            print(FBAsol)
+            input()
+            fluxes.append(FBAsol)
+
+            self.update_concentrations(FBAsol, dt)
+
+            species_id = self.check_solution_feasibility()
+
+            if species_id != "":
+                dt_hat = self.reset_dt(species_id, FBAsol)
+                used_time = used_time[:-1]
+                print(dt_hat)
+                input(species_id)
+
+                continue
+
+            for _, rid in self.m_model.get_model_biomass_ids().items():
+                mid = self.m_model.identify_model_from_reaction(rid)
+                Xt = self.m_biomass_concentrations[mid][-1] + FBAsol[rid] * dt
+                self.m_biomass_concentrations[mid].append(Xt)
+
+        return [
+            used_time,
+            self.m_metabolite_concentrations,
+            self.m_biomass_concentrations,
+            fluxes,
+        ]
+
     def get_joint_model(self) -> CommunityModel:
         """Get the community model appended with the Community
         Biomass function.
@@ -97,74 +172,6 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
         self.m_model.createObjectiveFunction("X_comm")
 
         self.m_model.setActiveObjective("X_comm_objective")
-
-    def simulate(
-        self,
-        dt: float,
-        n: int = 10000,
-        epsilon=0.01,
-        kinetics_func=None,
-        deviate=None,
-    ):
-        """Perform a dynamic joint FBA simulation.
-
-        Returns:
-            list: A list containing the simulation results -
-                [used_time, metabolite_concentrations, biomass_concentrations, fluxes].
-        """
-        used_time = [0]
-        dt_hat = -1
-        dt_save = dt
-        fluxes = []
-        run_condition = 0
-
-        for _ in range(1, n):
-            if dt_hat != -1:
-                dt = dt_hat
-                dt_hat = -1
-            else:
-                dt = dt_save
-
-            if deviate is not None:
-                run_condition += deviate(
-                    self,
-                    used_time,
-                    run_condition,
-                )
-            self.update_reaction_bounds(kinetics_func)
-
-            solution = cbmpy.doFBA(self.m_model, quiet=False)
-
-            if math.isnan(solution) or solution < epsilon:
-                break
-
-            used_time.append(used_time[-1] + dt)
-
-            FBAsol = self.m_model.getSolutionVector(names=True)
-            FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-
-            fluxes.append(FBAsol)
-
-            self.update_concentrations(FBAsol, dt)
-
-            species_id = self.check_solution_feasibility()
-
-            if species_id != "":
-                dt_hat = self.reset_dt(species_id, FBAsol)
-                used_time = used_time[:-1]
-                continue
-
-            for _, rid in self.m_model.get_model_biomass_ids().items():
-                mid = self.m_model.identify_model_from_reaction(rid)
-                Xt = self.m_biomass_concentrations[mid][-1] + FBAsol[rid] * dt
-                self.m_biomass_concentrations[mid].append(Xt)
-
-        return [
-            used_time,
-            self.m_metabolite_concentrations,
-            self.m_biomass_concentrations,
-            fluxes,
-        ]
 
     def update_concentrations(self, FBAsol, dt):
         """Update metabolite concentrations after an FBA step.

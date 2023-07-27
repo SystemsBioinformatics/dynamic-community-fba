@@ -232,22 +232,22 @@ def build_toy_model_fba_A():
     model.setReactionBounds("R_BM_A", -1000.0, 1000.0)
 
     # EXchange reactions:
-    model.createReaction("S_exchange", reversible=True)
-    model.createReactionReagent("S_exchange", "S_e", -1)
-    model.setReactionBounds("S_exchange", lower=-1000.0, upper=1000.0)
-    model.getReaction("S_exchange").is_exchange = True
+    model.createReaction("S_e_exchange", reversible=True)
+    model.createReactionReagent("S_e_exchange", "S_e", -1)
+    model.setReactionBounds("S_e_exchange", lower=-1000.0, upper=1000.0)
+    model.getReaction("S_e_exchange").is_exchange = True
 
     model.createReaction(
-        "B_exchange", reversible=True
+        "B_e_exchange", reversible=True
     )  # Q2.0 - should 'reversible' be True or False?
-    model.createReactionReagent("B_exchange", "B_e", -1)
-    model.setReactionBounds("B_exchange", lower=-1000.0, upper=1000.0)
-    model.getReaction("B_exchange").is_exchange = True
+    model.createReactionReagent("B_e_exchange", "B_e", -1)
+    model.setReactionBounds("B_e_exchange", lower=-1000.0, upper=1000.0)
+    model.getReaction("B_e_exchange").is_exchange = True
 
-    model.createReaction("A_exchange", reversible=True)
-    model.createReactionReagent("A_exchange", "A_e", -1)
-    model.setReactionBounds("A_exchange", -1000.0, 1000)
-    model.getReaction("A_exchange").is_exchange = True
+    model.createReaction("A_e_exchange", reversible=True)
+    model.createReactionReagent("A_e_exchange", "A_e", -1)
+    model.setReactionBounds("A_e_exchange", -1000.0, 1000)
+    model.getReaction("A_e_exchange").is_exchange = True
 
     # BM sink
     model.createReaction("BM_e_A_exchange", reversible=False)

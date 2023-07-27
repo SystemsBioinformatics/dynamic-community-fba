@@ -7,9 +7,7 @@ from cbmpy.CBModel import Model, Compartment, Reaction, Reagent, Species
 from ..Models.CommunityModel import CommunityModel
 
 
-def build_time_model(
-    initial_model: CommunityModel, times: list[str]
-) -> CommunityModel:
+def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
     """
     Build a time-dependent CommunityModel based on the initial CommunityModel.
 
@@ -23,7 +21,7 @@ def build_time_model(
 
     """
 
-    # TODO clone initial+_model
+    initial_model: CommunityModel = cm.clone()
     final_model = CommunityModel(
         [],
         [],
@@ -35,6 +33,7 @@ def build_time_model(
     final_model.m_single_model_biomass_reaction_ids = (
         initial_model.m_single_model_biomass_reaction_ids
     )
+
     final_model.m_single_model_ids = initial_model.m_single_model_ids
     add_biomass_species(initial_model)
 
@@ -250,10 +249,7 @@ def create_time_links(
             old_id = re.match(r"(.*?)_time\d+", sid).group(1)
 
             species: Species = final_model.getSpecies(sid)
-            if (
-                species.getCompartmentId() == f"e{t}"
-                or old_id in final_model.m_single_model_biomass_reaction_ids
-            ):
+            if species.getCompartmentId() == f"e{t}":
                 rid = f"{sid}{time_ids[index+1]}"
                 linking_reaction = final_model.createReaction(
                     rid, reversible=False, silent=True
@@ -265,7 +261,7 @@ def create_time_links(
                     f"{old_id}{time_ids[index+1]}", 1
                 )
                 linking_reaction.setLowerBound(0)
-                linking_reaction.setUpperBound(1e10)
+                linking_reaction.setUpperBound(numpy.inf)
 
         index += 1
         t = time_ids[index]
@@ -288,8 +284,8 @@ def add_final_exchange(
     """
     # Exchanges only have one species
     sid = exchange_reaction.getSpeciesIds()[0]
-
-    id = exchange_reaction.getId() + "_final"
+    old_id = re.match(r"(.*?)_time\d+", sid).group(1)
+    id = old_id + "_exchange_final"
 
     # Irreversible, no new species will be imported in the final time step
     final_model.createReaction(

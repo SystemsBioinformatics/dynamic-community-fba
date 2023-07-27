@@ -1,5 +1,4 @@
 import cbmpy
-import numpy
 from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
@@ -31,7 +30,7 @@ class EndPointFBA(DynamicFBABase):
     def simulate(
         self,
     ):
-        return cbmpy.doFBA(self.m_model)
+        return cbmpy.doFBA(self.m_model, quiet=True)
 
     def set_constraints(
         self, n: int, initial_biomasses, dt: float, times: list[str]
@@ -95,3 +94,7 @@ class EndPointFBA(DynamicFBABase):
             self.m_model.setReactionBounds(
                 f"BM_{key}_exchange", -value, -value
             )
+
+    # TODO think about how to make a faster implementation to add N or remove
+    # time points
+    # I think only time layers need to be removed?

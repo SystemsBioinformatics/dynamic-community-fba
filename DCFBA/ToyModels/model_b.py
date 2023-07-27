@@ -186,17 +186,17 @@ def build_toy_model_fba_B():
     model.createReactionReagent("R_3", "BM_c_B", 1)
     model.setReactionBounds("R_3", 0, 1000.0)
 
-    model.createReaction("R_4", "Create Z from A and S", reversible=True)
-    model.createReactionReagent("R_4", "A_c", -1)
-    model.createReactionReagent("R_4", "S_c", -2)
-    model.createReactionReagent("R_4", "Z_c", 1)
-    model.setReactionBounds("R_4", -1000.0, 1000.0)
-
     model.createReaction("R_5", "Create BM_c_B and B from Z", reversible=False)
     model.createReactionReagent("R_5", "Z_c", -3)
     model.createReactionReagent("R_5", "B_c", 1)
     model.createReactionReagent("R_5", "BM_c_B", 1)
     model.setReactionBounds("R_5", -0.0, 1000.0)
+
+    model.createReaction("R_4", "Create Z from A and S", reversible=True)
+    model.createReactionReagent("R_4", "A_c", -1)
+    model.createReactionReagent("R_4", "S_c", -2)
+    model.createReactionReagent("R_4", "Z_c", 1)
+    model.setReactionBounds("R_4", -1000.0, 1000.0)
 
     # Import B
     model.createReaction("R_export_B", "Export B_c to B_e", reversible=True)
@@ -215,22 +215,22 @@ def build_toy_model_fba_B():
     model.setReactionBounds("R_BM_B", -1000.0, 1000.0)
 
     # EXchange reactions:
-    model.createReaction("S_exchange", reversible=True)
-    model.createReactionReagent("S_exchange", "S_e", -1)
-    model.setReactionBounds("S_exchange", lower=-1000.0, upper=1000.0)
-    model.getReaction("S_exchange").is_exchange = True
+    model.createReaction("S_e_exchange", reversible=True)
+    model.createReactionReagent("S_e_exchange", "S_e", -1)
+    model.setReactionBounds("S_e_exchange", lower=-1000.0, upper=1000.0)
+    model.getReaction("S_e_exchange").is_exchange = True
 
     model.createReaction(
-        "B_exchange", reversible=True
+        "B_e_exchange", reversible=True
     )  # Q2.0 - should 'reversible' be True or False?
-    model.createReactionReagent("B_exchange", "B_e", -1)
-    model.setReactionBounds("B_exchange", lower=-1000.0, upper=1000.0)
-    model.getReaction("B_exchange").is_exchange = True
+    model.createReactionReagent("B_e_exchange", "B_e", -1)
+    model.setReactionBounds("B_e_exchange", lower=-1000.0, upper=1000.0)
+    model.getReaction("B_e_exchange").is_exchange = True
 
-    model.createReaction("A_exchange", reversible=True)
-    model.createReactionReagent("A_exchange", "A_e", -1)
-    model.setReactionBounds("A_exchange", -1000.0, 1000)
-    model.getReaction("A_exchange").is_exchange = True
+    model.createReaction("A_e_exchange", reversible=True)
+    model.createReactionReagent("A_e_exchange", "A_e", -1)
+    model.setReactionBounds("A_e_exchange", -1000.0, 1000)
+    model.getReaction("A_e_exchange").is_exchange = True
 
     # BM exchange
     model.createReaction("BM_e_B_exchange", reversible=False)

@@ -1,3 +1,4 @@
+import copy
 from cbmpy.CBModel import Model, Species, Reaction
 from ..Helpers import BuildCommunityMatrix as cm
 from ..Exceptions import NotInCombinedModel
@@ -91,6 +92,28 @@ class CommunityModel(Model):
             f"Model: {self.getId()} was build from "
             f"{[id for id in self.m_single_model_ids]}"
         )
+
+    def clone(self):
+        """
+        Create a deep copy of the CommunityModel instance.
+
+        Returns:
+            CommunityModel: A new deep copy of the CommunityModel instance.
+        """
+
+        new_instance = super().clone()
+        new_instance.m_identifiers = copy.deepcopy(self.m_identifiers)
+        new_instance.m_single_model_biomass_reaction_ids = copy.deepcopy(
+            self.m_single_model_biomass_reaction_ids
+        )
+        new_instance.m_single_model_ids = copy.deepcopy(
+            self.m_single_model_ids
+        )
+
+        return new_instance
+
+    # def clone1(self):
+    #     return copy.deepcopy(self)
 
     # TODO maybe implement __eq__() method
 

@@ -14,8 +14,8 @@ def plot_biomasses(ep: EndPointFBA, n: int):
         for key, value in FBAsol.items():
             if key.startswith(f"BM_{mid}_time"):
                 ls.append(value)
-
-        plt.plot(list(range(0, n)), ls, color=f"C{i}", label=f"{mid}")
+        ls.append(FBAsol[f"BM_{mid}_exchange_final"])
+        plt.plot(list(range(0, n + 1)), ls, color=f"C{i}", label=f"{mid}")
 
     plt.xlabel("Time")
     plt.ylabel("Concentration")
@@ -36,7 +36,8 @@ def plot_metabolites(
             if key.startswith(f"{sid}_time"):
                 ls.append(value)
 
-        plt.plot(list(range(0, n)), ls, color=f"C{i}", label=f"{sid}")
+        ls.append(FBAsol[f"{sid}_exchange_final"])
+        plt.plot(list(range(0, n + 1)), ls, color=f"C{i}", label=f"{sid}")
 
     plt.xlabel("Time")
     plt.ylabel("Concentration")
