@@ -7,6 +7,7 @@ from .DynamicFBABase import DynamicFBABase
 
 class EndPointFBA(DynamicFBABase):
     m_model = CommunityModel
+    m_times: list[str]
 
     def __init__(
         self,
@@ -18,13 +19,12 @@ class EndPointFBA(DynamicFBABase):
     ) -> None:
         width = len(str(n))
         # TODO times should not hold the under score
-        times = [f"_time{i:0{width}d}" for i in range(n)]
+        m_times = [f"time{i:0{width}d}" for i in range(n)]
+        self.m_model = build_time_model(community_model, m_times)
 
-        self.m_model = build_time_model(community_model, times)
-
-        self.set_constraints(n, initial_biomasses, dt, times)
+        self.set_constraints(n, initial_biomasses, dt, m_times)
         self.set_initial_concentrations(
-            initial_biomasses, initial_concentrations, times
+            initial_biomasses, initial_concentrations, m_times
         )
 
     def simulate(
@@ -60,7 +60,7 @@ class EndPointFBA(DynamicFBABase):
                     continue
 
                 # Bm of model id
-                r_x_t = f"BM_{mid}{times[i-1]}{times[i]}"
+                r_x_t = f"BM_{mid}_{times[i-1]}_{times[i]}"
 
                 # r_x_t = biomass_rid + times[i - 1]
                 ub = reaction.getUpperBound()
@@ -83,7 +83,7 @@ class EndPointFBA(DynamicFBABase):
     ):
         for key, value in initial_concentrations.items():
             # get species and it's corresponding exchange reaction
-            species: Species = self.m_model.getSpecies(key + times[0])
+            species: Species = self.m_model.getSpecies(key + "_" + times[0])
             rids = species.getReagentOf()
             for rid in rids:
                 reaction: Reaction = self.m_model.getReaction(rid)
@@ -95,6 +95,5 @@ class EndPointFBA(DynamicFBABase):
                 f"BM_{key}_exchange", -value, -value
             )
 
-    # TODO think about how to make a faster implementation to add N or remove
-    # time points
-    # I think only time layers need to be removed?
+    def remove_n_time_points(self, n):
+        pass

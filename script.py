@@ -66,15 +66,15 @@ kin = Kinetics(
 
 
 community_model = CommunityModel(
-    [m_a, m_b, m_d],
-    ["R_BM_A", "R_BM_B", "R_BM_D"],
-    ["modelA", "modelB", "modelD"],
+    [m_a, m_b],
+    ["R_BM_A", "R_BM_B"],
+    ["modelA", "modelB"],
 )
 
 # Are set by the model as often required by other GSMM
 community_model.deleteReactionAndBounds("BM_e_A_exchange")
 community_model.deleteReactionAndBounds("BM_e_B_exchange")
-community_model.deleteReactionAndBounds("BM_e_D_exchange")
+# community_model.deleteReactionAndBounds("BM_e_D_exchange")
 
 # community_model.getReaction("B_exchange").setLowerBound(-100)
 # community_model.getReaction("A_exchange").setLowerBound(-100)
@@ -82,18 +82,18 @@ community_model.deleteReactionAndBounds("BM_e_D_exchange")
 
 # community_model.getReaction("S_exchange").setLowerBound(-100)
 
-n = 27
+n = 13
 dj = EndPointFBA(
     community_model,
     n,
-    {"modelA": 1.0, "modelB": 1.0, "modelD": 1.0},
+    {"modelA": 3.0, "modelB": 3.0},
     {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
     0.1,
 )
 
 
 solution = dj.simulate()
-
+print(solution)
 FBAsol = dj.m_model.getSolutionVector(names=True)
 FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 print(FBAsol)

@@ -38,7 +38,6 @@ def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
     add_biomass_species(initial_model)
 
     set_exchanges(initial_model, final_model, times)
-    # create_biomass_exchanges(initial_model, final_model, times)
 
     for time_id in times:
         copy_compartments(initial_model, final_model, time_id)
@@ -70,27 +69,16 @@ def set_exchanges(
         new_reaction.is_exchange = True
 
         new_species = species.clone()
-        new_species.setId(f"{sid}{times[0]}")
+        new_species.setId(f"{sid}_{times[0]}")
 
-        new_species.setCompartmentId(f"{species.getCompartmentId()}{times[0]}")
+        new_species.setCompartmentId(
+            f"{species.getCompartmentId()}_{times[0]}"
+        )
         new_reaction.createReagent(new_species.getId(), -1)
 
         # Also create an exchange in the final time point. Such that
         # metabolites can flow out of the system
         add_final_exchange(final_model, new_reaction, times[-1])
-
-
-# def create_biomass_exchanges(
-#     initial_model: CommunityModel,
-#     final_model: CommunityModel,
-#     times: list[str],
-# ):
-#     biomasses: list[str] = initial_model.get_model_biomass_ids()
-#     for _, bm_rid in biomasses.items():
-#         final_model.createReaction(f"{bm_rid}_exchange{times[0]}")
-#         final_model.createReactionReagent("R_11", "B_c", -1)
-#         final_model.createReactionReagent("R_11", "B_e", 1)
-#         final_model.setReactionBounds("R_11", -1000.0, 1000.0)
 
 
 def copy_compartments(
@@ -136,7 +124,7 @@ def copy_reactions(
     for rid in initial_model.getReactionIds():
         reaction: Reaction = initial_model.getReaction(rid)
         if not reaction.is_exchange:
-            new_id = rid + time_id
+            new_id = rid + "_" + time_id
             final_model.createReaction(
                 new_id, reaction.name, reaction.reversible, silent=True
             )
@@ -179,7 +167,7 @@ def set_objective(final_model: CommunityModel, time_id):
     out.is_exchange = True
     out.setUpperBound(numpy.inf)
     out.setLowerBound(0)
-    out.createReagent("BM_c" + time_id, -1)
+    out.createReagent("BM_c_" + time_id, -1)
 
     final_model.createObjectiveFunction("X_comm")
 
@@ -206,17 +194,21 @@ def copy_species_and_reagents(
     """
     for sid in initial_model.getSpeciesIds():
         species: Species = initial_model.getSpecies(sid)
-        new_id = sid + time_id
+        new_id = sid + "_" + time_id
         new_species = species.clone()
         new_species.setId(new_id)
-        new_species.setCompartmentId(species.getCompartmentId() + time_id)
+        new_species.setCompartmentId(
+            species.getCompartmentId() + "_" + time_id
+        )
 
         final_model.addSpecies(new_species)
 
         for rid in species.isReagentOf():
             old_reaction: Reaction = initial_model.getReaction(rid)
             if not old_reaction.is_exchange:
-                new_reaction: Reaction = final_model.getReaction(rid + time_id)
+                new_reaction: Reaction = final_model.getReaction(
+                    rid + "_" + time_id
+                )
                 reagent: Reagent = old_reaction.getReagentWithSpeciesRef(sid)
 
                 new_reaction.createReagent(
@@ -249,8 +241,8 @@ def create_time_links(
             old_id = re.match(r"(.*?)_time\d+", sid).group(1)
 
             species: Species = final_model.getSpecies(sid)
-            if species.getCompartmentId() == f"e{t}":
-                rid = f"{sid}{time_ids[index+1]}"
+            if species.getCompartmentId() == f"e_{t}":
+                rid = f"{sid}_{time_ids[index+1]}"
                 linking_reaction = final_model.createReaction(
                     rid, reversible=False, silent=True
                 )
@@ -258,7 +250,7 @@ def create_time_links(
                 linking_reaction: Reaction = final_model.getReaction(rid)
                 linking_reaction.createReagent(sid, -1)
                 linking_reaction.createReagent(
-                    f"{old_id}{time_ids[index+1]}", 1
+                    f"{old_id}_{time_ids[index+1]}", 1
                 )
                 linking_reaction.setLowerBound(0)
                 linking_reaction.setUpperBound(numpy.inf)
@@ -299,5 +291,5 @@ def add_final_exchange(
 
     final_exchange.setUpperBound(1e10)
 
-    final_exchange.createReagent(re.sub(r"_time\d*", time_id, sid), -1)
+    final_exchange.createReagent(f"{old_id}_{time_id}", -1)
     final_exchange.is_exchange = True
