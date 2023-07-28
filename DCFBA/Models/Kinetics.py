@@ -1,13 +1,13 @@
-class Kinetics:
+class KineticsStruct:
     """
-    Kinetics
+    kineticsStruct
 
     This class represents a collection of reaction kinetics data. It stores
     the kinetics information as a dictionary, where the reaction identifier
     (rid) is the key, and the associated tuple of vmax and km values is the
     value.
 
-    Kinetics reaction_id => tuple(limiting_species, km. vmax)
+    kinetics reaction_id => tuple(limiting_species, km. vmax)
 
     Usage:
     - Add kinetics data for a reaction using the Add() method.
@@ -19,37 +19,40 @@ class Kinetics:
     get_kinetics() method.
     """
 
-    # Kinetics tuple(limiting_species, km. vmax)
-    Kinetics: dict[str, tuple[str, float, float]] = {}
+    # kinetics tuple(limiting_species, km. vmax)
+    kinetics: dict[str, tuple[str, float, float]] = {}
 
     def __init__(
         self, kinetics: dict[str, tuple[str, float, float]] = {}
     ) -> None:
-        self.Kinetics = kinetics
+        self.kinetics = kinetics
 
-    def Add(
+    def add(
         self, rid: str, km: float, vmax: float, limiting_substrate: str
     ) -> None:
-        self.Kinetics[rid] = [limiting_substrate, km, vmax]
+        self.kinetics[rid] = [limiting_substrate, km, vmax]
 
-    def Remove(self, rid: str) -> None:
-        del self.Kinetics[rid]
+    def remove(self, rid: str) -> None:
+        del self.kinetics[rid]
 
-    def Exists(self, rid: str) -> bool:
-        if rid in self.Kinetics.keys():
+    def exists(self, rid: str) -> bool:
+        if rid in self.kinetics.keys():
             return True
 
     def get_km(self, rid: str) -> float:
-        return self.Kinetics[rid][1]
+        return self.kinetics[rid][1]
 
     def get_vmax(self, rid) -> float:
-        return self.Kinetics[rid][2]
+        return self.kinetics[rid][2]
 
-    def get_kinetics(self, rid) -> tuple[float, float]:
-        return self.Kinetics[rid]
+    def get_reactions_kinetics(self, rid) -> tuple[float, float]:
+        return self.kinetics[rid]
 
     def get_limiting_substrate(self, rid) -> str:
-        return self.Kinetics[rid][0]
+        return self.kinetics[rid][0]
+
+    def get_kinetics(self) -> dict[str, tuple[str, float, float]]:
+        return self.kinetics
 
     # def has_limiting_substrate(self, rid: str) -> bool:
-    #     return self.Kinetics[rid][0] != ""
+    #     return self.kinetics[rid][0] != ""

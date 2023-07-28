@@ -1,14 +1,17 @@
 import cbmpy
+import re
 from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
 from .DynamicFBABase import DynamicFBABase
 from ..Helpers.OptimalTimeSearch import search
+from ..Models import KineticsStruct
 
 
 class EndPointFBA(DynamicFBABase):
     m_model = CommunityModel
     m_times: list[str]
+    m_kinetics: KineticsStruct
 
     def __init__(
         self,
@@ -16,12 +19,13 @@ class EndPointFBA(DynamicFBABase):
         n: int,
         initial_biomasses: dict[str, float],
         initial_concentrations: dict[str, float] = {},
+        kinetics: KineticsStruct = None,
         dt: float = 0.1,
     ) -> None:
         width = len(str(n))
-        # TODO times should not hold the under score
         self.m_times = [f"time{i:0{width}d}" for i in range(n)]
         self.m_model = build_time_model(community_model, self.m_times)
+        self.m_kinetics = kinetics
 
         self.set_constraints(n, initial_biomasses, dt)
         self.set_initial_concentrations(
@@ -91,16 +95,14 @@ class EndPointFBA(DynamicFBABase):
                     reaction.setLowerBound(-value)
 
         for key, value in initial_biomasses.items():
-            self.m_model.setReactionBounds(
-                f"BM_{key}_exchange", -value, -value
-            )
+            self.m_model.setReactionBounds(f"BM_{key}_exchange", -value, 0)
 
     # TODO implement this such that searching goes faster
     # Than we don't need to rebuild the entire model everytime
     # But we just remove linking reactions of N to final
     # and set N -n -> final links, such that the time points still exsist
     # Maybe also write add function?
-    def remove_n_time_points(self, n):
+    def remove_time_points(self, n):
         pass
 
     def constrain_rates(self, epsilon=0.1):
@@ -128,6 +130,43 @@ class EndPointFBA(DynamicFBABase):
                         [[1, id_t0], [-1, id_t1]],
                         ">=",
                         -epsilon,
+                    )
+
+    def set_kinetics(self, kin: KineticsStruct):
+        self.m_kinetics = kin
+
+    def mm_approximation(self, dt):
+        if self.m_kinetics is not None:
+            for rid, _ in self.m_kinetics.get_kinetics().items():
+                sid, km, vmax = self.m_kinetics.get_reactions_kinetics(rid)
+                if sid == "":
+                    raise Exception(
+                        "No limiting substrate was set in the kinetics object for: "
+                        + rid
+                    )
+                low_line = vmax / km
+                high_line = (vmax / 2) / km
+
+                for i in range(0, len(self.m_times) - 1):
+                    # Linking reaction is the concentration of S for the
+                    # timepoint
+                    linking_reaction_id = (
+                        f"{sid}_{self.m_times[i]}_{self.m_times[i+1]}"
+                    )
+                    t_rid = rid + "_" + self.m_times[i + 1]
+                    print(t_rid)
+                    self.m_model.addUserConstraint(
+                        f"mm_low_{linking_reaction_id}",
+                        [[1, t_rid], [-low_line * dt, linking_reaction_id]],
+                        ">=",
+                        0.0,
+                    )
+
+                    self.m_model.addUserConstraint(
+                        f"mm_high_{linking_reaction_id}",
+                        [[1, t_rid], [-high_line * dt, linking_reaction_id]],
+                        "<=",
+                        0.0,
                     )
 
     # TODO if add and remove time points is implemented you can call this

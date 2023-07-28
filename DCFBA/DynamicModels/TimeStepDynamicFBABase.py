@@ -1,5 +1,5 @@
 from cbmpy.CBModel import Model, Reaction
-from ..Models.Kinetics import Kinetics
+from ..Models.Kinetics import KineticsStruct
 from ..Models.Transporters import Transporters
 from .DynamicFBABase import DynamicFBABase
 from ..Exceptions import NoLimitingSubstrateFound
@@ -89,10 +89,6 @@ class TimeStepDynamicFBABase:
         """
         pass
 
-    def update_importer_bounds(self) -> None:
-        """Update the upper bounds of the importer reactions"""
-        pass
-
     def update_concentrations(self) -> None:
         """Update all metabolite concentrations"""
         pass
@@ -146,7 +142,7 @@ class TimeStepDynamicFBABase:
         reaction: Reaction,
         X: float,
         transporters: Transporters,
-        kinetics: Kinetics,
+        kinetics: KineticsStruct,
     ) -> None:
         """Calculates the Michaelis Menten Kinetics for a given reaction.
 

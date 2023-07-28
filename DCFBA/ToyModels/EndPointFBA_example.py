@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model, Reaction
 from DCFBA.ToyModels import model_a, model_b
 from DCFBA.Models.CommunityModel import CommunityModel
-from DCFBA.Models.Kinetics import Kinetics
+from DCFBA.Models.Kinetics import KineticsStruct
 from DCFBA.DynamicModels import EndPointFBA
 from DCFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 
@@ -39,7 +39,7 @@ m_b.getReaction("R_3").setLowerBound(0)
 m_b.getReaction("R_5").setLowerBound(0)
 
 
-kin = Kinetics(
+kin = KineticsStruct(
     {
         "R_1_modelA": ["", 10, 10],
         "R_4_modelA": ["B_e", 5, 3],

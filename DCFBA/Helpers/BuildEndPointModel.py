@@ -65,7 +65,7 @@ def set_exchanges(
         )
         new_reaction = final_model.getReaction(exchange)
         new_reaction.setLowerBound(reaction.getLowerBound())
-        new_reaction.setUpperBound(reaction.getUpperBound())
+        new_reaction.setUpperBound(0)
         new_reaction.is_exchange = True
 
         new_species = species.clone()
@@ -289,7 +289,7 @@ def add_final_exchange(
 
     final_exchange = final_model.getReaction(id)
 
-    final_exchange.setUpperBound(1e10)
+    final_exchange.setUpperBound(numpy.inf)
 
     final_exchange.createReagent(f"{old_id}_{time_id}", -1)
     final_exchange.is_exchange = True

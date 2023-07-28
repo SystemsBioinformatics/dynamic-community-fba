@@ -2,7 +2,7 @@ import cbmpy
 import math
 from cbmpy.CBModel import Model, Reaction
 from .TimeStepDynamicFBABase import TimeStepDynamicFBABase
-from ..Models.Kinetics import Kinetics
+from ..Models.Kinetics import KineticsStruct
 from ..Models.Transporters import Transporters
 
 
@@ -26,14 +26,14 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
     m_models: list[Model]
     m_initial_bounds: dict[str, dict[str, tuple[float, float]]] = {}
     m_model_transporters: dict[str, Transporters] = {}
-    m_model_kinetics: dict[str, Kinetics] = {}
+    m_model_kinetics: dict[str, KineticsStruct] = {}
 
     def __init__(
         self,
         models: list[Model],
         biomasses: list[float],
         initial_concentrations: dict[str, float] = {},
-        kinetics: dict[str, Kinetics] = {},
+        kinetics: dict[str, KineticsStruct] = {},
     ) -> None:
         """Initialize the DynamicParallelFBA class.
 
@@ -123,7 +123,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
 
             self.update_reaction_bounds(kinetics_func)
 
-            # self.constrain_exchanges()
+            self.constrain_exchanges()
 
             used_time.append(used_time[-1] + dt)
 
@@ -150,6 +150,11 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                 used_time = used_time[:-1]
 
             step += 1
+        return [
+            used_time[:-1],
+            self.m_metabolite_concentrations,
+            self.m_biomass_concentrations,
+        ]
 
     def constrain_exchanges(self):
         """Constrain exchange reactions based on current metabolite
@@ -165,10 +170,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                 reaction: Reaction = model.getReaction(rid)
                 sid = reaction.getSpeciesIds()[0]
                 reaction.setLowerBound(
-                    (
-                        (-1 * self.m_metabolite_concentrations[sid][-1])
-                        * self.m_biomass_concentrations[model.getId()][-1]
-                    )
+                    ((-1 * self.m_metabolite_concentrations[sid][-1]))
                 )
 
     def update_reaction_bounds(self, kinetics_func) -> None:
@@ -196,13 +198,9 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                     reaction.setLowerBound(
                         self.m_initial_bounds[mid][rid][0] * X_k_t
                     )
-                    # If the reaction is an importer we need to check
-                    # if there is any substrate they can import
-                    if self.m_model_transporters[mid].is_importer(rid):
-                        self.update_importer_bounds(mid, reaction, X_k_t)
 
-                    elif (mid in self.m_model_kinetics.keys()) and (
-                        self.m_model_kinetics[mid].Exists(rid)
+                    if (mid in self.m_model_kinetics.keys()) and (
+                        self.m_model_kinetics[mid].exists(rid)
                     ):
                         self.mm_kinetics(
                             reaction,
@@ -215,43 +213,6 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                         reaction.setUpperBound(
                             self.m_initial_bounds[mid][rid][1] * X_k_t
                         )
-
-    def update_importer_bounds(
-        self, mid: str, reaction: Reaction, X: float
-    ) -> None:
-        """Update bounds for importer reactions.
-
-        Args:
-            mid (str): The ID of the model for which to update importer bounds.
-            reaction (Reaction): The reaction to update bounds for.
-            X (float): Biomass concentration for the organism associated with
-                the reaction.
-
-        """
-        sids = self.m_model_transporters[mid].get_importers_species(
-            reaction.getId()
-        )
-        importers_reagent_concentrations = [
-            self.m_metabolite_concentrations[id][-1] for id in sids
-        ]
-
-        if all(x > 0 for x in importers_reagent_concentrations):
-            if mid in self.m_model_kinetics.keys() and self.m_model_kinetics[
-                mid
-            ].Exists(reaction.getId()):
-                self.mm_kinetics(
-                    reaction,
-                    X,
-                    self.m_model_transporters[mid],
-                    self.m_model_kinetics[mid],
-                )
-            else:
-                reaction.setUpperBound(
-                    self.m_initial_bounds[mid][reaction.getId()][1] * X
-                )
-
-        else:
-            reaction.setUpperBound(0)
 
     def update_concentrations(self, model: Model, FBAsol, step, dt) -> None:
         """Update metabolite concentrations after an FBA step.
@@ -303,6 +264,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
             step (int): The current simulation step.
 
         """
+
         mid = model.getId()
         Xt = (
             self.m_biomass_concentrations[mid][step - 1]
