@@ -132,11 +132,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                 FBAsol = model.getSolutionVector(names=True)
                 FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
-                if (
-                    math.isnan(solution)
-                    or solution < epsilon
-                    or dt < epsilon
-                ):
+                if math.isnan(solution) or solution < epsilon or dt < epsilon:
                     return [
                         used_time[:-1],
                         self.m_metabolite_concentrations,
@@ -171,7 +167,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                 reaction.setLowerBound(
                     (
                         (-1 * self.m_metabolite_concentrations[sid][-1])
-                        * self.m_biomass_concentrations[model.getId()][-1] spo
+                        * self.m_biomass_concentrations[model.getId()][-1]
                     )
                 )
 
