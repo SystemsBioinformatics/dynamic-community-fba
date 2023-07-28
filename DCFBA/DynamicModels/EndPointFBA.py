@@ -117,14 +117,14 @@ class EndPointFBA(DynamicFBABase):
                     id_t0 = f"{rid}_{time}"
                     id_t1 = f"{rid}_{self.m_times[i+1]}"
                     self.m_model.addUserConstraint(
-                        "R_constraint" + id_t0,
+                        "R_constraint_pos" + id_t0,
                         [[1, id_t0], [-1, id_t1]],
                         "<=",
                         epsilon,
                     )
 
                     self.m_model.addUserConstraint(
-                        "R_constraint" + id_t0,
+                        "R_constraint_neg" + id_t0,
                         [[1, id_t0], [-1, id_t1]],
                         ">=",
                         -epsilon,

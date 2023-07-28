@@ -64,11 +64,11 @@ community_model = CommunityModel(
 )
 
 
-community_model.getReaction("B_exchange").setLowerBound(-10000)
-community_model.getReaction("A_exchange").setLowerBound(-10000)
+community_model.getReaction("B_e_exchange").setLowerBound(-10000)
+community_model.getReaction("A_e_exchange").setLowerBound(-10000)
 
 
-community_model.getReaction("S_exchange").setLowerBound(-10000)
+community_model.getReaction("S_e_exchange").setLowerBound(-10000)
 
 
 # # print(community_model.getReaction("R_1_modelA").getUpperBound())
