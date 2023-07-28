@@ -77,7 +77,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
         self,
         dt: float,
         n: int = 10000,
-        epsilon: float = 0.001,
+        epsilon: float = 0.01,
         kinetics_func=None,
         deviate=None,
     ) -> list[list[float], dict[str, list[float]], dict[str, list[float]]]:
@@ -103,14 +103,14 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
         """
 
         used_time = [0]
-        dt_hat = math.nan
+        dt_hat = -1
         dt_save = dt
         run_condition = 0
         step = 1
         for _ in range(1, n):
-            if not math.isnan(dt_hat):
+            if dt_hat != -1:
                 dt = dt_hat
-                dt_hat = math.nan
+                dt_hat = -1
             else:
                 dt = dt_save
 
@@ -123,7 +123,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
 
             self.update_reaction_bounds(kinetics_func)
 
-            self.constrain_exchanges()
+            # self.constrain_exchanges()
 
             used_time.append(used_time[-1] + dt)
 
@@ -131,8 +131,12 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                 solution = cbmpy.doFBA(model, quiet=True)
                 FBAsol = model.getSolutionVector(names=True)
                 FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-                if math.isnan(solution) or solution < epsilon or dt < epsilon:
-                    print(dt)
+
+                if (
+                    math.isnan(solution)
+                    or solution < epsilon
+                    or dt < epsilon
+                ):
                     return [
                         used_time[:-1],
                         self.m_metabolite_concentrations,
@@ -167,7 +171,7 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
                 reaction.setLowerBound(
                     (
                         (-1 * self.m_metabolite_concentrations[sid][-1])
-                        * self.m_biomass_concentrations[model.getId()][-1]
+                        * self.m_biomass_concentrations[model.getId()][-1] spo
                     )
                 )
 
