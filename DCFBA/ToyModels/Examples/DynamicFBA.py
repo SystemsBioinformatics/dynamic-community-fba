@@ -16,30 +16,13 @@ community_model = CommunityModel(
 kin = KineticsStruct({"R_GLCpts_ecoli_1": ["", 5, 10]})
 dj = DynamicJointFBA(community_model, [0.1], {"M_glc__D_e": 10}, kinetics=kin)
 
-
-def deviate_func(
-    DFBA: DynamicJointFBA,
-    used_time,
-    condition: int,
-) -> int:
-    if (
-        DFBA.m_metabolite_concentrations["M_glc__D_e"][-1] <= 5.0
-        and condition < 1
-    ):
-        DFBA.m_metabolite_concentrations["M_glu__L_e"][-1] = 30
-
-        return 1
-
-    return condition
-
-
-T, metabolites, biomasses, _ = dj.simulate(0.1, deviate=deviate_func)
+T, metabolites, biomasses, _ = dj.simulate(0.1)
 
 
 ax = plt.subplot(111)
 ax.plot(T, biomasses["ecoli_1"])
 ax2 = plt.twinx(ax)
-ax2.plot(T, metabolites["M_glu__L_e"], color="r")
+ax2.plot(T, metabolites["M_glc__D_e"], color="r")
 
 ax.set_ylabel("Biomass", color="b")
 ax2.set_ylabel("Glucose", color="r")

@@ -158,7 +158,7 @@ class TimeStepDynamicFBABase:
             not an external species.
         """
         rid: str = reaction.getId()
-        sid, km, vmax = kinetics.get_kinetics(
+        sid, km, vmax = kinetics.get_reactions_kinetics(
             rid,
         )
 
