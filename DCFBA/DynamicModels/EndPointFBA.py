@@ -3,6 +3,7 @@ from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
 from .DynamicFBABase import DynamicFBABase
+from ..Helpers.OptimalTimeSearch import search
 
 
 class EndPointFBA(DynamicFBABase):
@@ -19,12 +20,12 @@ class EndPointFBA(DynamicFBABase):
     ) -> None:
         width = len(str(n))
         # TODO times should not hold the under score
-        m_times = [f"time{i:0{width}d}" for i in range(n)]
-        self.m_model = build_time_model(community_model, m_times)
+        self.m_times = [f"time{i:0{width}d}" for i in range(n)]
+        self.m_model = build_time_model(community_model, self.m_times)
 
-        self.set_constraints(n, initial_biomasses, dt, m_times)
+        self.set_constraints(n, initial_biomasses, dt)
         self.set_initial_concentrations(
-            initial_biomasses, initial_concentrations, m_times
+            initial_biomasses, initial_concentrations
         )
 
     def simulate(
@@ -32,10 +33,8 @@ class EndPointFBA(DynamicFBABase):
     ):
         return cbmpy.doFBA(self.m_model, quiet=True)
 
-    def set_constraints(
-        self, n: int, initial_biomasses, dt: float, times: list[str]
-    ):
-        rids_t0 = self.m_model.getReactionIds(times[0])
+    def set_constraints(self, n: int, initial_biomasses, dt: float):
+        rids_t0 = self.m_model.getReactionIds(self.m_times[0])
         for rid in rids_t0:
             reaction = self.m_model.getReaction(rid)
             mid = self.m_model.identify_model_from_reaction(rid)
@@ -49,7 +48,7 @@ class EndPointFBA(DynamicFBABase):
 
         # From time 1 to last time point
         for i in range(1, n):
-            rids = self.m_model.getReactionIds(times[i])
+            rids = self.m_model.getReactionIds(self.m_times[i])
             for rid in rids:
                 reaction: Reaction = self.m_model.getReaction(rid)
                 mid = self.m_model.identify_model_from_reaction(rid)
@@ -60,7 +59,7 @@ class EndPointFBA(DynamicFBABase):
                     continue
 
                 # Bm of model id
-                r_x_t = f"BM_{mid}_{times[i-1]}_{times[i]}"
+                r_x_t = f"BM_{mid}_{self.m_times[i-1]}_{self.m_times[i]}"
 
                 # r_x_t = biomass_rid + times[i - 1]
                 ub = reaction.getUpperBound()
@@ -79,11 +78,12 @@ class EndPointFBA(DynamicFBABase):
         self,
         initial_biomasses: dict[str, float],
         initial_concentrations: dict[str, float],
-        times,
     ):
         for key, value in initial_concentrations.items():
             # get species and it's corresponding exchange reaction
-            species: Species = self.m_model.getSpecies(key + "_" + times[0])
+            species: Species = self.m_model.getSpecies(
+                key + "_" + self.m_times[0]
+            )
             rids = species.getReagentOf()
             for rid in rids:
                 reaction: Reaction = self.m_model.getReaction(rid)
@@ -95,5 +95,41 @@ class EndPointFBA(DynamicFBABase):
                 f"BM_{key}_exchange", -value, -value
             )
 
+    # TODO implement this such that searching goes faster
+    # Than we don't need to rebuild the entire model everytime
+    # But we just remove linking reactions of N to final
+    # and set N -n -> final links, such that the time points still exsist
+    # Maybe also write add function?
     def remove_n_time_points(self, n):
         pass
+
+    def constrain_rates(self, epsilon=0.1):
+        old_rids = set(
+            [id.split("_time")[0] for id in self.m_model.getReactionIds()]
+        )
+        for rid in old_rids:
+            reaction: Reaction = self.m_model.getReaction(
+                rid + "_" + self.m_times[0]
+            )
+
+            if reaction is not None and (not reaction.is_exchange):
+                for i, time in enumerate(self.m_times[:-1]):
+                    id_t0 = f"{rid}_{time}"
+                    id_t1 = f"{rid}_{self.m_times[i+1]}"
+                    self.m_model.addUserConstraint(
+                        "R_constraint" + id_t0,
+                        [[1, id_t0], [-1, id_t1]],
+                        "<=",
+                        epsilon,
+                    )
+
+                    self.m_model.addUserConstraint(
+                        "R_constraint" + id_t0,
+                        [[1, id_t0], [-1, id_t1]],
+                        ">=",
+                        -epsilon,
+                    )
+
+    # TODO if add and remove time points is implemented you can call this
+    # def optimal_time_search(self):
+    #     search()

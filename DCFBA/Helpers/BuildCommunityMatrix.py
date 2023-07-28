@@ -32,7 +32,10 @@ def load_n_models(files: list[str]) -> list[Model]:
 
 
 def combine_models(
-    models: list[Model], new_ids: list[str] = [], objective_function: str = ""
+    models: list[Model],
+    new_ids: list[str] = [],
+    modelId="combined_model",
+    objective_function: str = "",
 ) -> Model:
     """
     Combine N models into a single model.
@@ -49,11 +52,11 @@ def combine_models(
         Model: The combined CBModel.
 
     """
-    combined_model = Model("combined_model")
+    combined_model = Model(modelId)
     combined_model.createCompartment("e", "extracellular space")
     duplicate_species = create_duplicate_species_dict(models)
 
-    if len(new_ids) > 0 and len(new_ids) < len(models):
+    if (len(new_ids) > 0) and (len(new_ids) < len(models)):
         raise Exception("Too few ids were provided")
 
     if len(new_ids) == 0:

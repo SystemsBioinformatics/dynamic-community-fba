@@ -105,11 +105,7 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
 
             FBAsol = self.m_model.getSolutionVector(names=True)
             FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-            print(self.m_biomass_concentrations)
-            print(self.m_metabolite_concentrations)
 
-            print(FBAsol)
-            input()
             fluxes.append(FBAsol)
 
             self.update_concentrations(FBAsol, dt)
@@ -119,9 +115,6 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
             if species_id != "":
                 dt_hat = self.reset_dt(species_id, FBAsol)
                 used_time = used_time[:-1]
-                print(dt_hat)
-                input(species_id)
-
                 continue
 
             for _, rid in self.m_model.get_model_biomass_ids().items():
