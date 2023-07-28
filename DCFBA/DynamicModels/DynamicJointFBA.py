@@ -104,11 +104,6 @@ class DynamicJointFBA(TimeStepDynamicFBABase):
 
             FBAsol = self.m_model.getSolutionVector(names=True)
             FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-            if i > 180:
-                print(FBAsol)
-                print(self.m_metabolite_concentrations["S_e"])
-                print(dt)
-                input()
 
             used_time.append(used_time[-1] + dt)
 
