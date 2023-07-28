@@ -14,8 +14,8 @@ m_a.getReaction("R_1").setLowerBound(0)
 m_a.getReaction("R_4").setLowerBound(0)
 m_a.getReaction("R_6").setLowerBound(0)
 
-m_a.getReaction("B_exchange").setLowerBound(-2)
-m_a.getReaction("A_exchange").setLowerBound(0)
+m_a.getReaction("B_e_exchange").setLowerBound(-2)
+m_a.getReaction("A_e_exchange").setLowerBound(0)
 
 
 m_b: Model = model_b.build_toy_model_fba_B()
@@ -27,8 +27,8 @@ m_b.getReaction("R_1").setLowerBound(0)
 m_b.getReaction("R_3").setLowerBound(0)
 m_b.getReaction("R_5").setLowerBound(0)
 
-m_b.getReaction("B_exchange").setLowerBound(0)
-m_b.getReaction("A_exchange").setLowerBound(-1)
+m_b.getReaction("B_e_exchange").setLowerBound(0)
+m_b.getReaction("A_e_exchange").setLowerBound(-1)
 
 kin = {
     "Organism_A": Kinetics(
@@ -47,11 +47,11 @@ kin = {
 }
 
 parallel = DynamicParallelFBA(
-    [m_a, m_b], [1, 1], {"S_e": 100, "A_e": 1, "B_e": 2}, kinetics=kin
+    [m_a, m_b], [1, 1], {"S_e": 100, "A_e": 1, "B_e": 2}
 )
 
 
-T, metabolites, biomasses = parallel.simulate(0.1, 0.05)
+T, metabolites, biomasses = parallel.simulate(0.1, 300, 0.05)
 
 print(metabolites)
 print(biomasses)

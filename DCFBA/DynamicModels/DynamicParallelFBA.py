@@ -106,8 +106,8 @@ class DynamicParallelFBA(TimeStepDynamicFBABase):
         dt_hat = math.nan
         dt_save = dt
         run_condition = 0
-
-        for step in range(1, n):
+        step = 1
+        for _ in range(1, n):
             if not math.isnan(dt_hat):
                 dt = dt_hat
                 dt_hat = math.nan
