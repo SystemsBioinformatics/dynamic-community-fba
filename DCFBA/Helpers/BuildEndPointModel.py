@@ -39,15 +39,26 @@ def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
 
     set_exchanges(initial_model, final_model, times)
 
-    for time_id in times:
-        copy_compartments(initial_model, final_model, time_id)
-        copy_reactions(initial_model, final_model, time_id)
-        copy_species_and_reagents(initial_model, final_model, time_id)
-
-    create_time_links(final_model, times)
-    set_objective(final_model, times[-1])
+    add_time_points(initial_model, final_model, times)
 
     return final_model
+
+
+def add_time_points(src_model, target_model, times):
+    for i, time in enumerate(times):
+        add_time_point(src_model, target_model, time)
+
+        # Check if it's not the last element to avoid index out of range error
+        if i < len(times) - 1:
+            add_time_link(target_model, times[i], times[i + 1])
+
+
+def add_time_point(
+    src_model: CommunityModel, target_model: CommunityModel, time_id
+):
+    add_time_compartments(src_model, target_model, time_id)
+    add_reactions(src_model, target_model, time_id)
+    copy_species_and_reagents(src_model, target_model, time_id)
 
 
 def set_exchanges(
@@ -81,7 +92,7 @@ def set_exchanges(
         add_final_exchange(final_model, new_reaction, times[-1])
 
 
-def copy_compartments(
+def add_time_compartments(
     initial_model: Model, final_model: Model, time_id: str
 ) -> None:
     """
@@ -104,7 +115,7 @@ def copy_compartments(
         )
 
 
-def copy_reactions(
+def add_reactions(
     initial_model: Model, final_model: Model, time_id: str
 ) -> None:
     """
@@ -161,19 +172,6 @@ def add_biomass_species(initial_model: CommunityModel) -> None:
         reaction.createReagent("BM_c", 1)
 
 
-def set_objective(final_model: CommunityModel, time_id):
-    final_model.createReaction("X_comm", silent=True)
-    out: Reaction = final_model.getReaction("X_comm")
-    out.is_exchange = True
-    out.setUpperBound(numpy.inf)
-    out.setLowerBound(0)
-    out.createReagent("BM_c_" + time_id, -1)
-
-    final_model.createObjectiveFunction("X_comm")
-
-    final_model.setActiveObjective("X_comm_objective")
-
-
 def copy_species_and_reagents(
     initial_model: Model, final_model: Model, time_id
 ) -> None:
@@ -216,47 +214,67 @@ def copy_species_and_reagents(
                 )
 
 
-def create_time_links(
-    final_model: CommunityModel, time_ids: list[str]
-) -> None:
-    """
-    Create links between species from different time points
-    in the CommunityModel.
-    Links represent reactions foreach reaction,time point
-        => species_time0 -> species_time1
-
-    Args:
-        final_model (CommunityModel): The final time-dependent CommunityModel.
-        time_ids (list): Ids of the different time points
-
-    Returns:
-        None
-
-    """
-    index = 0
-    t = time_ids[index]
-
-    while t != time_ids[-1]:
-        for sid in final_model.getSpeciesIds():
+def add_time_link(model: CommunityModel, time0, time1):
+    for sid in model.getSpeciesIds():
+        if "final" not in sid:
             old_id = re.match(r"(.*?)_time\d+", sid).group(1)
 
-            species: Species = final_model.getSpecies(sid)
-            if species.getCompartmentId() == f"e_{t}":
-                rid = f"{sid}_{time_ids[index+1]}"
-                linking_reaction = final_model.createReaction(
+            species: Species = model.getSpecies(sid)
+            if species.getCompartmentId() == f"e_{time0}":
+                # TODO maybe prefix with LINK_?
+                rid = f"{sid}_{time1}"
+                linking_reaction = model.createReaction(
                     rid, reversible=False, silent=True
                 )
 
-                linking_reaction: Reaction = final_model.getReaction(rid)
+                linking_reaction: Reaction = model.getReaction(rid)
                 linking_reaction.createReagent(sid, -1)
-                linking_reaction.createReagent(
-                    f"{old_id}_{time_ids[index+1]}", 1
-                )
+                linking_reaction.createReagent(f"{old_id}_{time1}", 1)
                 linking_reaction.setLowerBound(0)
                 linking_reaction.setUpperBound(numpy.inf)
 
-        index += 1
-        t = time_ids[index]
+
+# def create_time_links(
+#     final_model: CommunityModel, time_ids: list[str]
+# ) -> None:
+#     """
+#     Create links between species from different time points
+#     in the CommunityModel.
+#     Links represent reactions foreach reaction,time point
+#         => species_time0 -> species_time1
+
+#     Args:
+#         final_model (CommunityModel): The final time-dependent CommunityModel.
+#         time_ids (list): Ids of the different time points
+
+#     Returns:
+#         None
+
+#     """
+#     index = 0
+#     t = time_ids[index]
+
+#     while t != time_ids[-1]:
+#         for sid in final_model.getSpeciesIds():
+#             old_id = re.match(r"(.*?)_time\d+", sid).group(1)
+
+#             species: Species = final_model.getSpecies(sid)
+#             if species.getCompartmentId() == f"e_{t}":
+#                 rid = f"{sid}_{time_ids[index+1]}"
+#                 linking_reaction = final_model.createReaction(
+#                     rid, reversible=False, silent=True
+#                 )
+
+#                 linking_reaction: Reaction = final_model.getReaction(rid)
+#                 linking_reaction.createReagent(sid, -1)
+#                 linking_reaction.createReagent(
+#                     f"{old_id}_{time_ids[index+1]}", 1
+#                 )
+#                 linking_reaction.setLowerBound(0)
+#                 linking_reaction.setUpperBound(numpy.inf)
+
+#         index += 1
+#         t = time_ids[index]
 
 
 def add_final_exchange(
