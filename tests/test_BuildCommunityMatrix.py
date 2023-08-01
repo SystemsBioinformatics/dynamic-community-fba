@@ -57,6 +57,8 @@ def test_if_n_models_are_merged_correctly(
         combined_model.getReactionIds()
     ) == sorted(defined_combined_model.getReactionIds())
 
+    print(combined_model.getReactionIds())
+    print(defined_combined_model.getReactionIds())
     assert all(
         [
             compartments_are_copied_correctly,
@@ -87,7 +89,7 @@ def test_if_dict_contains_all_duplicate_species(model_A, model_B, model_C):
     dic: dict[str, int] = bcm.create_duplicate_species_dict(
         [model_A, model_B, model_C]
     )
-    print(dic)
+
     assert dic == {
         "S_e": 3,
         "S_c": 3,

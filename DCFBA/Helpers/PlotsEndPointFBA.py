@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from ..DynamicModels import EndPointFBA
 
 
-def plot_biomasses(ep: EndPointFBA, n: int):
+def plot_biomasses(ep: EndPointFBA):
     FBAsol = ep.m_model.getSolutionVector(names=True)
     FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
@@ -15,7 +15,12 @@ def plot_biomasses(ep: EndPointFBA, n: int):
             if key.startswith(f"BM_{mid}_time"):
                 ls.append(value)
         ls.append(FBAsol[f"BM_{mid}_exchange_final"])
-        plt.plot(list(range(0, n + 1)), ls, color=f"C{i}", label=f"{mid}")
+        plt.plot(
+            list(range(0, len(ep.m_times) + 1)),
+            ls,
+            color=f"C{i}",
+            label=f"{mid}",
+        )
 
     plt.xlabel("Time")
     plt.ylabel("Concentration")
@@ -24,7 +29,7 @@ def plot_biomasses(ep: EndPointFBA, n: int):
 
 
 def plot_metabolites(
-    ep: EndPointFBA, speciesIdsConcentration: dict[str, float], n: int
+    ep: EndPointFBA, speciesIdsConcentration: dict[str, float]
 ):
     FBAsol = ep.m_model.getSolutionVector(names=True)
     FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
@@ -37,7 +42,12 @@ def plot_metabolites(
                 ls.append(value)
 
         ls.append(FBAsol[f"{sid}_exchange_final"])
-        plt.plot(list(range(0, n + 1)), ls, color=f"C{i}", label=f"{sid}")
+        plt.plot(
+            list(range(0, len(ep.m_times) + 1)),
+            ls,
+            color=f"C{i}",
+            label=f"{sid}",
+        )
 
     plt.xlabel("Time")
     plt.ylabel("Concentration")

@@ -1,10 +1,9 @@
 import cbmpy
-import re
+from numpy import Inf
 from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
 from .DynamicFBABase import DynamicFBABase
-from ..Helpers.OptimalTimeSearch import search
 from ..Models import KineticsStruct
 
 
@@ -24,13 +23,26 @@ class EndPointFBA(DynamicFBABase):
     ) -> None:
         width = len(str(n))
         self.m_times = [f"time{i:0{width}d}" for i in range(n)]
+
         self.m_model = build_time_model(community_model, self.m_times)
         self.m_kinetics = kinetics
-
+        self.set_objective()
         self.set_constraints(n, initial_biomasses, dt)
         self.set_initial_concentrations(
             initial_biomasses, initial_concentrations
         )
+
+    def set_objective(self):
+        self.m_model.createReaction("X_comm", silent=True)
+        out: Reaction = self.m_model.getReaction("X_comm")
+        out.is_exchange = True
+        out.setUpperBound(Inf)
+        out.setLowerBound(0)
+        out.createReagent("BM_c_" + self.m_times[-1], -1)
+
+        self.m_model.createObjectiveFunction("X_comm")
+
+        self.m_model.setActiveObjective("X_comm_objective")
 
     def simulate(
         self,
@@ -95,15 +107,9 @@ class EndPointFBA(DynamicFBABase):
                     reaction.setLowerBound(-value)
 
         for key, value in initial_biomasses.items():
-            self.m_model.setReactionBounds(f"BM_{key}_exchange", -value, 0)
-
-    # TODO implement this such that searching goes faster
-    # Than we don't need to rebuild the entire model everytime
-    # But we just remove linking reactions of N to final
-    # and set N -n -> final links, such that the time points still exsist
-    # Maybe also write add function?
-    def remove_time_points(self, n):
-        pass
+            self.m_model.setReactionBounds(
+                f"BM_{key}_exchange", -value, -value
+            )
 
     def constrain_rates(self, epsilon=0.1):
         old_rids = set(
@@ -168,7 +174,3 @@ class EndPointFBA(DynamicFBABase):
                         "<=",
                         0.0,
                     )
-
-    # TODO if add and remove time points is implemented you can call this
-    # def optimal_time_search(self):
-    #     search()

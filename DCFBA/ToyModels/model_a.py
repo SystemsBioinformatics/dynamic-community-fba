@@ -77,7 +77,7 @@ def build_model_A():
     model.createReactionReagent("R_6", "Z_c", -8)
     model.createReactionReagent("R_6", "B_c", -3)
     model.createReactionReagent("R_6", "BM_c_A", 1)
-    model.setReactionBounds("R_6" - 1000.0, 1000.0)
+    model.setReactionBounds("R_6", -1000.0, 1000.0)
 
     # Import B
     model.createReaction("R_7", "Import B_e to B_c", reversible=True)

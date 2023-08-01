@@ -4,6 +4,9 @@
 from cbmpy.CBModel import Model, Species, Reaction, Reagent, Compartment
 import cbmpy
 
+# Add extracellular ids here
+extracellular_compartments = ["e", "extracellular"]
+
 
 def load_n_models(files: list[str]) -> list[Model]:
     """
@@ -120,7 +123,7 @@ def merge_compartments(model: Model, combined_model: Model, new_id):
     compartment: Compartment
 
     for compartment in model.compartments:
-        if compartment.id != "e":
+        if compartment.id not in extracellular_compartments:
             combined_model.createCompartment(
                 create_new_id(compartment.id, new_id),
                 f"Compartmnet {compartment.name}",
@@ -202,7 +205,7 @@ def merge_species(
     ls_species_ids = model.getSpeciesIds()
     for species_id in ls_species_ids:
         species: Species = model.getSpecies(species_id)
-        if species.compartment != "e":
+        if species.compartment not in extracellular_compartments:
             if species_id in duplicate_species.keys():
                 copy_species_and_reagents(model, species, new_id)
                 model.deleteSpecies(species_id)

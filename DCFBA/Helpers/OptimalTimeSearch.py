@@ -15,13 +15,13 @@ def search(
     initial_concentrations: dict[str, float] = {},
     dt=0.1,
 ):
-    n = 70
+    n = 100  # np.random(0, 10000)
 
     low = 1
     obj, high = find_upper_bound(
         n, cm, initial_biomasses, initial_concentrations, dt
     )
-    print(high)
+
     while low < high:
         n = (low + high) // 2
         print("trying " + str(n) + ".....")
@@ -47,11 +47,6 @@ def find_upper_bound(
     ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt)
     value = ep.simulate()
     while prev < value:
-        print("--------------")
-        print(value)
-        print(prev)
-        print("--------------")
-
         prev = value
         n = 2 * n
         ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt)
