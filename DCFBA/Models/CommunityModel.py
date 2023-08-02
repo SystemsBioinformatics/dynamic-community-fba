@@ -292,6 +292,7 @@ class CommunityModel(Model):
 
         return species_ids
 
+    # TODO prefix with _#id or MT_A
     def identify_model_from_reaction(self, rid: str) -> str:
         """Given a reaction id get the single model this reaction belonged to
 

@@ -53,3 +53,27 @@ def plot_metabolites(
     plt.ylabel("Concentration")
     plt.legend()
     plt.show()
+
+
+def plot_fluxes(ep: EndPointFBA, fluxes):
+    FBAsol = ep.m_model.getSolutionVector(names=True)
+    FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+
+    ls = []
+    for i, f in enumerate(fluxes):
+        ls = []
+        for key, value in FBAsol.items():
+            if key.startswith(f):
+                ls.append(value)
+
+        plt.plot(
+            list(range(0, len(ep.m_times))),
+            ls,
+            color=f"C{i}",
+            label=f"{f}",
+        )
+
+    plt.xlabel("Time")
+    plt.ylabel("Concentration")
+    plt.legend()
+    plt.show()

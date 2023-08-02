@@ -232,6 +232,7 @@ def add_time_link(model: CommunityModel, time0, time1):
                 linking_reaction.createReagent(f"{old_id}_{time1}", 1)
                 linking_reaction.setLowerBound(0)
                 linking_reaction.setUpperBound(numpy.inf)
+                linking_reaction.is_linking = True
 
 
 # def create_time_links(
