@@ -1,42 +1,3 @@
-import cplex
-import numpy
-import cbmpy
-import time
-import cbmpy.CBCPLEX as wcplex
-from packaging import version as pkgver
-
-from DCFBA.ToyModels.model_c import build_model_C
-
-_Stime = time.time()
-
-HAVE_SYMPY = False
-try:
-    import sympy
-
-    if pkgver.parse(sympy.__version__) >= pkgver.Version("0.7.4"):
-        HAVE_SYMPY = True
-    else:
-        del sympy
-        print(
-            "\nWARNING: SymPy version 0.7.5 or newer is required for symbolic matrix support."
-        )
-except ImportError:
-    HAVE_SYMPY = False
-
-HAVE_SCIPY = False
-try:
-    from scipy.sparse import csr
-
-    HAVE_SCIPY = True
-except ImportError:
-    HAVE_SCIPY = False
-
-CPLX_LP_PARAMETERS = {
-    "simplex.tolerances.optimality": 1e-6,
-    "simplex.tolerances.feasibility": 1e-6,
-}
-
-
 def cplex_constructPorbfromFBA(fba, fname=None):
     # define model and add variables
     prob = cplex.Cplex()
@@ -49,10 +10,7 @@ def cplex_constructPorbfromFBA(fba, fname=None):
     )
     # print(lp.parameters.simplex.get_changed())
     prob.set_problem_name("%s" % (fba.getId()))
-    prob.variables.add(
-        names=fba.N.col,
-        types=[prob.variables.type.continuous] * len(fba.N.col),
-    )
+    prob.variables.add(names=fba.N.col)
 
     try:
         # define objective
@@ -68,50 +26,24 @@ def cplex_constructPorbfromFBA(fba, fname=None):
         prob.objective.set_name(fba.getActiveObjective().getId())
     except AttributeError:
         print("\nWARNING(CPLEX create LP): no objective function defined")
-    # TODO in the model active objective set a variable that says if
-    # objective is quadratic !implementation needed!
-<<<<<<< HEAD
 
     cplex_buildLinearConstraints(prob, fba, fname)
-
-    # cplex_constructLPfromFBA(prob, fba)
-    cplex_constructQPfromFBA(prob, fba)
-
-    return prob
+    # TODO in the model active objective set a variable that says if
+    # objective is quadratic !implementation needed!
+    if fba.getActiveObjective().isLinear:
+        cplex_constructLPfromFBA(prob, fba)
+    else:
+        cplex_constructQPfromFBA(prob, fba)
 
 
 def cplex_constructQPfromFBA(prob, fba):
-    # target = prob.parameters.optimalitytarget.values
-    # prob.parameters.optimalitytarget.set(target.optimal_global)
-=======
-    cplex_buildLinearConstraints(prob, fba, fname)
-
-    cplex_constructQPfromFBA(prob, fba, fname)
-    wcplex.cplx_setFBAsolutionToModel(fba, prob)
-    return prob
-
-
-def cplex_constructQPfromFBA(prob, fba, fname):
     target = prob.parameters.optimalitytarget.values
     prob.parameters.optimalitytarget.set(target.optimal_global)
->>>>>>> e579687 (lots of tests)
-
     variable_names = prob.variables.get_names()
     qmat = [
         cplex.SparsePair(ind=variable_names, val=[0.0] * len(variable_names))
         for _ in variable_names
     ]
-<<<<<<< HEAD
-    prob.objective.set_quadratic(qmat)
-
-    cmat = []
-    for fo in fba.getActiveObjective().QPObjective:
-        v = fo[1]
-        if fo[0][0] == fo[0][1]:
-            v *= 2
-
-        cmat.append((fo[0][0], fo[0][1], v))
-=======
 
     prob.objective.set_quadratic(qmat)
 
@@ -119,14 +51,12 @@ def cplex_constructQPfromFBA(prob, fba, fname):
         (fo[0][0], fo[0][1], fo[1])
         for fo in fba.getActiveObjective().QPObjective
     ]
->>>>>>> e579687 (lots of tests)
 
     prob.objective.set_quadratic_coefficients(cmat)
 
     return prob
 
 
-<<<<<<< HEAD
 def cplex_constructLPfromFBA(prob, fba):
     prob.objective.set_linear(
         [
@@ -136,14 +66,12 @@ def cplex_constructLPfromFBA(prob, fba):
     )
 
 
-=======
->>>>>>> e579687 (lots of tests)
 def cplex_buildLinearConstraints(prob, fba, fname):
     lin_expr = []
     rhs = []
     names = []
     senses = []
-    lp = prob
+
     if HAVE_SYMPY and fba.N.__array_type__ == sympy.MutableDenseMatrix:
         print("INFO: CPLEX requires floating point, converting N")
         Nmat = numpy.array(fba.N.array).astype("float")
@@ -173,10 +101,10 @@ def cplex_buildLinearConstraints(prob, fba, fname):
             )
         )
         rhs.append(RHSmat[n])
-        senses.append(wcplex.cplx_fixConSense(fba.N.operators[n]))
+        senses.append(cplx_fixConSense(fba.N.operators[n]))
         names.append(fba.N.row[n])
     # print senses
-    lp.linear_constraints.add(
+    prob.linear_constraints.add(
         lin_expr=lin_expr, senses=senses, rhs=rhs, names=names
     )
     # print 'New style lc:', time.time() - tnew
@@ -200,9 +128,9 @@ def cplex_buildLinearConstraints(prob, fba, fname):
                 )
             )
             rhs.append(CMrhs[n])
-            senses.append(wcplex.cplx_fixConSense(fba.CM.operators[n]))
+            senses.append(cplx_fixConSense(fba.CM.operators[n]))
             names.append(fba.CM.row[n])
-        lp.linear_constraints.add(
+        prob.linear_constraints.add(
             lin_expr=lin_expr, senses=senses, rhs=rhs, names=names
         )
         # print 'New style lc:', time.time() - t2new
@@ -230,22 +158,11 @@ def cplex_buildLinearConstraints(prob, fba, fname):
             ub.append((b_.reaction, bvalue))
             lb.append((b_.reaction, bvalue))
     if len(lb) > 0:
-        lp.variables.set_lower_bounds(lb)
+        prob.variables.set_lower_bounds(lb)
     if len(ub) > 0:
-        lp.variables.set_upper_bounds(ub)
+        prob.variables.set_upper_bounds(ub)
 
     print("\ncplx_constructLPfromFBA time: {}\n".format(time.time() - _Stime))
     if fname != None:
-        lp.write(fname + ".lp", filetype="lp")
-    return lp
-
-
-# m_c = build_model_C()
-# m_c.getReaction("S_exchange").setLowerBound(-100)
-
-# obj = m_c.getActiveObjective()
-# obj.QPObjective = [(["BM_e_C_exchange", "BM_e_C_exchange"], 1.0)]
-
-# m_c.buildStoichMatrix()
-# cbmpy.doFBA(m_c)
-# cplex_constructPorbfromFBA(m_c)
+        prob.write(fname + ".lp", filetype="lp")
+    return prob
