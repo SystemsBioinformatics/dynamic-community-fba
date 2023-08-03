@@ -1,4 +1,5 @@
 import cbmpy
+import re
 from numpy import Inf
 from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
@@ -12,6 +13,8 @@ class EndPointFBA(DynamicFBABase):
     m_times: list[str]
     m_kinetics: KineticsStruct
 
+    # m_original_reactions: list[str]
+
     def __init__(
         self,
         community_model: CommunityModel,
@@ -23,7 +26,6 @@ class EndPointFBA(DynamicFBABase):
     ) -> None:
         width = len(str(n))
         self.m_times = [f"time{i:0{width}d}" for i in range(n)]
-
         self.m_model = build_time_model(community_model, self.m_times)
         self.m_kinetics = kinetics
         self.set_objective()
@@ -174,3 +176,32 @@ class EndPointFBA(DynamicFBABase):
                         "<=",
                         0.0,
                     )
+
+    def set_qp(self, solution, epsilon=0.01):
+        obj = self.m_model.getActiveObjective()
+        obj.setOperation("minimize")
+        obj.QPObjective = []
+
+        for i, tid in enumerate(self.m_times[:-1]):
+            rids = self.m_model.getReactionIds(tid)
+            for rid in rids:
+                reaction = self.m_model.getReaction(rid)
+
+                # R_ are all the original reqactions
+                # We dont want the exchange reactions
+                if rid.startswith("R_") and not reaction.is_exchange:
+                    rid = re.match(r"(.*?)_(time\d*)", rid).group(1)
+                    rid_t_t1 = f"{rid}_{self.m_times[i+1]}"
+                    rid_t_t0 = f"{rid}_{self.m_times[i]}"
+
+                    if i == 0:
+                        obj.QPObjective.append(((rid_t_t0, rid_t_t0), 1.0))
+                    else:
+                        obj.QPObjective.append(((rid_t_t0, rid_t_t0), 2.0))
+
+                    obj.QPObjective.append(((rid_t_t0, rid_t_t1), -2.0))
+
+                    obj.QPObjective.append(((rid_t_t1, rid_t_t1), 1.0))
+
+        self.m_model.getReaction("X_comm").setLowerBound(solution - epsilon)
+        self.m_model.getReaction("X_comm").setUpperBound(solution + epsilon)

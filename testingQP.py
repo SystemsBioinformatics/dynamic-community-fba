@@ -70,33 +70,46 @@ def cplex_constructPorbfromFBA(fba, fname=None):
         print("\nWARNING(CPLEX create LP): no objective function defined")
     # TODO in the model active objective set a variable that says if
     # objective is quadratic !implementation needed!
+
     cplex_buildLinearConstraints(prob, fba, fname)
 
-    cplex_constructQPfromFBA(prob, fba, fname)
-    wcplex.cplx_setFBAsolutionToModel(fba, prob)
+    # cplex_constructLPfromFBA(prob, fba)
+    cplex_constructQPfromFBA(prob, fba)
+
     return prob
 
 
-def cplex_constructQPfromFBA(prob, fba, fname):
-    target = prob.parameters.optimalitytarget.values
-    prob.parameters.optimalitytarget.set(target.optimal_global)
+def cplex_constructQPfromFBA(prob, fba):
+    # target = prob.parameters.optimalitytarget.values
+    # prob.parameters.optimalitytarget.set(target.optimal_global)
 
     variable_names = prob.variables.get_names()
     qmat = [
         cplex.SparsePair(ind=variable_names, val=[0.0] * len(variable_names))
         for _ in variable_names
     ]
-
     prob.objective.set_quadratic(qmat)
 
-    cmat = [
-        (fo[0][0], fo[0][1], fo[1])
-        for fo in fba.getActiveObjective().QPObjective
-    ]
+    cmat = []
+    for fo in fba.getActiveObjective().QPObjective:
+        v = fo[1]
+        if fo[0][0] == fo[0][1]:
+            v *= 2
+
+        cmat.append((fo[0][0], fo[0][1], v))
 
     prob.objective.set_quadratic_coefficients(cmat)
 
     return prob
+
+
+def cplex_constructLPfromFBA(prob, fba):
+    prob.objective.set_linear(
+        [
+            (fo.reaction, fo.coefficient)
+            for fo in fba.getActiveObjective().fluxObjectives
+        ]
+    )
 
 
 def cplex_buildLinearConstraints(prob, fba, fname):
