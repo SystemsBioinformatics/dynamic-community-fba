@@ -2,6 +2,7 @@ import cplex
 
 c = cplex.Cplex()
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 # target = c.parameters.optimalitytarget.values
 # c.parameters.optimalitytarget.set(target.optimal_global)
@@ -40,52 +41,68 @@ print(" lin   = ", c.objective.get_linear())
 print(" sense = ", c.objective.get_sense())
 
 =======
+=======
+
+# target = c.parameters.optimalitytarget.values
+# c.parameters.optimalitytarget.set(target.optimal_global)
+>>>>>>> df5bb40 (Messfull code which can be cleaned up if cbmpy is updated with the functionality)
 c.objective.set_sense(c.objective.sense.minimize)
 
-print(c.__repr__())
-target = c.parameters.optimalitytarget.values
-c.parameters.optimalitytarget.set(target.optimal_global)
+n = 3
 c.variables.add(
-    names=["x1", "x2"],
-    types=[c.variables.type.continuous] * 2,
-    ub=[10, 20],
-    # lb=[-10, -20],
+    names=["x" + str(i) for i in range(n)],
+    types=[c.variables.type.continuous] * n,
+    # ub=[10, 20],
+    # lb=[-10, -10],
+    # obj=[0.0, -1.0],
 )
+
+qmat = []
 
 qmat = [
-    cplex.SparsePair(ind=["x1", "x2"], val=[1.0, 1.0]),
-    cplex.SparsePair(ind=["x1", "x2"], val=[1.0, 1.0]),
+    [["x0", "x1", "x2"], [2.0, -2.0, 0.0]],
+    [["x0", "x1", "x2"], [-2.0, 4.0, -2.0]],
+    [["x0", "x1", "x2"], [0.0, -2.0, 2.0]],
 ]
 
+
 c.objective.set_quadratic(qmat)
-c.objective.set_quadratic_coefficients(
-    [("x1", "x2", -2.0), ("x1", "x1", 1.0), ("x2", "x2", 1.0)]
-)
 
-# rows = [
-#     [[0, "x2"], [0.0, 1.0]],
-# ]
-
-# c.linear_constraints.add(lin_expr=rows, senses="L", rhs=[10], names=["c1"])
-
-# c.variables.set_upper_bounds([(0, 10), (1, 10)])
+print(c.objective.get_quadratic())
+# c.objective.set_quadratic_coefficients([("x1", "x1", -1)])
 
 c.solve()
 
+<<<<<<< HEAD
 >>>>>>> e579687 (lots of tests)
+=======
+print()
+print("Objective function")
+print(" qnnz  = ", c.objective.get_num_quadratic_nonzeros())
+print(" quad  = ", c.objective.get_quadratic())
+print(" lin   = ", c.objective.get_linear())
+print(" sense = ", c.objective.get_sense())
+
+>>>>>>> df5bb40 (Messfull code which can be cleaned up if cbmpy is updated with the functionality)
 print(c.solution.status[c.solution.get_status()])
 print("Solution value  = ", c.solution.get_objective_value())
 
 x = c.solution.get_values()
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> df5bb40 (Messfull code which can be cleaned up if cbmpy is updated with the functionality)
 print(x)
 print("x0 =", x[0])
 print("x1 =", x[1])
 
 
+<<<<<<< HEAD
 =======
 print("x1 =", x[0])
 print("x2 =", x[1])
 >>>>>>> e579687 (lots of tests)
+=======
+>>>>>>> df5bb40 (Messfull code which can be cleaned up if cbmpy is updated with the functionality)
 # print("x3 =", x[2])
 # print("x4 =", x[3])
