@@ -1,7 +1,7 @@
 5. Dynamic Joint FBA 
 ====================
 
-The multiple metabolic models of different or the same organism that were combined in the ``CommunityModel`` as described
+The multiple metabolic models of different (or the same) organism that were combined in the ``CommunityModel`` as described
 in the previous chapter can now be used in dynamic joint FBA. The community model incorporates the metabolic reactions and 
 interactions between the organisms, allowing for the study of their collective behavior and the emergent properties of the 
 community as a whole.
@@ -10,52 +10,9 @@ The joint FBA approach enables the investigation of metabolic exchanges, such as
 between organisms within the community. By simulating the community-level metabolic interactions, researchers can gain 
 insights into the dependencies, cooperation, competition, and overall dynamics of the organisms in the community.
 
-Joint FBA
----------
 
-After defining the ``CommunityModel`` it is easy to refine it in such a way that we can perform a Joint FBA
-The only thing left to do is append the biomass reaction of each individual model to create the so called `Community biomass`.
-We can now define the reaction :literal:`X_c ->` where  ``X_c`` is the total sum of the individual models' biomasses.
-
-To perform joint FBA run the following: 
-
-.. code-block:: python
-   
-    import cbmpy
-    from cbmpy.CBModel import Model
-    from DCFBA.Models import CommunityModel
-    from DCFBA.DynamicModels import DynamicJointFBA
-
-    model1: Model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
-    model1.getReaction("R_GLCpts").setUpperBound(10)
-
-    model_2 = model1.clone()
-    
-    # Ecoli 2 imports glucose slower
-    model_2.getReaction("R_GLCpts").setUpperBound(8)
-
-    combined_model = CommunityModel(
-        [model1, model_2],
-        ["R_BIOMASS_Ecoli_core_w_GAM", "R_BIOMASS_Ecoli_core_w_GAM"],
-        ["ecoli_1", "ecoli_2"],
-    )  # Create a CommunityModel of two  E. coli strains competing for resources
-
-
-    # Create the joint FBA object with initial biomasses and the initial concentration of glucose
-    dynamic_fba = DynamicJointFBA(
-        combined_model,
-        [0.1, 0.1],
-        {"M_glc__D_e": 10},
-    )
-
-    # Perform FBA on the new joint FBA model object
-    solution = cbmpy.doFBA(dynamic_fba.get_joint_model())
-    print(solution)
-
-
-
-Making it dynamic
------------------
+Making it dynamic!
+------------------
 
 Dynamic FBA is an extension of the traditional FBA approach that incorporates the element of 
 time. In dynamic FBA, a specific time step `dt` is selected, and the concentrations of external
@@ -100,9 +57,9 @@ And the biomasses of both species
     plt.legend()
     plt.show()
 
-.. tip::
+.. .. tip::
 
-    If you create a ``DynamicJointFBA`` object with a ``CommunityModel`` build from just one organism and call the simulate function you
-    perform just regular dynamic FBA!
+..     If you create a ``DynamicJointFBA`` object with a ``CommunityModel`` build from just one organism and call the simulate function you
+..     perform just regular dynamic FBA!
 
 

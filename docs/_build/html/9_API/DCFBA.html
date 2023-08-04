@@ -69,7 +69,10 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#dynamicmodelbase">DynamicModelBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.DynamicModels.DynamicModelBase">DynamicModelBase</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicModelBase.DynamicModelBase"><code class="docutils literal notranslate"><span class="pre">DynamicModelBase</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.DynamicModels.EndPointFBA">EndPointFBA</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#DCFBA.DynamicModels.EndPointFBA.EndPointFBA"><code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#DCFBA.DynamicModels.EndPointFBA.EndPointFBA.m_model"><code class="docutils literal notranslate"><span class="pre">EndPointFBA.m_model</span></code></a></li>
@@ -114,7 +117,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.Models.Kinetics">KineticModel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.Models.Kinetics">KineticStruct</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#DCFBA.Models.Kinetics.KineticsStruct"><code class="docutils literal notranslate"><span class="pre">KineticsStruct</span></code></a></li>
 </ul>
 </li>
@@ -377,15 +380,23 @@ Defaults to None. If set to None, the model ID will be used.</p></li>
 </dd></dl>
 
 </section>
-<section id="dynamicmodelbase">
-<h2>DynamicModelBase<a class="headerlink" href="#dynamicmodelbase" title="Permalink to this heading"></a></h2>
+<section id="module-DCFBA.DynamicModels.DynamicModelBase">
+<span id="dynamicmodelbase"></span><h2>DynamicModelBase<a class="headerlink" href="#module-DCFBA.DynamicModels.DynamicModelBase" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="DCFBA.DynamicModels.DynamicModelBase.DynamicModelBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.DynamicModels.DynamicModelBase.</span></span><span class="sig-name descname"><span class="pre">DynamicModelBase</span></span><a class="headerlink" href="#DCFBA.DynamicModels.DynamicModelBase.DynamicModelBase" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for Dynamic FBA classes
+A DynamicFBA class should at least implement the simulate method</p>
+</dd></dl>
+
 </section>
 <section id="module-DCFBA.DynamicModels.EndPointFBA">
 <span id="endpointfba"></span><h2>EndPointFBA<a class="headerlink" href="#module-DCFBA.DynamicModels.EndPointFBA" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="DCFBA.DynamicModels.EndPointFBA.EndPointFBA">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.DynamicModels.EndPointFBA.</span></span><span class="sig-name descname"><span class="pre">EndPointFBA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">community_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#DCFBA.Models.CommunityModel.CommunityModel" title="DCFBA.Models.CommunityModel.CommunityModel"><span class="pre">CommunityModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_biomasses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_concentrations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#DCFBA.Models.Kinetics.KineticsStruct" title="DCFBA.Models.Kinetics.KineticsStruct"><span class="pre">KineticsStruct</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DCFBA.DynamicModels.EndPointFBA.EndPointFBA" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicModelBase</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#DCFBA.DynamicModels.DynamicModelBase.DynamicModelBase" title="DCFBA.DynamicModels.DynamicModelBase.DynamicModelBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicModelBase</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="DCFBA.DynamicModels.EndPointFBA.EndPointFBA.m_model">
 <span class="sig-name descname"><span class="pre">m_model</span></span><a class="headerlink" href="#DCFBA.DynamicModels.EndPointFBA.EndPointFBA.m_model" title="Permalink to this definition"></a></dt>
@@ -400,7 +411,7 @@ Defaults to None. If set to None, the model ID will be used.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="DCFBA.DynamicModels.TimeStepDynamicModel.TimeStepDynamicModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.DynamicModels.TimeStepDynamicModel.</span></span><span class="sig-name descname"><span class="pre">TimeStepDynamicModel</span></span><a class="headerlink" href="#DCFBA.DynamicModels.TimeStepDynamicModel.TimeStepDynamicModel" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicModelBase</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#DCFBA.DynamicModels.DynamicModelBase.DynamicModelBase" title="DCFBA.DynamicModels.DynamicModelBase.DynamicModelBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicModelBase</span></code></a></p>
 <p>Base class for handling dynamic flux balance analysis simulations
 using time steps to track biomass and metabolite concentrations over time.</p>
 <dl class="py method">
@@ -677,25 +688,27 @@ the objective function of the model.</p>
 
 </section>
 <section id="module-DCFBA.Models.Kinetics">
-<span id="kineticmodel"></span><h2>KineticModel<a class="headerlink" href="#module-DCFBA.Models.Kinetics" title="Permalink to this heading"></a></h2>
+<span id="kineticstruct"></span><h2>KineticStruct<a class="headerlink" href="#module-DCFBA.Models.Kinetics" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="DCFBA.Models.Kinetics.KineticsStruct">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.Models.Kinetics.</span></span><span class="sig-name descname"><span class="pre">KineticsStruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DCFBA.Models.Kinetics.KineticsStruct" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>kineticsStruct</p>
 <p>This class represents a collection of reaction kinetics data. It stores
 the kinetics information as a dictionary, where the reaction identifier
 (rid) is the key, and the associated tuple of vmax and km values is the
 value.</p>
-<p>kinetics reaction_id =&gt; tuple(limiting_species, km, vmax)</p>
-<p>Usage:
-- Add kinetics data for a reaction using the Add() method.
-- Remove kinetics data for a reaction using the Remove() method.
-- Check if kinetics data exists for a reaction using the Exists() method.
-- Retrieve km value for a reaction using the get_km() method.
-- Retrieve vmax value for a reaction using the get_vmax() method.
-- Retrieve the tuple of vmax and km values for a reaction using the
-get_kinetics() method.</p>
+<p>kinetics reaction_id =&gt; tuple(limiting_species_id, km, vmax)</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><ul class="simple">
+<li><p>Add kinetics data for a reaction using the Add() method.</p></li>
+<li><p>Remove kinetics data for a reaction using the Remove() method.</p></li>
+<li><p>Check if kinetics data exists for a reaction using the Exists() method.</p></li>
+<li><p>Retrieve km value for a reaction using the get_km() method.</p></li>
+<li><p>Retrieve vmax value for a reaction using the get_vmax() method.</p></li>
+<li><p>Retrieve the tuple of vmax and km values for a reaction using the get_kinetics() method.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

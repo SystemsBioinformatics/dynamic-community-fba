@@ -1,7 +1,7 @@
 from cbmpy.CBModel import Model, Reaction
 from ..Models.Kinetics import KineticsStruct
 from ..Models.Transporters import Transporters
-from .DyanmicModelBase import DynamicModelBase
+from .DynamicModelBase import DynamicModelBase
 from ..Exceptions import NoLimitingSubstrateFound
 
 
@@ -42,8 +42,16 @@ class TimeStepDynamicModel(DynamicModelBase):
                     # TODO set species exchange to this value
                 else:
                     self.m_metabolite_concentrations[species_id] = [
-                        -reaction.getLowerBound()
+                        max(-reaction.getLowerBound(), 0)
                     ]
+
+        for species in model.species:
+            if (
+                species.getCompartmentId() == "e"
+                and species.getId()
+                not in self.m_metabolite_concentrations.keys()
+            ):
+                self.m_metabolite_concentrations[species.getId()] = [0]
 
     def simulate(
         self,
