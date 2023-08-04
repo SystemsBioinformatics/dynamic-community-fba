@@ -128,11 +128,7 @@ By manipulating you can think of adding or removing external metabolites from th
 </div>
 <p>Next we will define our deviation function. Remember that the function, no matter if you use it or not, needs to accept the <code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code> model, the <code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">steps</span></code> of the simulation
 and a <code class="docutils literal notranslate"><span class="pre">condition</span></code> which we will explain in a minute.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">deviate_func</span><span class="p">(</span>
-    <span class="n">DFBA</span><span class="p">:</span> <span class="n">DynamicJointFBA</span><span class="p">,</span>
-    <span class="n">used_time</span><span class="p">,</span>
-    <span class="n">condition</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">deviate_func</span><span class="p">(</span><span class="n">DFBA</span><span class="p">:</span> <span class="n">DynamicJointFBA</span><span class="p">,</span> <span class="n">used_time</span><span class="p">,</span> <span class="n">condition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="k">if</span> <span class="p">(</span>
     <span class="n">DFBA</span><span class="o">.</span><span class="n">m_metabolite_concentrations</span><span class="p">[</span><span class="s2">&quot;M_pyr_e&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">5.0</span>
     <span class="ow">and</span> <span class="n">condition</span> <span class="o">&lt;</span> <span class="mi">1</span>
@@ -147,7 +143,7 @@ and a <code class="docutils literal notranslate"><span class="pre">condition</sp
 </pre></div>
 </div>
 <p>Here we define the <code class="docutils literal notranslate"><span class="pre">deviate_func</span></code> as follows, run the function when the concentration of the dynamic FBA object runs under 5.0 and run it only once. If the concentration is
-not below oir equal to 5.0 return the condition. The <code class="docutils literal notranslate"><span class="pre">condition</span></code> parameter is an <code class="docutils literal notranslate"><span class="pre">int</span></code> which is set to zero at the start of the simulation and is always passed to the deviate function.
+not below oir equal to 5.0 return the condition. The <code class="docutils literal notranslate"><span class="pre">condition</span></code> parameter is by default set to 0 at the start of the simulation and is always passed to the deviate function.
 This is done such that for example you can rerun the function for consecutive time steps. The value returned by the function will always be added to the global condition variable.
 By doing so we can for example add Glucose to the system for N consecutive runs by modifying the conditional statement.
 You can also skip on using the condition and define your own conditions when the function should run.</p>
