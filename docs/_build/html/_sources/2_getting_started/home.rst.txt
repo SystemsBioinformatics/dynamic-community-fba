@@ -1,12 +1,18 @@
-2. Getting Started
-==================
+2. CBMPy Quick Start Guide
+==========================
 
-With the package a the models for *E. coli core metabolism*, *Streptococcus thermophilus* and *Lactobacillus delbrueckii*, here 
-we will show you the basic operations for loading and modifying a cbmpy model. If you've worked with `cobrapy` previously
-you will see `cbmpy` is not that different. If this is your first time working with GSMM's and FBA we recommend  you to start with
-the extensive cbmpy tutorial (if we have completed this)
+Before delving into the modeling of microbial communities, let's establish a solid foundation by exploring the core principles of the `CBMPy` package. 
+We will guide you through a series of instructive examples that illuminate key operations for GSMM's. These examples will demonstrate the foundational techniques 
+for loading and manipulating models. For these examples we will use the *E. coli core metabolism* which comes with the `CBMPy` package. 
+Through these hands-on demonstrations, you'll swiftly grasp the fundamental maneuvers that underpin effective model manipulation.
+For a more comprehensive understanding and explanation of all the functionalities available in  `CBMPy`, we recommend you to read the extensive documentation_.
 
-2.1. Loading a model using cbmpy
+For those who have prior experience with CPBRApy, the transition to CBMPy will feel remarkably intuitive, as the two share notable similarities in their approach and methodology. 
+
+.. _documentation: https://pythonhosted.org/cbmpy/modules_doc.html
+
+
+2.1. Loading a model using CBMPy
 --------------------------------
 
 To load a model and perform a simple FBA analysis on it type:
@@ -16,25 +22,24 @@ To load a model and perform a simple FBA analysis on it type:
    import cbmpy
    from cbmpy.CBModel import Model
 
-   model: Model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
-   cbmpy.doFBA(model)
-   FBAsol = model.getSolutionVector(names=True)
-   FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+   model: Model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml") #Load the model
+   solution = cbmpy.doFBA(model) #Perform FBA, returns the objective value
+   FBAsol = model.getSolutionVector(names=True) #Get all reaction ids with there flux value
    
 Here the model refers to a ``cbmpy.CBModel`` which represents the GSMM of the loaded organism .
 
 
-2.2. SBML and cobra models 
+2.2. SBML and COBRA models 
 --------------------------
 
-The ``cbmpy.load_model()`` function is designed to efficiently handle a wide range of models. It seamlessly supports the 
+The ``cbmpy.loadModel()`` function is designed to efficiently handle a wide range of models. It seamlessly supports the 
 import of models encoded in the standardized `Systems Biology Markup Language (SBML)`_ format, as well as models exported by 
-`cobrapy`. This means that you can easily work with different versions of SBML and `cobrapy` models without having to 
+`COBRApy`. This means that you can easily work with different versions of SBML and `COBRApy` models without having to 
 specify them explicitly. This flexibility simplifies the model loading process. 
 
 .. note::
     Sometimes the conversion of exchanges, sinks or other boundary conditions are not properly set when exporting or importing 
-    a `cobra` model into `cbmpy` therefore always check if these reactions are set correctly in the loaded model.*
+    a `COBRA` model into `CBMPy` therefore always check if these reactions are set correctly in the loaded model.
 
 .. _Systems Biology Markup Language (SBML): https://sbml.org/
 
@@ -50,7 +55,7 @@ There are two ways to save a cbmpy model. The easiest way is to save your altere
 
     cbmpy.saveModel(model, "adjusted_model.xml") #Save the new model to a XML file
 
-If you don't want to save the model to to the latest version of SBML or you wan't to save it to a `cobrapy` model you can call one of the below functions:
+If you don't want to save the model to to the latest version of SBML or you wan't to save it to a `COBRApy` model you can call one of the below functions:
 
 .. code-block:: python
     
@@ -62,15 +67,10 @@ If you don't want to save the model to to the latest version of SBML or you wan'
 2.4. Reactions, Reagents and Species
 ------------------------------------
 
-In `cbmpy`, the ``cbmpy.CBModel`` object forms the basis of the model. When working with the model, 
+In `CBMPy`, the ``cbmpy.CBModel`` object stores the model and all it's attributes. When working with the model, 
 most modifications will involve manipulating this object. In the previous section, 
-we demonstrated how to load the *E. coli core metabolism*. Now, let's explore some basic alterations that can be made 
-to the model. For a more comprehensive understanding of the functionalities available in the ``cbmpy.CBModel`` object and 
-other features of cbmpy, we recommend referring to the extensive documentation_.
-
-
-
-.. _documentation: https://pythonhosted.org/cbmpy/modules_doc.html
+we demonstrated how to load the *E. coli core metabolism* model and perform a FBA on it. Now, let's explore some basic alterations that can be made 
+to the model.
 
 Reactions
 *********
@@ -167,31 +167,26 @@ Furthermore you can list the reactions in which a species is consumed or created
 Objective function 
 ******************
 
-To perform FBA on the model you need to set an objective function. This is the reaction for which the maximal or minimal flux will 
-be calculated. 
+To perform FBA on the model you need to set an objective function. The out put of FBA 
+will be a flux distribution which maximizes/minimizes this objective function. 
+
 To check what the active objective function of the model is you can write: 
 
 .. code-block:: python 
 
-    objective_ids = model.getActiveObjectiveReactionIds() 
+    objective_ids = model.getActiveObjectiveReactionIds() #Returns the IDs of the reactions which have been set as objective reaction
     #['R_BIOMASS_Ecoli_core_w_GAM']
     
     objective = model.getActiveObjective()
     objective.getOperation()
     #Maximize
 
-
-If you would call the function ``cbmpy.doFBA(model)`` FBA will calculate the fluxes such that the flux through the 
-reaction with id `R_BIOMASS_Ecoli_core_w_GAM` is maximal. 
+    solution = cbmpy.doFBA(model)
 
 
-2.5. Transitioning to cbmpy from cobrapy
-----------------------------------------
-
-As previously mentioned, any model build using `cobrapy` or any other toolbox for that matter can easily be opened in `cbmpy`. By 
-just exporting your model of interest to either SBML format or to a cobra model you can import it as an cbmpy model.
+Calling ``cbmpy.doFBA(model)``  will calculate the fluxes such that the flux through the 
+reaction with id `R_BIOMASS_Ecoli_core_w_GAM` is maximized. 
 
 
-
-Next we will explore how cbmpy models can be used to model the behaviors of microbial communities. 
+Next we will explore how CBMPy models can be used to model the behaviors of microbial communities. 
 

@@ -31,6 +31,16 @@ class DynamicJointFBA(DynamicFBABase):
         self.m_transporters.add_exporter("X_comm", ["X_c"])
         self.m_metabolite_concentrations["X_c"] = [sum(biomasses)]
 
+    def get_joint_model(self) -> CommunityModel:
+        """Get the community model appended with the Community
+        Biomass function.
+
+        Returns:
+            CommunityModel: The community model used for the simulation.
+
+        """
+        return self.m_model
+
     def set_community_biomass_reaction(self):
         """Create and set up the community biomass reaction.
 

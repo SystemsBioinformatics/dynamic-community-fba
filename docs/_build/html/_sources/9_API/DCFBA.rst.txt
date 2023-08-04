@@ -53,7 +53,7 @@ DynamicJointFba
    :show-inheritance:
 
 
-KineticModel
+KineticStruct
 -------------------------------
 
 .. automodule:: DCFBA.Models.Kinetics

@@ -8,7 +8,7 @@ class DynamicSingleFBA(DynamicFBABase):
         self,
         model: Model,
         biomass_id: str,
-        initial_biomass: list[float],
+        initial_biomass: float,
         initial_concentrations: dict[str, float] = {},
         kinetics: KineticsStruct = KineticsStruct({}),
     ):
