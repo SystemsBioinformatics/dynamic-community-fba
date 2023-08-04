@@ -7,7 +7,7 @@ class KineticsStruct:
     (rid) is the key, and the associated tuple of vmax and km values is the
     value.
 
-    kinetics reaction_id => tuple(limiting_species, km. vmax)
+    kinetics reaction_id => tuple(limiting_species, km, vmax)
 
     Usage:
     - Add kinetics data for a reaction using the Add() method.
