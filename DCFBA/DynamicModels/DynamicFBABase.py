@@ -1,11 +1,17 @@
 import cbmpy
 import math
-from cbmpy.CBModel import Model, Reaction
+from cbmpy.CBModel import Reaction
 from ..Models import KineticsStruct, Transporters, CommunityModel
 from .TimeStepDynamicModel import TimeStepDynamicModel
 
 
 class DynamicFBABase(TimeStepDynamicModel):
+    """Base class for SingleDynamicFBA and JointFBA
+    Here the code for simulating both is implemented
+    The two models only differ in the fact that there is
+    a Community Biomass in Dynamic JointFBA
+    """
+
     m_model: CommunityModel
     m_transporters: Transporters
     m_initial_bounds: dict[str, tuple[float, float]] = {}
@@ -74,7 +80,7 @@ class DynamicFBABase(TimeStepDynamicModel):
         fluxes = []
         run_condition = 0
 
-        for i in range(1, n):
+        for _ in range(1, n):
             if dt_hat != -1:
                 dt = dt_hat
                 dt_hat = -1
@@ -91,7 +97,9 @@ class DynamicFBABase(TimeStepDynamicModel):
             self.update_reaction_bounds(kinetics_func)
             self.update_exchanges()
 
-            solution = cbmpy.doFBA(self.m_model, quiet=True)
+            solution = cbmpy.doFBA(self.m_model, quiet=False)
+            FBAsol = self.m_model.getSolutionVector(names=True)
+            FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
             if math.isnan(solution) or solution <= epsilon or dt < epsilon:
                 break
@@ -123,16 +131,6 @@ class DynamicFBABase(TimeStepDynamicModel):
             self.m_biomass_concentrations,
             fluxes,
         ]
-
-    def get_joint_model(self) -> CommunityModel:
-        """Get the community model appended with the Community
-        Biomass function.
-
-        Returns:
-            CommunityModel: The community model used for the simulation.
-
-        """
-        return self.m_model
 
     def update_exchanges(self):
         for rid in self.m_model.getExchangeReactionIds():

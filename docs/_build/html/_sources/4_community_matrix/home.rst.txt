@@ -6,7 +6,8 @@
 
 Here we will introduce the concept of the community model, which plays a vital role in upcoming modeling techniques. 
 In simple terms, the community model represents the combined stoichiometry matrices of N Genome-Scale Metabolic Models (GSMMs) 
-for performing Flux Balance Analysis (FBA).
+for performing Flux Balance Analysis (FBA). Furthermore, you can easily exported the community model to an SBML model and analyses it with your 
+preferred tool.
 
 To streamline the handling of multiple models, we have developed the ``CommunityModel`` class. The class offers a structured representation of combined metabolic networks, integrating stoichiometric 
 information from individual GSMMs. This facilitates in-depth analysis of complex microbial communities, their dynamics, 
@@ -24,13 +25,13 @@ To initialize a ``CommunityModel`` you have to give a list of N GSMMs as well as
 .. code-block:: python
 
     import cbmpy
-    from endPointFBA import CommunityModel
+    from DCFBA.Models import CommunityModel
 
-    model1 = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
-    model2 = cbmpy.loadModel("data/bigg_models/strep_therm.xml")
+    model1 = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")
+    model2 = cbmpy.loadModel("models/bigg_models/strep_therm.xml")
 
-    biomass_reaction_model_1 = "R_BIOMASS_Ecoli_core_w_GAM"
-    biomass_reaction_model_2 = "R_biomass_STR"
+    biomass_reaction_model_1 = "R_BIOMASS_Ecoli_core_w_GAM" #Biomass reaction id of ecoli
+    biomass_reaction_model_2 = "R_biomass_STR" #Biomass reaction id of strep.
     community_model: CommunityModel = CommunityModel(
         [model1, model2],
         [
@@ -66,17 +67,18 @@ Check the API for all functionality.
 Maybe move this to an advanced section?
 
 During the initialization of the community model a new ``cbmpy.CBModel`` object is created. In the new object all compartments,
-reactions, reagents and species are copied from the provided model. The following considerations were made for each:
+reactions, reagents and species are copied from the provided models. To implement this process, following considerations were made for each:
 
 Compartments:
 *************
 
+
+In the new model, all organisms share the same external environment, all compartments from the individual models are copied, 
+except for the `external` or `e` compartment, which is only created once in the new model. All copied compartment ids get a prefix of the id of the model
+they belonged to such that we know which compartment corresponds to which organism.
+
 The new model comprises a total of :math:`\Sigma_{i=1}^{n} (c_i-1) + 1` compartments, where c represents the number 
 of compartments in each model i.
-
-In the new model, all compartments from the individual models are copied, except for the `external` or `e` compartment. 
-The external compartment is reserved to be added at the end. All other compartment ids get a prefix of the id of the model
-they belonged to such that we know which compartment corresponds to which organism.
 
 This design ensures that there is only one external compartment in which all species and reactions from all models coexist.
 
@@ -88,20 +90,13 @@ Reactions:
 
 Just like the compartments, all reactions are duplicated, and each reaction ID is augmented with its corresponding model ID. This 
 holds up for all reactions except for the exchange reactions. If two models share an exchange reaction only one is saved in the new 
-combined model such that we have more control over all. 
+combined model.
 
 Reagents and species
 ********************
 
-Before the reactions can be copied to the new model there is a check for which species occur in more than one model.
-For these species a new species in the original model is created and all reactions associated to this species have there reagents changed. 
-By doing so the initial models already have everything set correctly into place to have the reactions copied. 
-
-In contrast with the compartment IDs, and the reaction IDs the species IDs are not changed by default. But only if the species id 
-occurs in two or more models. This is done since we can already quickly lookup to which original model the species belonged by checking 
-the compartment which it is in.
-
-
+Since the community shares all external metabolites only one copy of each external metabolite is stored in the combined model.
+All other species are copied to the new model, only receiving a suffix if the species occurs in more than one model.
 
 
 .. warning:: 

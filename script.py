@@ -1,30 +1,41 @@
-import cbmpy
-from DCFBA.DynamicModels import DynamicSingleFBA
-from DCFBA.Models import KineticsStruct
 import matplotlib.pyplot as plt
+import cbmpy
+from cbmpy.CBModel import Model, Species, Reaction
+from DCFBA.Models import CommunityModel
+from DCFBA.DynamicModels import DynamicSingleFBA
 
-model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
 
-initial_biomass = 0.1
-initial_concentrations = {"M_glc__D_e": 10}
-kin = KineticsStruct({"R_GLCpts": ("M_glc__D_e", 5, 10)})
+model1: Model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")
+model2: Model = cbmpy.loadModel("models/bigg_models/strep_therm.xml")
 
-ds = DynamicSingleFBA(
-    model,
-    "R_BIOMASS_Ecoli_core_w_GAM",
-    initial_biomass,
-    initial_concentrations,
-    kinetics=kin,
+model1.getReaction("R_GLCpts").setUpperBound(10)
+
+
+model2.getReaction("R_GLCt2").setUpperBound(1)
+# model2.getReaction("R_EX_LCTSGALex").setLowerBound(0)
+# R_EX_gal_e
+# model2.getReaction("R_EX_LCTSGALex").setLowerBound(-10)
+# print(model2.getReaction("R_EX_LCTSGALex").getUpperBound())
+
+biomass_reaction_model_1: str = "R_BIOMASS_Ecoli_core_w_GAM"
+biomass_reaction_model_2: str = "R_biomass_STR"
+
+{"M_glc__D_e": 100, "M_lcts_e": 100}
+dj = DynamicSingleFBA(
+    model2, biomass_reaction_model_2, 0.1, {"M_glc__D_e": 1000000}
 )
 
-T, metabolites, biomassess, _ = ds.simulate(0.15)
+T, metabolites, biomasses, fluxes = dj.simulate(0.1)
 
+plt.plot(T, metabolites["M_glc__D_e"], color="blue", label="[Glucose]")
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
+plt.show()
 
-ax = plt.subplot(111)
-ax.plot(T, biomassess[""])
-ax2 = plt.twinx(ax)
-ax2.plot(T, metabolites["M_glc__D_e"], color="r")
-
-ax.set_ylabel("Biomass", color="b")
-ax2.set_ylabel("Glucose", color="r")
+plt.plot(T, biomasses["ecoli"], color="blue", label="modelA")
+plt.plot(T, biomasses["strep"], color="orange", label="modelB")
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
 plt.show()

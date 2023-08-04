@@ -3,7 +3,7 @@ from numpy import Inf
 from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
-from .DyanmicModelBase import DynamicModelBase
+from .DynamicModelBase import DynamicModelBase
 from ..Models import KineticsStruct
 
 
