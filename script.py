@@ -11,7 +11,7 @@ from DCFBA.Helpers.PlotsEndPointFBA import (
     plot_metabolites,
     plot_fluxes,
 )
-from testingQP import cplex_constructPorbfromFBA
+from testingQP import cplex_constructProbfromFBA
 import cbmpy.CBCPLEX as wcplex
 
 
@@ -69,7 +69,7 @@ kin = KineticsStruct(
 
 
 community_model = CommunityModel(
-    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelA"]
+    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
 )
 
 # Are set by the model as often required by other GSMM
@@ -98,7 +98,7 @@ plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
 dj.set_qp(solution, 0)
 dj.m_model.buildStoichMatrix()
 
-prob = cplex_constructPorbfromFBA(dj.m_model)
+prob = cplex_constructProbfromFBA(dj.m_model)
 prob.solve()
 print("Solution value  = ", prob.solution.get_objective_value())
 sol, objname, objval = wcplex.cplx_getOptimalSolution(prob)

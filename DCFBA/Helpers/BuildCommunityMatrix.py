@@ -374,7 +374,7 @@ def check_ids(new_ids: list[str], models: list[Model]) -> None:
 
     for rid in rids:
         for id in new_ids:
-            if f"_{id}" in rid:
+            if f"_{id}" in rid and id != "":
                 raise Exception(
                     "The provided ids are not unique in the model.\
                                 Please provide an alternative model \
