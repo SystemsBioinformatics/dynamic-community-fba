@@ -1,4 +1,4 @@
-from DCFBA.DynamicModels.TimeStepDynamicFBABase import DynamicFBABase
 from DCFBA.DynamicModels.DynamicJointFBA import DynamicJointFBA
 from DCFBA.DynamicModels.DynamicParallelFBA import DynamicParallelFBA
 from DCFBA.DynamicModels.EndPointFBA import EndPointFBA
+from DCFBA.DynamicModels.DynamicSingleFBA import DynamicSingleFBA

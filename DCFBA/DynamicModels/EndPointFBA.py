@@ -3,11 +3,11 @@ from numpy import Inf
 from cbmpy.CBModel import Reaction, Species
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
-from .DynamicFBABase import DynamicFBABase
+from .DyanmicModelBase import DynamicModelBase
 from ..Models import KineticsStruct
 
 
-class EndPointFBA(DynamicFBABase):
+class EndPointFBA(DynamicModelBase):
     m_model = CommunityModel
     m_times: list[str]
     m_kinetics: KineticsStruct

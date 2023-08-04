@@ -1,11 +1,11 @@
 from cbmpy.CBModel import Model, Reaction
 from ..Models.Kinetics import KineticsStruct
 from ..Models.Transporters import Transporters
-from .DynamicFBABase import DynamicFBABase
+from .DyanmicModelBase import DynamicModelBase
 from ..Exceptions import NoLimitingSubstrateFound
 
 
-class TimeStepDynamicFBABase:
+class TimeStepDynamicModel(DynamicModelBase):
     """Base class for handling dynamic flux balance analysis simulations
     using time steps to track biomass and metabolite concentrations over time.
 

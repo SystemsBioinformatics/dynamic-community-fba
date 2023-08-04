@@ -1,12 +1,12 @@
 import cbmpy
 import math
 from cbmpy.CBModel import Model, Reaction
-from .TimeStepDynamicFBABase import TimeStepDynamicFBABase
+from .TimeStepDynamicModel import TimeStepDynamicModel
 from ..Models.Kinetics import KineticsStruct
 from ..Models.Transporters import Transporters
 
 
-class DynamicParallelFBA(TimeStepDynamicFBABase):
+class DynamicParallelFBA(TimeStepDynamicModel):
     """A class representing a dynamic parallel FBA simulation.
 
     This class extends the TimeStepDynamicFBABase and provides functionality
