@@ -179,7 +179,7 @@ def build_combined_model():
     model.createReaction("A_exchange", reversible=True)
     model.createReactionReagent("A_exchange", "A_e", -1)
     model.setReactionBounds("A_exchange", -1000.0, 1000)
-    model.getReaction("A_exchange").is_exchange = True
+    model.getReaction("S_exchange").is_exchange = True
 
     # D can't be imported
     model.createReaction("D_exchange", reversible=False)

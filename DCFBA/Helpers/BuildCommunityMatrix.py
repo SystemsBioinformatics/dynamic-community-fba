@@ -63,8 +63,9 @@ def combine_models(
         raise Exception("Too few ids were provided")
 
     if len(new_ids) == 0:
-        for model in models:
-            new_ids.append(model.id)
+        new_ids = [model.getId() for model in models]
+
+    check_ids(new_ids, models)
 
     for i in range(0, len(models)):
         model = models[i]
@@ -353,3 +354,29 @@ def create_new_id(old_id: str, new_id: str) -> str:
         return f"{old_id}"
 
     return f"{old_id}_{new_id}"
+
+
+def check_ids(new_ids: list[str], models: list[Model]) -> None:
+    """Checks if the new ids are valid
+
+    Args:
+        new_ids (list[str]): List of strings to append to the old ids
+        models (list[Model]): list of models
+    """
+    if len(new_ids) > 0 and len(new_ids) < len(models):
+        raise Exception("Too few ids were provided")
+
+    if len(set(new_ids)) != len(new_ids):
+        raise Exception("Model identifiers should be unique!")
+
+    rids = [rid for model in models for rid in model.getReactionIds()]
+    rids = list(set(rids))
+
+    for rid in rids:
+        for id in new_ids:
+            if f"_{id}" in rid:
+                raise Exception(
+                    "The provided ids are not unique in the model.\
+                                Please provide an alternative model \
+                                identifier."
+                )

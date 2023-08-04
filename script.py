@@ -52,7 +52,7 @@ kin = KineticsStruct(
 
 
 community_model = CommunityModel(
-    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelA"]
 )
 
 # Are set by the model as often required by other GSMM
