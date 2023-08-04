@@ -48,17 +48,18 @@ class CommunityModel(Model):
         """
         super().__init__(combined_model_id)
 
-        self.createCompartment("e", "extracellular space")
-        duplicate_species = cm.create_duplicate_species_dict(models)
-
         self.m_single_model_ids = [model.id for model in models]
 
-        if len(ids) > 0 and len(ids) < len(models):
-            raise Exception("Too few ids were provided")
         if len(ids) == 0:
-            self.m_identifiers = self.m_single_model_ids.copy()
+            self.m_identifiers = self.m_single_model_ids
         else:
-            self.m_identifiers = ids
+            self.m_identifiers = copy.deepcopy(ids)
+
+        cm.check_ids(self.m_identifiers, models)
+
+        self.createCompartment("e", "extracellular space")
+
+        duplicate_species = cm.create_duplicate_species_dict(models)
 
         # Save biomass reaction id of old model, make sure
         # the first reaction is the biomass reaction
@@ -292,6 +293,7 @@ class CommunityModel(Model):
 
         return species_ids
 
+    # TODO prefix with _#id or MT_A
     def identify_model_from_reaction(self, rid: str) -> str:
         """Given a reaction id get the single model this reaction belonged to
 
