@@ -8,6 +8,16 @@ from DCFBA.DynamicModels import DynamicSingleFBA
 model1: Model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")
 model2: Model = cbmpy.loadModel("models/bigg_models/strep_therm.xml")
 
+
+solution = cbmpy.doFBA(model2)
+FBAsol = model2.getSolutionVector(names=True)
+FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+
+for key, value in FBAsol.keys():
+    if key.startswith("R_EX"):
+        print(key, value)
+
+raise Exception
 model1.getReaction("R_GLCpts").setUpperBound(10)
 
 
@@ -22,7 +32,7 @@ biomass_reaction_model_2: str = "R_biomass_STR"
 
 {"M_glc__D_e": 100, "M_lcts_e": 100}
 dj = DynamicSingleFBA(
-    model2, biomass_reaction_model_2, 0.1, {"M_glc__D_e": 1000000}
+    model2, biomass_reaction_model_2, 0.1, {"M_glc__D_e": 1000, "M_gal_e": 25}
 )
 
 T, metabolites, biomasses, fluxes = dj.simulate(0.1)
@@ -33,8 +43,8 @@ plt.ylabel("Concentration")
 plt.legend()
 plt.show()
 
-plt.plot(T, biomasses["ecoli"], color="blue", label="modelA")
-plt.plot(T, biomasses["strep"], color="orange", label="modelB")
+# plt.plot(T, biomasses["ecoli"], color="blue", label="modelA")
+plt.plot(T, biomasses[""], color="orange", label="modelB")
 plt.xlabel("Time")
 plt.ylabel("Concentration")
 plt.legend()
