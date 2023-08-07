@@ -9,8 +9,8 @@ Simply put, Dynamic FBA performs FBA foreach given time point and calculates the
 With each iteration, external metabolites and biomasses are adjusted, followed by another FBA run. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
 or the final time point is reached. This modeling approach enables the exploration of metabolic network adjustments to evolving environmental factors, substrate availability, and cellular demands.
 
-Example
--------
+Making it dynamic!
+------------------
 
 To perform dFBA run the following: 
 

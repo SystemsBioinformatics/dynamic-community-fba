@@ -43,7 +43,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../1_installation/home.html">1. Installation and Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. CBMPy Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">2. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
@@ -97,7 +98,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.DynamicModels.DynamicFBABase">DynamicFBABase</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_joint_model"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.get_joint_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.reset_dt"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.reset_dt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.simulate"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.simulate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.update_concentrations"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.update_concentrations()</span></code></a></li>
@@ -112,6 +112,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-DCFBA.DynamicModels.DynamicJointFBA">DynamicJointFba</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA"><code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_joint_model"><code class="docutils literal notranslate"><span class="pre">DynamicJointFBA.get_joint_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#DCFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction"><code class="docutils literal notranslate"><span class="pre">DynamicJointFBA.set_community_biomass_reaction()</span></code></a></li>
 </ul>
 </li>
@@ -575,21 +576,6 @@ Here the code for simulating both is implemented
 The two models only differ in the fact that there is
 a Community Biomass in Dynamic JointFBA</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_joint_model">
-<span class="sig-name descname"><span class="pre">get_joint_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#DCFBA.Models.CommunityModel.CommunityModel" title="DCFBA.Models.CommunityModel.CommunityModel"><span class="pre">CommunityModel</span></a></span></span><a class="headerlink" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_joint_model" title="Permalink to this definition"></a></dt>
-<dd><p>Get the community model appended with the Community
-Biomass function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The community model used for the simulation.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#DCFBA.Models.CommunityModel.CommunityModel" title="DCFBA.Models.CommunityModel.CommunityModel">CommunityModel</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.reset_dt">
 <span class="sig-name descname"><span class="pre">reset_dt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FBAsol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.reset_dt" title="Permalink to this definition"></a></dt>
 <dd><p>Recalculate the time step if a species becomes infeasible.</p>
@@ -660,7 +646,7 @@ bounds based on kinetics. If None, standard bounds are used.</p>
 <span id="dynamicsinglefba"></span><h2>DynamicSingleFBA<a class="headerlink" href="#module-DCFBA.DynamicModels.DynamicSingleFBA" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="DCFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.DynamicModels.DynamicSingleFBA.</span></span><span class="sig-name descname"><span class="pre">DynamicSingleFBA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">model:</span> <span class="pre">~cbmpy.CBModel.Model,</span> <span class="pre">biomass_id:</span> <span class="pre">str,</span> <span class="pre">initial_biomass:</span> <span class="pre">list[float],</span> <span class="pre">initial_concentrations:</span> <span class="pre">dict[str,</span> <span class="pre">float]</span> <span class="pre">=</span> <span class="pre">{},</span> <span class="pre">kinetics:</span> <span class="pre">~DCFBA.Models.Kinetics.KineticsStruct</span> <span class="pre">=</span> <span class="pre">&lt;DCFBA.Models.Kinetics.KineticsStruct</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#DCFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DCFBA.DynamicModels.DynamicSingleFBA.</span></span><span class="sig-name descname"><span class="pre">DynamicSingleFBA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model:</span> <span class="pre">~cbmpy.CBModel.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biomass_id:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_biomass:</span> <span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_concentrations:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float]</span> <span class="pre">=</span> <span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics:</span> <span class="pre">~DCFBA.Models.Kinetics.KineticsStruct</span> <span class="pre">=</span> <span class="pre">&lt;DCFBA.Models.Kinetics.KineticsStruct</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#DCFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase" title="DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicFBABase</span></code></a></p>
 </dd></dl>
 
@@ -674,6 +660,21 @@ bounds based on kinetics. If None, standard bounds are used.</p>
 <p>A class representing a dynamic joint Flux Balance Analysis simulation.</p>
 <p>This class extends the TimeStepDynamicFBABase and provides functionality
 for performing dynamic joint FBA simulations on a community model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="DCFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_joint_model">
+<span class="sig-name descname"><span class="pre">get_joint_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#DCFBA.Models.CommunityModel.CommunityModel" title="DCFBA.Models.CommunityModel.CommunityModel"><span class="pre">CommunityModel</span></a></span></span><a class="headerlink" href="#DCFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_joint_model" title="Permalink to this definition"></a></dt>
+<dd><p>Get the community model appended with the Community
+Biomass function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The community model used for the simulation.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#DCFBA.Models.CommunityModel.CommunityModel" title="DCFBA.Models.CommunityModel.CommunityModel">CommunityModel</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="DCFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction">
 <span class="sig-name descname"><span class="pre">set_community_biomass_reaction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#DCFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction" title="Permalink to this definition"></a></dt>

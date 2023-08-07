@@ -1,21 +1,4 @@
 import cbmpy
-import re
-import matplotlib.pyplot as plt
-from cbmpy.CBModel import Model, Reaction, Objective
-from DCFBA.ToyModels import model_a, model_b
-from DCFBA.Models.CommunityModel import CommunityModel
-from DCFBA.Models.Kinetics import KineticsStruct
-from DCFBA.DynamicModels import EndPointFBA
-from DCFBA.Helpers.PlotsEndPointFBA import (
-    plot_biomasses,
-    plot_metabolites,
-    plot_fluxes,
-)
-from testingQP import cplex_constructProbfromFBA
-import cbmpy.CBCPLEX as wcplex
-
-
-import cbmpy
 import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model, Reaction
 from DCFBA.ToyModels import model_a, model_b

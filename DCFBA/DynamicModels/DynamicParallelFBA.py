@@ -58,6 +58,7 @@ class DynamicParallelFBA(TimeStepDynamicModel):
             self.set_initial_concentrations(model, initial_concentrations)
             self.m_biomass_concentrations[mid] = [biomasses[i]]
             self.m_model_transporters[mid] = Transporters(model)
+
             for rid in model.getReactionIds():
                 reaction: Reaction = model.getReaction(rid)
                 if mid not in self.m_initial_bounds.keys():
@@ -107,6 +108,7 @@ class DynamicParallelFBA(TimeStepDynamicModel):
         dt_save = dt
         run_condition = 0
         step = 1
+
         for _ in range(1, n):
             if dt_hat != -1:
                 dt = dt_hat
@@ -126,11 +128,9 @@ class DynamicParallelFBA(TimeStepDynamicModel):
             self.constrain_exchanges()
 
             used_time.append(used_time[-1] + dt)
-
+            fluxes = {}
             for model in self.m_models:
                 solution = cbmpy.doFBA(model, quiet=True)
-                FBAsol = model.getSolutionVector(names=True)
-                FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
                 if math.isnan(solution) or solution < epsilon or dt < epsilon:
                     return [
@@ -139,13 +139,18 @@ class DynamicParallelFBA(TimeStepDynamicModel):
                         self.m_biomass_concentrations,
                     ]
 
+                FBAsol = model.getSolutionVector(names=True)
+                FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+
+                fluxes[model.getId()] = FBAsol
+
                 self.update_concentrations(model, FBAsol, step, dt)
                 self.update_biomasses(model, dt, FBAsol, step)
 
             species_id = self.check_solution_feasibility()
 
             if species_id != "":
-                dt_hat = self.reset_dt(species_id, FBAsol)
+                dt_hat = self.reset_dt(species_id, fluxes)
                 step -= 1
                 used_time = used_time[:-1]
 
@@ -292,7 +297,6 @@ class DynamicParallelFBA(TimeStepDynamicModel):
         self.m_biomass_concentrations = {
             key: lst[:-1] for key, lst in self.m_biomass_concentrations.items()
         }
-
         total = 0
         for model in self.m_models:
             mid = model.getId()
@@ -300,6 +304,6 @@ class DynamicParallelFBA(TimeStepDynamicModel):
                 mid
             ].get_importers(True):
                 if species_id in species_ids:
-                    total += FBAsol[rid]
+                    total += FBAsol[mid][rid]
 
         return self.m_metabolite_concentrations[species_id][-1] / total
