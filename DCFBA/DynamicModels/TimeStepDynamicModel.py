@@ -30,20 +30,25 @@ class TimeStepDynamicModel(DynamicModelBase):
                 the initial concentrations as key-value pairs for different
                 metabolites.
         """
-
         for exchange in model.getExchangeReactionIds():
             reaction: Reaction = model.getReaction(exchange)
             species_id: str = reaction.reagents[0].getSpecies()
-            if species_id not in self.m_metabolite_concentrations.keys():
-                if species_id in initial_concentrations.keys():
-                    self.m_metabolite_concentrations[species_id] = [
-                        initial_concentrations[species_id]
-                    ]
-                    # TODO set species exchange to this value
-                else:
-                    self.m_metabolite_concentrations[species_id] = [
-                        max(-reaction.getLowerBound(), 0)
-                    ]
+
+            if species_id in initial_concentrations.keys():
+                self.m_metabolite_concentrations[species_id] = [
+                    initial_concentrations[species_id]
+                ]
+            else:
+                # Max such that positive lower bounds in exchanges are not set
+                concentration = (
+                    0
+                    if species_id
+                    not in self.m_metabolite_concentrations.keys()
+                    else self.m_metabolite_concentrations[species_id][-1]
+                )
+                self.m_metabolite_concentrations[species_id] = [
+                    max(-reaction.getLowerBound(), concentration)
+                ]
 
         for species in model.species:
             if (

@@ -98,11 +98,7 @@ class DynamicFBABase(TimeStepDynamicModel):
             self.update_exchanges()
 
             solution = cbmpy.doFBA(self.m_model, quiet=False)
-            FBAsol = self.m_model.getSolutionVector(names=True)
-            FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
-            print(FBAsol)
-            input()
             if math.isnan(solution) or solution <= epsilon or dt < epsilon:
                 break
 
