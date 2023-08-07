@@ -1,29 +1,56 @@
 5. Dynamic Joint FBA 
 ====================
 
-The multiple metabolic models of different (or the same) organism that were combined in the ``CommunityModel`` as described
-in the previous chapter can now be used in dynamic joint FBA. The community model incorporates the metabolic reactions and 
-interactions between the organisms, allowing for the study of their collective behavior and the emergent properties of the 
-community as a whole.
 
-The joint FBA approach enables the investigation of metabolic exchanges, such as the exchange of nutrients or byproducts, 
-between organisms within the community. By simulating the community-level metabolic interactions, researchers can gain 
-insights into the dependencies, cooperation, competition, and overall dynamics of the organisms in the community.
+Now that we've defined and can construct a ``CommunityModel`` let's dive into its practical use for studying how different organisms function collectively.
+In this section, we'll introduce the initial approach for modeling microbial communities, known as Dynamic Joint FBA. This method allows researchers to simulate the 
+interactions between different organisms at the community level using Dynamic Joint FBA. Through this, we can uncover valuable insights into the interdependencies, 
+collaborations, competitions, and overall dynamics present within the community of organisms.
+
+The core principle behind Dynamic Joint FBA is quite straightforward. Firstly, we introduce a new species into the model, which we aptly term the `community biomass`
+denoted as ``X_c``. Next, we integrate ``X_c`` to be a product of the biomass reactions of all the models used to build the community matrix. 
+Finally, we set the objective function to the exchange reaction of ``X_c``. 
+By doing so Dynamic Joint FBA effectively identifies the most optimal flux distribution through the system, that maximizes the creation of community biomass.
 
 
-Making it dynamic!
-------------------
 
-Dynamic FBA is an extension of the traditional FBA approach that incorporates the element of 
-time. In dynamic FBA, a specific time step `dt` is selected, and the concentrations of external
-metabolites and biomass concentrations are calculated at each time point.
-This enables the modeling and analysis of dynamic processes such as metabolic fluxes, 
-nutrient uptake, and product secretion over time. 
+Example
+--------
 
-The same technique can be applied for using the previously described Joint FBA which we call
-`Dynamic Joint FBA`
+Here we will give use the example of a combining the  *E. coli core metabolism* model with the *Streptococcus thermophilus* (iRZ476) model.
+To perform the Dynamic Joint FBA we first define the ``CommunityModel`` and use this to initialize a ``DynamicJointFBA`` object:
 
-To perform the joint FBA over time using the ``DynamicJointFBA`` model:
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    import cbmpy
+    from cbmpy.CBModel import Model
+    from DCFBA.Models import CommunityModel
+    from DCFBA.DynamicModels import DynamicJointFBA
+
+
+    model1: Model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml") #load e_coli core
+    model2: Model = cbmpy.loadModel("models/bigg_models/strep_therm.xml") #load the Streptococcus model
+
+    #Set the import bounds for glucose in both models
+    model1.getReaction("R_GLCpts").setUpperBound(10) 
+    model2.getReaction("R_GLCpts").setUpperBound(6)
+
+    #The biomass reactions ids 
+    biomass_reaction_model_1: str = "R_BIOMASS_Ecoli_core_w_GAM"
+    biomass_reaction_model_2: str = "R_biomass_STR"
+
+    cm = CommunityModel(
+        [model1, model2],
+        [biomass_reaction_model_1, biomass_reaction_model_2],
+        ["ecoli", "strep"],
+    ) #Define the community model
+
+    dynamic_fba = DynamicJointFBA(
+        cm, [1.0, 1.0], {"M_glc__D_e": 100, "M_gal_e": 0, "M_lcts_e": 100}
+    ) #Create a DynamicJointFBA object, set the initial concentrations of glucose and lactose to 100
+
+Now that the model is in place we can run the simulation using time steps of 0.1:
 
 .. code-block:: python
 
@@ -38,28 +65,34 @@ You can now easily plot the species concentration over time:
 .. code-block:: python
 
     plt.plot(T, metabolites["M_glc__D_e"], color="blue", label="[Glucose]")
-    
+    plt.plot(T, metabolites["M_lcts_e"], color="orange", label="[Lactose]")
+
     plt.xlabel("Time")
     plt.ylabel("Concentration")
     plt.legend()
     plt.show()
   
-And the biomasses of both species
+
+
+.. image:: ../_static/images/Metabolites_DJFBA.png
+    :width: 500px
+    :align: center
+    :alt: Biomass concentrations
+     
+And the biomasses of both species over time
 
 .. code-block:: python
     
-    plt.plot(T, biomasses["ecoli_1"], color="blue", label="Biomass model 1")
-    plt.plot(T, biomasses["ecoli_2"], color="orange", label="Biomass model 2")
-
+    plt.plot(T, biomasses["ecoli"], color="orange", label="ecoli")
+    plt.plot(T, biomasses["strep"], color="blue", label="strep")
     
     plt.xlabel("Time")
     plt.ylabel("Concentration")
     plt.legend()
     plt.show()
 
-.. .. tip::
-
-..     If you create a ``DynamicJointFBA`` object with a ``CommunityModel`` build from just one organism and call the simulate function you
-..     perform just regular dynamic FBA!
-
-
+.. image:: ../_static/images/Biomass_DJFBA.png
+    :width: 500px
+    :align: center
+    :alt: Biomass concentrations
+     
