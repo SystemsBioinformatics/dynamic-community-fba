@@ -69,7 +69,7 @@ n = 21
 dj = EndPointFBA(
     community_model,
     n,
-    {"modelA": 0.9, "modelB": 2.1},
+    {"modelA": 1.0, "modelB": 2.0},
     {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
     0.1,
 )

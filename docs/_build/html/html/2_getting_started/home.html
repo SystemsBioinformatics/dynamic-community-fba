@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2. Getting Started &mdash; dynamic-community-fba  documentation</title>
+  <title>2. CBMPy Quick Start Guide &mdash; dynamic-community-fba  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="3. Parallel dynamic FBA" href="../3_parallel_dfba/home.html" />
+    <link rel="next" title="2. Dynamic FBA" href="../3_DynamicFBA/home.html" />
     <link rel="prev" title="1. Installation and Requirements" href="../1_installation/home.html" /> 
 </head>
 
@@ -44,9 +44,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../1_installation/home.html">1. Installation and Requirements</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">2. Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#loading-a-model-using-cbmpy">2.1. Loading a model using cbmpy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#sbml-and-cobra-models">2.2. SBML and cobra models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">2. CBMPy Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#loading-a-model-using-cbmpy">2.1. Loading a model using CBMPy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sbml-and-cobra-models">2.2. SBML and COBRA models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#saving-a-model">2.3. Saving a model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reactions-reagents-and-species">2.4. Reactions, Reagents and Species</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#reactions">Reactions</a></li>
@@ -55,15 +55,16 @@
 <li class="toctree-l3"><a class="reference internal" href="#objective-function">Objective function</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#transitioning-to-cbmpy-from-cobrapy">2.5. Transitioning to cbmpy from cobrapy</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../3_parallel_dfba/home.html">3. Parallel dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">2. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../6_endpoint_fba/home.html">6. EndpointFBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../7_faq/home.html">7. FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../8_API/DCFBA.html">8. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">6. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
 </ul>
 
         </div>
@@ -80,7 +81,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">2. Getting Started</li>
+      <li class="breadcrumb-item active">2. CBMPy Quick Start Guide</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/2_getting_started/home.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,48 +91,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="getting-started">
-<h1>2. Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h1>
-<p class="linemarker linemarker-4">With the package a the models for <em>E. coli core metabolism</em>, <em>Streptococcus thermophilus</em> and <em>Lactobacillus delbrueckii</em>, here
-we will show you the basic operations for loading and modifying a cbmpy model. If you’ve worked with <cite>cobrapy</cite> previously
-you will see <cite>cbmpy</cite> is not that different. If this is your first time working with GSMM’s and FBA we recommend  you to start with
-the extensive cbmpy tutorial (if we have completed this)</p>
+  <section id="cbmpy-quick-start-guide">
+<h1>2. CBMPy Quick Start Guide<a class="headerlink" href="#cbmpy-quick-start-guide" title="Permalink to this heading"></a></h1>
+<p class="linemarker linemarker-4">Before delving into the modeling of microbial communities, let’s establish a solid foundation by exploring the core principles of the <cite>CBMPy</cite> package.
+We will guide you through a series of instructive examples that illuminate key operations for GSMM’s. These examples will demonstrate the foundational techniques
+for loading and manipulating models. For these examples we will use the <em>E. coli core metabolism</em> which comes with the <cite>CBMPy</cite> package.
+Through these hands-on demonstrations, you’ll swiftly grasp the fundamental maneuvers that underpin effective model manipulation.
+For a more comprehensive understanding and explanation of all the functionalities available in  <cite>CBMPy</cite>, we recommend you to read the extensive <a class="reference external" href="https://pythonhosted.org/cbmpy/modules_doc.html">documentation</a>.</p>
+<p class="linemarker linemarker-10">For those who have prior experience with CPBRApy, the transition to CBMPy will feel remarkably intuitive, as the two share notable similarities in their approach and methodology.</p>
 <section id="loading-a-model-using-cbmpy">
-<h2>2.1. Loading a model using cbmpy<a class="headerlink" href="#loading-a-model-using-cbmpy" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-12">To load a model and perform a simple FBA analysis on it type:</p>
+<h2>2.1. Loading a model using CBMPy<a class="headerlink" href="#loading-a-model-using-cbmpy" title="Permalink to this heading"></a></h2>
+<p class="linemarker linemarker-18">To load a model and perform a simple FBA analysis on it type:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cbmpy</span>
 <span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
 
-<span class="n">model</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;data/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span>
-<span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">FBAsol</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getSolutionVector</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">FBAsol</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">FBAsol</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">FBAsol</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="n">model</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span> <span class="c1">#Load the model</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1">#Perform FBA, returns the objective value</span>
+<span class="n">FBAsol</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getSolutionVector</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#Get all reaction ids with there flux value</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-24">Here the model refers to a <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> which represents the GSMM of the loaded organism .</p>
+<p class="linemarker linemarker-29">Here the model refers to a <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> which represents the GSMM of the loaded organism .</p>
 </section>
 <section id="sbml-and-cobra-models">
-<h2>2.2. SBML and cobra models<a class="headerlink" href="#sbml-and-cobra-models" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-30">The <code class="docutils literal notranslate"><span class="pre">cbmpy.load_model()</span></code> function is designed to efficiently handle a wide range of models. It seamlessly supports the
+<h2>2.2. SBML and COBRA models<a class="headerlink" href="#sbml-and-cobra-models" title="Permalink to this heading"></a></h2>
+<p class="linemarker linemarker-35">The <code class="docutils literal notranslate"><span class="pre">cbmpy.loadModel()</span></code> function is designed to efficiently handle a wide range of models. It seamlessly supports the
 import of models encoded in the standardized <a class="reference external" href="https://sbml.org/">Systems Biology Markup Language (SBML)</a> format, as well as models exported by
-<cite>cobrapy</cite>. This means that you can easily work with different versions of SBML and <cite>cobrapy</cite> models without having to
+<cite>COBRApy</cite>. This means that you can easily work with different versions of SBML and <cite>COBRApy</cite> models without having to
 specify them explicitly. This flexibility simplifies the model loading process.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p class="linemarker linemarker-36">Sometimes the conversion of exchanges, sinks or other boundary conditions are not properly set when exporting or importing
-a <cite>cobra</cite> model into <cite>cbmpy</cite> therefore always check if these reactions are set correctly in the loaded model.*</p>
+<p class="linemarker linemarker-41">Sometimes the conversion of exchanges, sinks or other boundary conditions are not properly set when exporting or importing
+a <cite>COBRA</cite> model into <cite>CBMPy</cite> therefore always check if these reactions are set correctly in the loaded model.</p>
 </div>
 </section>
 <section id="saving-a-model">
 <h2>2.3. Saving a model<a class="headerlink" href="#saving-a-model" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-44">There are two ways to save a cbmpy model. The easiest way is to save your altered model to the latest version of SBML:</p>
+<p class="linemarker linemarker-49">There are two ways to save a cbmpy model. The easiest way is to save your altered model to the latest version of SBML:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reaction</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_EX_glc__D_e&quot;</span><span class="p">)</span> <span class="c1">#Get a reaction from the model</span>
 <span class="n">reaction</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#Alter the reaction in the model</span>
 
 <span class="n">cbmpy</span><span class="o">.</span><span class="n">saveModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;adjusted_model.xml&quot;</span><span class="p">)</span> <span class="c1">#Save the new model to a XML file</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-53">If you don’t want to save the model to to the latest version of SBML or you wan’t to save it to a <cite>cobrapy</cite> model you can call one of the below functions:</p>
+<p class="linemarker linemarker-58">If you don’t want to save the model to to the latest version of SBML or you wan’t to save it to a <cite>COBRApy</cite> model you can call one of the below functions:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cbmpy</span><span class="o">.</span><span class="n">writeCOBRASBML</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">cbmpy</span><span class="o">.</span><span class="n">writeFVAtoCSV</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">cbmpy</span><span class="o">.</span><span class="n">writeModelToExcel97</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -141,11 +143,10 @@ a <cite>cobra</cite> model into <cite>cbmpy</cite> therefore always check if the
 </section>
 <section id="reactions-reagents-and-species">
 <h2>2.4. Reactions, Reagents and Species<a class="headerlink" href="#reactions-reagents-and-species" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-65">In <cite>cbmpy</cite>, the <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object forms the basis of the model. When working with the model,
+<p class="linemarker linemarker-70">In <cite>CBMPy</cite>, the <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object stores the model and all it’s attributes. When working with the model,
 most modifications will involve manipulating this object. In the previous section,
-we demonstrated how to load the <em>E. coli core metabolism</em>. Now, let’s explore some basic alterations that can be made
-to the model. For a more comprehensive understanding of the functionalities available in the <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object and
-other features of cbmpy, we recommend referring to the extensive <a class="reference external" href="https://pythonhosted.org/cbmpy/modules_doc.html">documentation</a>.</p>
+we demonstrated how to load the <em>E. coli core metabolism</em> model and perform a FBA on it. Now, let’s explore some basic alterations that can be made
+to the model.</p>
 <section id="reactions">
 <h3>Reactions<a class="headerlink" href="#reactions" title="Permalink to this heading"></a></h3>
 <p class="linemarker linemarker-78">To list all the reactions in the model, or list the reaction containing a certain string you can call the following functions:</p>
@@ -222,26 +223,23 @@ Furthermore you can list the reactions in which a species is consumed or created
 </section>
 <section id="objective-function">
 <h3>Objective function<a class="headerlink" href="#objective-function" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-170">To perform FBA on the model you need to set an objective function. This is the reaction for which the maximal or minimal flux will
-be calculated.
-To check what the active objective function of the model is you can write:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">objective_ids</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getActiveObjectiveReactionIds</span><span class="p">()</span>
+<p class="linemarker linemarker-170">To perform FBA on the model you need to set an objective function. The out put of FBA
+will be a flux distribution which maximizes/minimizes this objective function.</p>
+<p class="linemarker linemarker-173">To check what the active objective function of the model is you can write:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">objective_ids</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getActiveObjectiveReactionIds</span><span class="p">()</span> <span class="c1">#Returns the IDs of the reactions which have been set as objective reaction</span>
 <span class="c1">#[&#39;R_BIOMASS_Ecoli_core_w_GAM&#39;]</span>
 
 <span class="n">objective</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getActiveObjective</span><span class="p">()</span>
 <span class="n">objective</span><span class="o">.</span><span class="n">getOperation</span><span class="p">()</span>
 <span class="c1">#Maximize</span>
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-184">If you would call the function <code class="docutils literal notranslate"><span class="pre">cbmpy.doFBA(model)</span></code> FBA will calculate the fluxes such that the flux through the
-reaction with id <cite>R_BIOMASS_Ecoli_core_w_GAM</cite> is maximal.</p>
+<p class="linemarker linemarker-187">Calling <code class="docutils literal notranslate"><span class="pre">cbmpy.doFBA(model)</span></code>  will calculate the fluxes such that the flux through the
+reaction with id <cite>R_BIOMASS_Ecoli_core_w_GAM</cite> is maximized.</p>
+<p class="linemarker linemarker-191">Next we will explore how CBMPy models can be used to model the behaviors of microbial communities.</p>
 </section>
-</section>
-<section id="transitioning-to-cbmpy-from-cobrapy">
-<h2>2.5. Transitioning to cbmpy from cobrapy<a class="headerlink" href="#transitioning-to-cbmpy-from-cobrapy" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-191">As previously mentioned, any model build using <cite>cobrapy</cite> or any other toolbox for that matter can easily be opened in <cite>cbmpy</cite>. By
-just exporting your model of interest to either SBML format or to a cobra model you can import it as an cbmpy model.</p>
-<p class="linemarker linemarker-196">Next we will explore how cbmpy models can be used to model the behaviors of microbial communities.</p>
 </section>
 </section>
 
@@ -250,7 +248,7 @@ just exporting your model of interest to either SBML format or to a cobra model 
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../1_installation/home.html" class="btn btn-neutral float-left" title="1. Installation and Requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../3_parallel_dfba/home.html" class="btn btn-neutral float-right" title="3. Parallel dynamic FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../3_DynamicFBA/home.html" class="btn btn-neutral float-right" title="2. Dynamic FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="5. Dynamic Joint FBA" href="../5_djoint/home.html" />
-    <link rel="prev" title="3. Parallel dynamic FBA" href="../3_parallel_dfba/home.html" /> 
+    <link rel="prev" title="2. Dynamic FBA" href="../3_DynamicFBA/home.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,8 +45,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../1_installation/home.html">1. Installation and Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../3_parallel_dfba/home.html">3. Parallel dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. CBMPy Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">2. Dynamic FBA</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">4. The community model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#definition">4.1. Definition</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#creating-and-modifying-the-community-model">4.2. Creating and modifying the community model</a></li>
@@ -59,9 +59,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../6_endpoint_fba/home.html">6. EndpointFBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../7_faq/home.html">7. FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../8_API/DCFBA.html">8. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">6. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
 </ul>
 
         </div>
@@ -94,25 +96,26 @@
 <h2>4.1. Definition<a class="headerlink" href="#definition" title="Permalink to this heading"></a></h2>
 <p class="linemarker linemarker-7">Here we will introduce the concept of the community model, which plays a vital role in upcoming modeling techniques.
 In simple terms, the community model represents the combined stoichiometry matrices of N Genome-Scale Metabolic Models (GSMMs)
-for performing Flux Balance Analysis (FBA).</p>
-<p class="linemarker linemarker-11">To streamline the handling of multiple models, we have developed the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class. The class offers a structured representation of combined metabolic networks, integrating stoichiometric
+for performing Flux Balance Analysis (FBA). Furthermore, you can easily exported the community model to an SBML model and analyses it with your
+preferred tool.</p>
+<p class="linemarker linemarker-12">To streamline the handling of multiple models, we have developed the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class. The class offers a structured representation of combined metabolic networks, integrating stoichiometric
 information from individual GSMMs. This facilitates in-depth analysis of complex microbial communities, their dynamics,
 and metabolic potentials.</p>
-<p class="linemarker linemarker-15">The documentation delves into the underlying principles and rules governing the community model’s construction, ensuring
+<p class="linemarker linemarker-16">The documentation delves into the underlying principles and rules governing the community model’s construction, ensuring
 effective utilization and preventing erroneous model creation. Additionally, we provide practical usage examples to further
 illustrate the versatility of the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class.</p>
 </section>
 <section id="creating-and-modifying-the-community-model">
 <h2>4.2. Creating and modifying the community model<a class="headerlink" href="#creating-and-modifying-the-community-model" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-22">To initialize a <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> you have to give a list of N GSMMs as well as there biomass reaction ids:</p>
+<p class="linemarker linemarker-23">To initialize a <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> you have to give a list of N GSMMs as well as there biomass reaction ids:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cbmpy</span>
-<span class="kn">from</span> <span class="nn">endPointFBA</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
+<span class="kn">from</span> <span class="nn">DCFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
 
-<span class="n">model1</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;data/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span>
-<span class="n">model2</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;data/bigg_models/strep_therm.xml&quot;</span><span class="p">)</span>
+<span class="n">model1</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span>
+<span class="n">model2</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/strep_therm.xml&quot;</span><span class="p">)</span>
 
-<span class="n">biomass_reaction_model_1</span> <span class="o">=</span> <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span>
-<span class="n">biomass_reaction_model_2</span> <span class="o">=</span> <span class="s2">&quot;R_biomass_STR&quot;</span>
+<span class="n">biomass_reaction_model_1</span> <span class="o">=</span> <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span> <span class="c1">#Biomass reaction id of ecoli</span>
+<span class="n">biomass_reaction_model_2</span> <span class="o">=</span> <span class="s2">&quot;R_biomass_STR&quot;</span> <span class="c1">#Biomass reaction id of strep.</span>
 <span class="n">community_model</span><span class="p">:</span> <span class="n">CommunityModel</span> <span class="o">=</span> <span class="n">CommunityModel</span><span class="p">(</span>
     <span class="p">[</span><span class="n">model1</span><span class="p">,</span> <span class="n">model2</span><span class="p">],</span>
     <span class="p">[</span>
@@ -122,62 +125,58 @@ illustrate the versatility of the <code class="docutils literal notranslate"><sp
 <span class="p">)</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-42">If you are not familiar with the biomass reaction ID, there are a couple of ways to identify it.
+<p class="linemarker linemarker-43">If you are not familiar with the biomass reaction ID, there are a couple of ways to identify it.
 First, you can look it up in the SBML model. Alternatively, you can check if the active objective function of the model is
 set to the biomass reaction by using the following code: <code class="code docutils literal notranslate"><span class="pre">model.getActiveObjectiveReactionIds()</span></code>.
 This will display a list of objective IDs, and you can verify if the biomass reaction is included.</p>
-<p class="linemarker linemarker-47">In this example, we have utilized two models included in the package: <em>E. coli core metabolism</em>
+<p class="linemarker linemarker-48">In this example, we have utilized two models included in the package: <em>E. coli core metabolism</em>
 and <em>Streptococcus thermophilus</em>. If desired, you can provide an optional list of alternative IDs to refer to the single models.
 This can be done by supplying a list of strings as the third argument to the function.
 If no alternative IDs are provided, the community matrix will default to using the model identifiers.
 Lastly, you have the option to assign an ID of your own choosing to the new combined model. If not provided the default ID will be used.</p>
-<p class="linemarker linemarker-53">It is important to note that the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class is derived from the base <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> class, meaning that the
+<p class="linemarker linemarker-54">It is important to note that the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class is derived from the base <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> class, meaning that the
 <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> is still an instance of <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code>. With the newly initialized object we can obtain even more information.
 Check the API for all functionality.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p class="linemarker linemarker-58">If you want to create a community model of N identical models, it is mandatory to specify the alternative ids.
+<p class="linemarker linemarker-59">If you want to create a community model of N identical models, it is mandatory to specify the alternative ids.
 Without providing alternative IDs, both models would have the same ID during the community model creation process.
 As a result, the code would be unable to distinguish between the two models, leading to undesired behavior.</p>
 </div>
 </section>
 <section id="rules">
 <h2>4.3. Rules<a class="headerlink" href="#rules" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-66">Maybe move this to an advanced section?</p>
-<p class="linemarker linemarker-68">During the initialization of the community model a new <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object is created. In the new object all compartments,
-reactions, reagents and species are copied from the provided model. The following considerations were made for each:</p>
+<p class="linemarker linemarker-67">Maybe move this to an advanced section?</p>
+<p class="linemarker linemarker-69">During the initialization of the community model a new <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object is created. In the new object all compartments,
+reactions, reagents and species are copied from the provided models. To implement this process, following considerations were made for each:</p>
 <section id="compartments">
 <h3>Compartments:<a class="headerlink" href="#compartments" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-74">The new model comprises a total of <span class="math notranslate nohighlight">\(\Sigma_{i=1}^{n} (c_i-1) + 1\)</span> compartments, where c represents the number
-of compartments in each model i.</p>
-<p class="linemarker linemarker-77">In the new model, all compartments from the individual models are copied, except for the <cite>external</cite> or <cite>e</cite> compartment.
-The external compartment is reserved to be added at the end. All other compartment ids get a prefix of the id of the model
+<p class="linemarker linemarker-76">In the new model, all organisms share the same external environment, all compartments from the individual models are copied,
+except for the <cite>external</cite> or <cite>e</cite> compartment, which is only created once in the new model. All copied compartment ids get a prefix of the id of the model
 they belonged to such that we know which compartment corresponds to which organism.</p>
-<p class="linemarker linemarker-81">This design ensures that there is only one external compartment in which all species and reactions from all models coexist.</p>
-<p class="linemarker linemarker-83">By following this approach, the new model achieves compartmental organization while consolidating all species and reactions
+<p class="linemarker linemarker-80">The new model comprises a total of <span class="math notranslate nohighlight">\(\Sigma_{i=1}^{n} (c_i-1) + 1\)</span> compartments, where c represents the number
+of compartments in each model i.</p>
+<p class="linemarker linemarker-83">This design ensures that there is only one external compartment in which all species and reactions from all models coexist.</p>
+<p class="linemarker linemarker-85">By following this approach, the new model achieves compartmental organization while consolidating all species and reactions
 within a unified external compartment.</p>
 </section>
 <section id="reactions">
 <h3>Reactions:<a class="headerlink" href="#reactions" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-89">Just like the compartments, all reactions are duplicated, and each reaction ID is augmented with its corresponding model ID. This
+<p class="linemarker linemarker-91">Just like the compartments, all reactions are duplicated, and each reaction ID is augmented with its corresponding model ID. This
 holds up for all reactions except for the exchange reactions. If two models share an exchange reaction only one is saved in the new
-combined model such that we have more control over all.</p>
+combined model.</p>
 </section>
 <section id="reagents-and-species">
 <h3>Reagents and species<a class="headerlink" href="#reagents-and-species" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-96">Before the reactions can be copied to the new model there is a check for which species occur in more than one model.
-For these species a new species in the original model is created and all reactions associated to this species have there reagents changed.
-By doing so the initial models already have everything set correctly into place to have the reactions copied.</p>
-<p class="linemarker linemarker-100">In contrast with the compartment IDs, and the reaction IDs the species IDs are not changed by default. But only if the species id
-occurs in two or more models. This is done since we can already quickly lookup to which original model the species belonged by checking
-the compartment which it is in.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p class="linemarker linemarker-108">It is crucial to verify that the identical reactions and species within different models have consistent IDs before
+<p class="linemarker linemarker-98">Since the community shares all external metabolites only one copy of each external metabolite is stored in the combined model.
+All other species are copied to the new model, only receiving a suffix if the species occurs in more than one model.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p class="linemarker linemarker-103">It is crucial to verify that the identical reactions and species within different models have consistent IDs before
 creating the community model. This is particularly significant for exchange reactions and species localized in the
 extracellular space. If these IDs are not uniform, despite referring to the same reactions or species, the CommunityModel
 class cannot determine their equivalence accurately.</p>
-<p class="linemarker linemarker-113">Please ensure that the corresponding IDs for these reactions and species are harmonized to guarantee the proper
+<p class="linemarker linemarker-108">Please ensure that the corresponding IDs for these reactions and species are harmonized to guarantee the proper
 functioning of the CommunityModel.</p>
 </div>
 </section>
@@ -188,7 +187,7 @@ functioning of the CommunityModel.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../3_parallel_dfba/home.html" class="btn btn-neutral float-left" title="3. Parallel dynamic FBA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../3_DynamicFBA/home.html" class="btn btn-neutral float-left" title="2. Dynamic FBA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../5_djoint/home.html" class="btn btn-neutral float-right" title="5. Dynamic Joint FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
