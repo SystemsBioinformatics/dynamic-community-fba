@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="6. EndpointFBA" href="../6_endpoint_fba/home.html" />
+    <link rel="next" title="3. Parallel Dynamic FBA" href="../6_parallel_dfba/home.html" />
     <link rel="prev" title="4. The community model" href="../4_community_matrix/home.html" /> 
 </head>
 
@@ -44,21 +44,18 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../1_installation/home.html">1. Installation and Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../3_parallel_dfba/home.html">3. Parallel dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. CBMPy Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">2. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">5. Dynamic Joint FBA</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#joint-fba">Joint FBA</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#making-it-dynamic">Making it dynamic</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#add-reaction-kinetics">Add reaction kinetics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#write-your-own-kinetics">Write your own kinetics!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../6_endpoint_fba/home.html">6. EndpointFBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../7_faq/home.html">7. FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../8_API/DCFBA.html">8. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">6. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
 </ul>
 
         </div>
@@ -87,91 +84,76 @@
              
   <section id="dynamic-joint-fba">
 <h1>5. Dynamic Joint FBA<a class="headerlink" href="#dynamic-joint-fba" title="Permalink to this heading"></a></h1>
-<p class="linemarker linemarker-4">The multiple metabolic models of different or the same organism that were combined in the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> as described
-in the previous chapter can now be used in dynamic joint FBA. The community model incorporates the metabolic reactions and
-interactions between the organisms, allowing for the study of their collective behavior and the emergent properties of the
-community as a whole.</p>
-<p class="linemarker linemarker-9">The joint FBA approach enables the investigation of metabolic exchanges, such as the exchange of nutrients or byproducts,
-between organisms within the community. By simulating the community-level metabolic interactions, researchers can gain
-insights into the dependencies, cooperation, competition, and overall dynamics of the organisms in the community.</p>
-<section id="joint-fba">
-<h2>Joint FBA<a class="headerlink" href="#joint-fba" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-16">After defining the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> it is easy to refine it in such a way that we can perform a Joint FBA
-The only thing left to do is append the biomass reaction of each individual model to create the so called <cite>Community biomass</cite>.
-So now we can define the reaction <code class="docutils literal notranslate"><span class="pre">X_c</span> <span class="pre">-&gt;</span> <span class="pre">`</span> <span class="pre">where</span> <span class="pre">`X_c</span></code> is the community biomass.</p>
-<p class="linemarker linemarker-20">To perform joint FBA run the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cbmpy</span>
-<span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">endPointFBA.CommunityModel</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
-<span class="kn">from</span> <span class="nn">endPointFBA.DynamicJointFBA</span> <span class="kn">import</span> <span class="n">DynamicJointFBA</span>
-
-<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;data/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span>
-<span class="n">model1</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-
-<span class="n">model_2</span> <span class="o">=</span> <span class="n">model1</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-
-<span class="n">combined_model</span> <span class="o">=</span> <span class="n">CommunityModel</span><span class="p">(</span>
-    <span class="p">[</span><span class="n">model1</span><span class="p">,</span> <span class="n">model_2</span><span class="p">],</span>
-    <span class="p">[</span><span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span><span class="p">,</span> <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span><span class="p">],</span>
-    <span class="p">[</span><span class="s2">&quot;ecoli_1&quot;</span><span class="p">,</span> <span class="s2">&quot;ecoli_2&quot;</span><span class="p">],</span>
-<span class="p">)</span>  <span class="c1"># Create a CommunityModel of two  E. coli strains competing for resources</span>
-
-
-<span class="c1"># Create the joint FBA object with initial biomasses and the initial concentration of glucose</span>
-<span class="n">dynamic_fba</span> <span class="o">=</span> <span class="n">DynamicJointFBA</span><span class="p">(</span>
-    <span class="n">combined_model</span><span class="p">,</span>
-    <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
-    <span class="p">{</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
-<span class="p">)</span>
-
-<span class="c1"># Perform FBA on the new joint FBA model object</span>
-<span class="n">solution</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">dynamic_fba</span><span class="o">.</span><span class="n">get_joint_model</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="making-it-dynamic">
-<h2>Making it dynamic<a class="headerlink" href="#making-it-dynamic" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-57">Dynamic FBA is an extension of the traditional FBA approach that incorporates the element of
-time. In dynamic FBA, a specific time step <cite>dt</cite> is selected, and the concentrations of external
-metabolites and biomass concentrations are calculated at each time point.
-This enables the modeling and analysis of dynamic processes such as metabolic fluxes,
-nutrient uptake, and product secretion over time.</p>
-<p class="linemarker linemarker-63">The same technique can be applied for using the previously described Joint FBA which we call
-<cite>Dynamic Joint FBA</cite></p>
-<p class="linemarker linemarker-66">To perform the joint FBA over time using the <code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code> model:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dynamic_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="linemarker linemarker-72">You can now easily plot the solution:</p>
+<p class="linemarker linemarker-5">Now that we’ve defined and can construct a <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> let’s dive into its practical use for studying how different organisms function collectively.
+In this section, we’ll introduce the initial approach for modeling microbial communities, known as Dynamic Joint FBA. This method allows researchers to simulate the
+interactions between different organisms at the community level using Dynamic Joint FBA. Through this, we can uncover valuable insights into the interdependencies,
+collaborations, competitions, and overall dynamics present within the community of organisms.</p>
+<p class="linemarker linemarker-10">The core principle behind Dynamic Joint FBA is quite straightforward. Firstly, we introduce a new species into the model, which we aptly term the <cite>community biomass</cite>
+denoted as <code class="docutils literal notranslate"><span class="pre">X_c</span></code>. Next, we integrate <code class="docutils literal notranslate"><span class="pre">X_c</span></code> to be a product of the biomass reactions of all the models used to build the community matrix.
+Finally, we set the objective function to the exchange reaction of <code class="docutils literal notranslate"><span class="pre">X_c</span></code>.
+By doing so Dynamic Joint FBA effectively identifies the most optimal flux distribution through the system, that maximizes the creation of community biomass.</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
+<p class="linemarker linemarker-20">Here we will give use the example of a combining the  <em>E. coli core metabolism</em> model with the <em>Streptococcus thermophilus</em> (iRZ476) model.
+To perform the Dynamic Joint FBA we first define the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> and use this to initialize a <code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code> object:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">cbmpy</span>
+<span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">DCFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
+<span class="kn">from</span> <span class="nn">DCFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicJointFBA</span>
 
-<span class="n">ts</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">,</span> <span class="n">biomasses</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 
+<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span> <span class="c1">#load e_coli core</span>
+<span class="n">model2</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/strep_therm.xml&quot;</span><span class="p">)</span> <span class="c1">#load the Streptococcus model</span>
 
-<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;ecoli_1&quot;</span><span class="p">])</span>
-<span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">twinx</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;X_c&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="c1">#Set the import bounds for glucose in both models</span>
+<span class="n">model1</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">model2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
 
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Biomass ecoli 1&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
-<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;X_comm&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="c1">#The biomass reactions ids</span>
+<span class="n">biomass_reaction_model_1</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span>
+<span class="n">biomass_reaction_model_2</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;R_biomass_STR&quot;</span>
 
-<span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">twinx</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;ecoli_2&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
-<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Biomass ecoli 2&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="n">cm</span> <span class="o">=</span> <span class="n">CommunityModel</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">model1</span><span class="p">,</span> <span class="n">model2</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">biomass_reaction_model_1</span><span class="p">,</span> <span class="n">biomass_reaction_model_2</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;ecoli&quot;</span><span class="p">,</span> <span class="s2">&quot;strep&quot;</span><span class="p">],</span>
+<span class="p">)</span> <span class="c1">#Define the community model</span>
 
+<span class="n">dynamic_fba</span> <span class="o">=</span> <span class="n">DynamicJointFBA</span><span class="p">(</span>
+    <span class="n">cm</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;M_gal_e&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;M_lcts_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">}</span>
+<span class="p">)</span> <span class="c1">#Create a DynamicJointFBA object, set the initial concentrations of glucose and lactose to 100</span>
+</pre></div>
+</div>
+<p class="linemarker linemarker-53">Now that the model is in place we can run the simulation using time steps of 0.1:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">,</span> <span class="n">fluxes</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="linemarker linemarker-59">The <code class="docutils literal notranslate"><span class="pre">simulate</span></code> method returns a tuple with four elements. First, it provides a list of time points for the simulation.
+Second, it returns a <code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the species_ids and their corresponding concentrations at each time point. Third, we get a
+<code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the biomasses of the models, accessed through their IDs. Lastly we get the fluxes of all reactions for each time point.</p>
+<p class="linemarker linemarker-63">You can now easily plot the species concentration over time:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Glucose]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_lcts_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Lactose]&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Concentration&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-</section>
-<section id="add-reaction-kinetics">
-<h2>Add reaction kinetics<a class="headerlink" href="#add-reaction-kinetics" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-103">In construction</p>
-<section id="write-your-own-kinetics">
-<h3>Write your own kinetics!<a class="headerlink" href="#write-your-own-kinetics" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-107">In construction</p>
-</section>
+<a class="reference internal image-reference" href="../_images/Metabolites_DJFBA.png"><img alt="Biomass concentrations" class="align-center" src="../_images/Metabolites_DJFBA.png" style="width: 500px;" /></a>
+<p class="linemarker linemarker-82">And the biomasses of both species over time</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;ecoli&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ecoli&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;strep&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;strep&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Concentration&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/Biomass_DJFBA.png"><img alt="Biomass concentrations" class="align-center" src="../_images/Biomass_DJFBA.png" style="width: 500px;" /></a>
 </section>
 </section>
 
@@ -180,7 +162,7 @@ nutrient uptake, and product secretion over time.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../4_community_matrix/home.html" class="btn btn-neutral float-left" title="4. The community model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../6_endpoint_fba/home.html" class="btn btn-neutral float-right" title="6. EndpointFBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../6_parallel_dfba/home.html" class="btn btn-neutral float-right" title="3. Parallel Dynamic FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

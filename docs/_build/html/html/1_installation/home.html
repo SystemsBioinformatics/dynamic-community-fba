@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="2. Getting Started" href="../2_getting_started/home.html" />
+    <link rel="next" title="2. CBMPy Quick Start Guide" href="../2_getting_started/home.html" />
     <link rel="prev" title="Dynamic-community-fba’s documentation" href="../index.html" /> 
 </head>
 
@@ -49,13 +49,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#escher">Escher</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../3_parallel_dfba/home.html">3. Parallel dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. CBMPy Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">2. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../6_endpoint_fba/home.html">6. EndpointFBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../7_faq/home.html">7. FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../8_API/DCFBA.html">8. API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">6. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
 </ul>
 
         </div>
@@ -86,30 +88,33 @@
 <h1>1. Installation and Requirements<a class="headerlink" href="#installation-and-requirements" title="Permalink to this heading"></a></h1>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-6">The dynamic-community-fba package relies on the <cite>cbmpy</cite> library <a class="footnote-reference brackets" href="#ref-cbmpy" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> for handling constraint-based metabolic models. Like
-<a class="reference external" href="https://opencobra.github.io/cobrapy/#:~:text=cobrapy%20is%20a%20python%20package,io.">cobrapy</a> <cite>cbmpy`</cite> is a Python package that simplifies the creation, loading, and manipulation of constraint-based models, allowing interaction with LP-solvers like ‘cplex’ or ‘GLPK’.</p>
-<p class="linemarker linemarker-9">To install <cite>cbmpy</cite>, you can use the following command:</p>
+<p class="linemarker linemarker-6">The dynamic-community-fba package relies on the <cite>CBMPy</cite> library <a class="footnote-reference brackets" href="#ref-cbmpy" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> for handling constraint-based metabolic models. Like
+<cite>COBRApy</cite>, <cite>CBMPy</cite> is a Python package that simplifies the creation, loading, and manipulation of constraint-based models, allowing interaction with LP-solvers like <cite>CPLEX</cite> <a class="footnote-reference brackets" href="#ref-cplex" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p class="linemarker linemarker-9">To install <cite>CBMPy</cite>, you can use the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>cbmpy
 </pre></div>
 </div>
-<p class="linemarker linemarker-15">For more information and detailed documentation on using <cite>cbmpy</cite>, please refer to the <a class="reference external" href="https://github.com/SystemsBioinformatics/cbmpy">cbmpy GitHub repository</a> and the <a class="reference external" href="https://pythonhosted.org/cbmpy/modules_doc.html">cbmpy documentation</a>.</p>
-<aside class="footnote brackets" id="ref-cbmpy" role="note">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p class="linemarker linemarker-21">PySCeS Constraint Based Modelling (<a class="reference external" href="http://cbmpy.sourceforge.net">http://cbmpy.sourceforge.net</a>) Copyright (C) 2010-2023 Brett G. Olivier, Vrije Universiteit Amsterdam, Amsterdam, The Netherlands</p>
-</aside>
+<p class="linemarker linemarker-15">For more information and detailed documentation on using <cite>CBMPy</cite>, please refer to the <a class="reference external" href="https://github.com/SystemsBioinformatics/cbmpy">CBMPy GitHub repository</a> and the <a class="reference external" href="https://pythonhosted.org/cbmpy/modules_doc.html">CBMPy documentation</a>.</p>
 </section>
 <section id="dynamic-community-fba">
 <h2>Dynamic Community FBA<a class="headerlink" href="#dynamic-community-fba" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-27">After the installation of <cite>cbmpy</cite> you can install dynamic community FBA using the following command</p>
+<p class="linemarker linemarker-25">After the installation of <cite>CBMPY</cite> you can install dynamic community FBA using the following command</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>NAME
 </pre></div>
 </div>
-<p class="linemarker linemarker-33">More text if needed about the installation</p>
 </section>
 <section id="escher">
 <h2>Escher<a class="headerlink" href="#escher" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-38">Maybe we can write some easy converter functions for known maps. To display the models
+<p class="linemarker linemarker-35">Maybe we can write some easy converter functions for known maps. To display the models
 have to think about this</p>
+<aside class="footnote brackets" id="ref-cbmpy" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p class="linemarker linemarker-40">PySCeS Constraint Based Modelling (<a class="reference external" href="http://cbmpy.sourceforge.net">http://cbmpy.sourceforge.net</a>) Copyright (C) 2010-2023 Brett G. Olivier, Vrije Universiteit Amsterdam, Amsterdam, The Netherlands</p>
+</aside>
+<aside class="footnote brackets" id="ref-cplex" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p class="linemarker linemarker-41">IBM (2017) IBM ILOG CPLEX 12.7 User’s Manual (IBM ILOG CPLEX Division, Incline Village, NV).1</p>
+</aside>
 </section>
 </section>
 
@@ -118,7 +123,7 @@ have to think about this</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Dynamic-community-fba’s documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../2_getting_started/home.html" class="btn btn-neutral float-right" title="2. Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../2_getting_started/home.html" class="btn btn-neutral float-right" title="2. CBMPy Quick Start Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
