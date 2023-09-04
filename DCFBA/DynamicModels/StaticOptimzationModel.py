@@ -6,9 +6,8 @@ from ..Exceptions import NoLimitingSubstrateFound
 
 
 class StaticOptimizationModel(DynamicModelBase):
-    """Base class for handling dynamic flux balance analysis simulations
-    using time steps to track biomass and metabolite concentrations over time.
-
+    """Base class providing a framework for the static optimization approaches (SOA)
+    methods; using time steps to track biomass and metabolite concentrations over time.
     """
 
     m_biomass_concentrations: dict[str, list[float]] = {}
@@ -17,12 +16,11 @@ class StaticOptimizationModel(DynamicModelBase):
     def set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]
     ) -> None:
-        """Sets the initial concentrations of the metabolites.
+        """Sets initial concentrations of metabolites based on provided values
+        or reaction bounds.
 
-        The method uses the exchange reaction lower bounds as initial
-        concentrations. If you want to change the initial concentrations,
-        you can modify either the initial concentrations or the lower bounds of
-        exchange reactions.
+        This method sets the initial concentrations using either the provided
+        concentrations or the lower bounds of the model's exchange reactions.
 
         Args:
             model (Model): A cbmpy.CBModel instance.
@@ -66,9 +64,10 @@ class StaticOptimizationModel(DynamicModelBase):
         kinetics_func=None,
         deviate=None,
     ):
-        """Simulates the dynamic flux balance analysis (dFBA) over specified time steps.
+        """Placeholder for dynamic FBA simulation over specified time intervals.
 
-        This method should be implemented in the subclasses with their own rules for simulation.
+        This method should be overridden in subclasses to implement specific simulation logic.
+
 
         Args:
             dt (float): The time step for simulation.
@@ -79,10 +78,8 @@ class StaticOptimizationModel(DynamicModelBase):
                 Defaults to 0.001.
             kinetics_func (function, optional): A user-defined function to
                 calculate kinetics. Defaults to None.
-            deviate (function, optional): A user-defined function to apply
-                changes during the simulation. It should accept the model,
-                a dictionary of biomass concentrations, a dictionary of
-                metabolite concentrations, and dt.
+           deviate (function, optional): A function to apply model changes during the simulation.
+                Should accept: the model, biomass concentrations, metabolite concentrations, and dt as parameters.
                 Defaults to None.
             deviation_time (int, optional): The time step when the deviation
                 function should be called.
@@ -115,14 +112,10 @@ class StaticOptimizationModel(DynamicModelBase):
         pass
 
     def check_solution_feasibility(self) -> str:
-        """Checks the feasibility of the current solution.
-
-        If the current solution isn't feasible due to a lack of metabolite
-        concentrations.
+        """Checks if the current solution has any metabolite concentration below zero.
 
         Returns:
-            str: The name of the metabolite with the lowest concentration
-                below zero.
+            str: The metabolite ID with the lowest negative concentration, or an empty string if all concentrations are positive.
         """
 
         low = 1e10
@@ -157,19 +150,23 @@ class StaticOptimizationModel(DynamicModelBase):
         transporters: Transporters,
         kinetics: KineticsStruct,
     ) -> None:
-        """Calculates the Michaelis Menten Kinetics for a given reaction.
+        """Computes the Michaelis-Menten kinetics for a given reaction.
 
-        Args:
-            reaction (Reaction): A reaction object.
-            X (float): The biomass of the species the reaction belongs to.
-            transporters (Transporters): A Transporters object of the model.
-            kinetics (Kinetics): A Kinetics object for kinetic parameter
-            retrieval.
+         If the reaction is an importer and no limiting substrate was provided,
+         the function uses the minimum concentration of all substrates.
+
+
+         Args:
+             reaction (Reaction): A reaction object.
+             X (float): The biomass of the species the reaction belongs to.
+             transporters (Transporters): A Transporters object of the model.
+             kinetics (Kinetics): A Kinetics object for kinetic parameter
+             retrieval.
         Raises:
-            NoLimitingSubstrateFound: If the reaction is not an importer and no
-            limiting substrate was supplied, or if the limiting substrate was
-            not an external species.
+             NoLimitingSubstrateFound: Raised if the reaction isn't an import reaction and
+             no limiting substrate was provided or if the provided substrate isn't external.
         """
+
         rid: str = reaction.getId()
         sid, km, vmax = kinetics.get_reactions_kinetics(
             rid,

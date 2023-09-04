@@ -27,7 +27,7 @@ EndPointFBA
 TimeStepDynamicModel
 -------------------------------
 
-.. automodule:: DCFBA.DynamicModels.TimeStepDynamicModel
+.. automodule:: DCFBA.DynamicModels.StaticOptimizationModel
    :members:
    :show-inheritance:
 

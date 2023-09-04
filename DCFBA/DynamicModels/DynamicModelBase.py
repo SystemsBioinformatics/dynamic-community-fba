@@ -1,7 +1,5 @@
 class DynamicModelBase:
-    """Base class for Dynamic FBA classes
-    A DynamicFBA class should at least implement the simulate method
-    """
+    """Base class for the Dynamic FBA classes"""
 
     def simulate(self):
         pass
