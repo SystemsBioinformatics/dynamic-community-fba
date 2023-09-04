@@ -60,20 +60,16 @@ kin = KineticsStruct(
 community_model = CommunityModel(
     [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
 )
-
+community_model.getReaction("S_e_exchange").setLowerBound(-1000)
 
 # # print(community_model.getReaction("R_1_modelA").getUpperBound())
 # print(community_model.getReaction("R_1_modelB").getUpperBound())
 # print(community_model.getReaction("R_5_modelB").getUpperBound())
 
-community_model.getReaction("S_e_exchange").setLowerBound(-1000)
-community_model.getReaction("A_e_exchange").setLowerBound(-1000)
-community_model.getReaction("B_e_exchange").setLowerBound(-1000)
-
 dj = DynamicJointFBA(
     community_model, [1, 1], {"S_e": 100, "A_e": 0.0, "B_e": 0.0}
 )
-T, metabolites, biomasses, fluxes = dj.simulate(0.1)
+T, metabolites, biomasses, fluxes = dj.simulate(0.01)
 index = 0
 
 # for a in fluxes:
@@ -119,12 +115,11 @@ rv6 = list(map(lambda d: d["R_6_modelA"], fluxes))
 # print(biomasses["modelA"][65])
 # print(biomasses["modelB"][65])
 
-# print()
-# print(fluxes[65])
-# raise Exception(metabolites["A_e"][80])
-
 print(metabolites["S_e"])
-plt.plot(T, metabolites["S_e"], color="blue", label="Metabolite S")
+for d in fluxes:
+    print(d["S_e_exchange"])
+
+plt.plot(T, metabolites["S_e"], color="blue", label="Metabolite s")
 plt.xlabel("Time")
 plt.ylabel("Concentration")
 plt.legend()

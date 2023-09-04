@@ -125,7 +125,7 @@ class DynamicParallelFBA(StaticOptimizationModel):
 
             self.update_reaction_bounds(kinetics_func)
 
-            self.constrain_exchanges()
+            self.update_exchanges(dt)
 
             used_time.append(used_time[-1] + dt)
             fluxes = {}
@@ -161,7 +161,7 @@ class DynamicParallelFBA(StaticOptimizationModel):
             self.m_biomass_concentrations,
         ]
 
-    def constrain_exchanges(self):
+    def update_exchanges(self, dt):
         """Constrain exchange reactions based on current metabolite
          concentrations and biomass.
 
@@ -175,7 +175,7 @@ class DynamicParallelFBA(StaticOptimizationModel):
                 reaction: Reaction = model.getReaction(rid)
                 sid = reaction.getSpeciesIds()[0]
                 reaction.setLowerBound(
-                    ((-1 * self.m_metabolite_concentrations[sid][-1]))
+                    -self.m_metabolite_concentrations[sid][-1] * (1 / dt)
                 )
 
     def update_reaction_bounds(self, kinetics_func) -> None:

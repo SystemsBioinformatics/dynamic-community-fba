@@ -118,6 +118,11 @@ rv6 = list(map(lambda d: d["R_6_modelA"], fluxes))
 # print()
 # print(fluxes[65])
 # raise Exception(metabolites["A_e"][80])
+plt.plot(T, metabolites["S_e"], color="blue", label="Metabolite s")
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
+plt.show()
 
 
 plt.plot(T, metabolites["A_e"], color="blue", label="Metabolite a")
