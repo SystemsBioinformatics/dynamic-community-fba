@@ -5,7 +5,7 @@ from .DynamicModelBase import DynamicModelBase
 from ..Exceptions import NoLimitingSubstrateFound
 
 
-class TimeStepDynamicModel(DynamicModelBase):
+class StaticOptimizationModel(DynamicModelBase):
     """Base class for handling dynamic flux balance analysis simulations
     using time steps to track biomass and metabolite concentrations over time.
 
