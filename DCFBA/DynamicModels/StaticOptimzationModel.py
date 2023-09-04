@@ -48,6 +48,8 @@ class StaticOptimizationModel(DynamicModelBase):
                     max(-reaction.getLowerBound(), concentration)
                 ]
 
+        # This is in place for bad GSMM's which do not set an exchange for each
+        # extracellular metabolite
         for species in model.species:
             if (
                 species.getCompartmentId() == "e"

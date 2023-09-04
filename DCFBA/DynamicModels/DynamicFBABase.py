@@ -80,7 +80,7 @@ class DynamicFBABase(StaticOptimizationModel):
         fluxes = []
         run_condition = 0
 
-        for _ in range(1, n):
+        for i in range(1, n):
             if dt_hat != -1:
                 dt = dt_hat
                 dt_hat = -1
@@ -95,7 +95,7 @@ class DynamicFBABase(StaticOptimizationModel):
                 )
 
             self.update_reaction_bounds(kinetics_func)
-            self.update_exchanges()
+            self.update_exchanges(dt)
 
             solution = cbmpy.doFBA(self.m_model, quiet=False)
 
@@ -111,6 +111,14 @@ class DynamicFBABase(StaticOptimizationModel):
 
             self.update_concentrations(FBAsol, dt)
 
+            # if i >= 1:
+            #     print(FBAsol)
+            #     print(self.m_metabolite_concentrations["A_e"][-1])
+            #     for id in self.m_model.getExchangeReactionIds():
+            #         r = self.m_model.getReaction(id)
+            #         print(id)
+            #         print(r.getLowerBound())
+            #     input()
             species_id = self.check_solution_feasibility()
 
             if species_id != "":
@@ -130,14 +138,21 @@ class DynamicFBABase(StaticOptimizationModel):
             fluxes,
         ]
 
-    def update_exchanges(self):
+    def update_exchanges(self, dt) -> None:
+        """Update exchange reaction lower bounds to the metabolite
+        concentration of that time step
+        """
+
         for rid in self.m_model.getExchangeReactionIds():
             reaction: Reaction = self.m_model.getReaction(rid)
             # Exchanges only have one species:
             sid = reaction.getSpeciesIds()[0]
-            reaction.setLowerBound(-self.m_metabolite_concentrations[sid][-1])
+            # TODO DISCUSS  (1/dt)
+            reaction.setLowerBound(
+                -self.m_metabolite_concentrations[sid][-1] * (1 / dt)
+            )
 
-    def update_concentrations(self, FBAsol, dt):
+    def update_concentrations(self, FBAsol, dt) -> None:
         """Update metabolite concentrations after an FBA step.
 
         Args:
