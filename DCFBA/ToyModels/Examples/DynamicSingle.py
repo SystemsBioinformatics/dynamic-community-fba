@@ -3,7 +3,7 @@ from DCFBA.DynamicModels import DynamicSingleFBA
 from DCFBA.Models import KineticsStruct
 import matplotlib.pyplot as plt
 
-model = cbmpy.loadModel("data/bigg_models/e_coli_core.xml")
+model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")
 
 initial_biomass = 0.1
 initial_concentrations = {"M_glc__D_e": 10}
