@@ -2,10 +2,10 @@ import cbmpy
 import math
 from cbmpy.CBModel import Reaction
 from ..Models import KineticsStruct, Transporters, CommunityModel
-from .TimeStepDynamicModel import TimeStepDynamicModel
+from .StaticOptimzationModel import StaticOptimizationModel
 
 
-class DynamicFBABase(TimeStepDynamicModel):
+class DynamicFBABase(StaticOptimizationModel):
     """Base class for SingleDynamicFBA and JointFBA
     Here the code for simulating both is implemented
     The two models only differ in the fact that there is
