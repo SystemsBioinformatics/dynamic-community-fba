@@ -127,7 +127,7 @@ def merge_compartments(model: Model, combined_model: Model, new_id):
         if compartment.id not in extracellular_compartments:
             combined_model.createCompartment(
                 create_new_id(compartment.id, new_id),
-                f"Compartmnet {compartment.name}",
+                f"Compartment {compartment.name}",
                 size=compartment.size,
                 dimensions=compartment.dimensions,
             )
