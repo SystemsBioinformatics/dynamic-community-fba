@@ -187,10 +187,10 @@ def merge_species(
     1) If a species occurs in two or more models in the cytosolic space
     we append the id of that species with the model id, such that we
     distinguish between the two species/metabolites in the organisms
-    2) If the species on the other lives in the extracellular space
-    we don't merge the species, the two model now use the same extracellular
+    2) If the species lives in the extracellular space
+    we don't merge the species, and the two model now use the same extracellular
     space species
-    3) If the species of a model is not a duplicate we still change it's
+    3) If the species of a model is not a duplicate we still change its
     compartment for clarity. Now the user know where the species is located
 
     Args:
