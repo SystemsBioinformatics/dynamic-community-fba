@@ -1,18 +1,13 @@
 5. Dynamic Joint FBA 
 ====================
 
+Dynamic Joint Flux Balance Analysis (djFBA) is a method to dynamically model microbial communities. The core principle of djFBA is the formation of 
+`community biomass`, denoted as ``X_c``. Which is introduced in the ``CommunityModel`` to be the total sum of individual biomasses. The formation of 
+this mock species is than set to be the objective function for FBA.
 
-Now that we've defined and can construct a ``CommunityModel`` let's dive into its practical use for studying how different organisms function collectively.
-In this section, we'll introduce the initial approach for modeling microbial communities, known as Dynamic Joint FBA. This method allows researchers to simulate the 
-interactions between different organisms at the community level using Dynamic Joint FBA. Through this, we can uncover valuable insights into the interdependencies, 
-collaborations, competitions, and overall dynamics present within the community of organisms.
+Using this in combination with the static optimization approaches as introduced in the dFBA section. We now have our first method to model microbial communities!
 
-The core principle behind Dynamic Joint FBA is quite straightforward. Firstly, we introduce a new species into the model, which we aptly term the `community biomass`
-denoted as ``X_c``. Next, we integrate ``X_c`` to be a product of the biomass reactions of all the models used to build the community matrix. 
-Finally, we set the objective function to the exchange reaction of ``X_c``. 
-By doing so Dynamic Joint FBA effectively identifies the most optimal flux distribution through the system, that maximizes the creation of community biomass.
-
-
+** citation from Dynamic Joint FBA
 
 Example
 --------

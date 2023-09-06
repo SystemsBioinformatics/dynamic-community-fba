@@ -52,8 +52,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">7. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Dynamic Parallel FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">7. EndPointFBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
@@ -85,10 +85,10 @@
              
   <section id="dynamic-fba">
 <h1>3. Dynamic FBA<a class="headerlink" href="#dynamic-fba" title="Permalink to this heading"></a></h1>
-<p>Dynamic Flux Balance Analysis (DFBA) stands as a powerful computational framework that merges the principles of Flux Balance Analysis (FBA) with dynamic modeling,
+<p>Dynamic Flux Balance Analysis (dFBA) stands as a powerful computational framework that merges the principles of Flux Balance Analysis (FBA) with dynamic modeling,
 enabling the simulation and analysis of time-evolving metabolic processes within biological systems. Here we’ve implemented the Static Optimization approach as described
 by <em>Mahadevan et. al (2002)</em> <a class="footnote-reference brackets" href="#ref-dfba" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
-<p>Simply put, Dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.
+<p>Simply put, dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.
 With each iteration, external metabolites and biomasses are adjusted, followed by another FBA run. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients),
 or the final time point is reached. This modeling approach enables the exploration of metabolic network adjustments to evolving environmental factors, substrate availability, and cellular demands.</p>
 <section id="making-it-dynamic">
@@ -116,7 +116,7 @@ or the final time point is reached. This modeling approach enables the explorati
 
 <span class="c1">#Plot the results</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomassess</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">])</span>
 <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">twinx</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
 

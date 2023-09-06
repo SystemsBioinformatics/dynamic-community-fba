@@ -47,7 +47,7 @@ def build_model_C():
     model.createReactionReagent("R_13", "F_c", 1)
     model.setReactionBounds("R_13", -1000.0, 1000.0)
 
-    model.createReaction("R_14", "Create BM_c_C from X", reversible=True)
+    model.createReaction("R_14", "Create BM_c_C from F", reversible=True)
     model.createReactionReagent("R_14", "F_c", -1)
     model.createReactionReagent("R_14", "BM_c_C", 1)
     model.setReactionBounds("R_14", -1000.0, 1000.0)

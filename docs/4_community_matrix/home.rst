@@ -5,22 +5,29 @@
 ---------------
 
 Here we will introduce the concept of the community model, which plays a vital role in upcoming modeling techniques. 
-In simple terms, the community model represents the combined stoichiometry matrices of N Genome-Scale Metabolic Models (GSMMs) 
-for performing Flux Balance Analysis (FBA). Furthermore, you can easily exported the community model to an SBML model and analyses it with your 
-preferred tool.
+Strictly put, the community model represents the combined stoichiometry matrices of N Genome-Scale Metabolic Models (GSMMs) 
+and thus can again be used to perform FBA.
 
 To streamline the handling of multiple models, we have developed the ``CommunityModel`` class. The class offers a structured representation of combined metabolic networks, integrating stoichiometric 
-information from individual GSMMs. This facilitates in-depth analysis of complex microbial communities, their dynamics, 
-and metabolic potentials.
+information from individual GSMMs/SBML models. By merging the information of each model, we can examine intricate microbial communities, their dynamics, and metabolic potentials.
 
-The documentation delves into the underlying principles and rules governing the community model's construction, ensuring 
-effective utilization and preventing erroneous model creation. Additionally, we provide practical usage examples to further 
-illustrate the versatility of the ``CommunityModel`` class.
+Building upon the foundational ``cbmpy.CBModel`` class, 
+the ``CommunityModel`` inherits all its capabilities, 
+ensuring compatibility and ease of use. All functionalities 
+available in the ``cbmpy.CBModel`` class are retained in the 
+``CommunityModel``. Additionally, the latter can seamlessly 
+be exported to an SBML file, supporting its analysis 
+through various tools.
+
+In this chapter, we elaborate on the principles and guidelines 
+essential for constructing an accurate community model. By doing so, we aim to maximize its utility and prevent inadvertent errors. 
+To elucidate the ``CommunityModel`` class's adaptability further, we also offer hands-on examples.
+
 
 4.2. Creating and modifying the community model
 -----------------------------------------------
 
-To initialize a ``CommunityModel`` you have to give a list of N GSMMs as well as there biomass reaction ids:
+To set up a ``CommunityModel``, you must provide a list of N GSMMs along with their corresponding biomass reaction IDs:
 
 .. code-block:: python
 
@@ -40,20 +47,16 @@ To initialize a ``CommunityModel`` you have to give a list of N GSMMs as well as
         ],
     )
 
-If you are not familiar with the biomass reaction ID, there are a couple of ways to identify it. 
-First, you can look it up in the SBML model. Alternatively, you can check if the active objective function of the model is 
-set to the biomass reaction by using the following code: :code:`model.getActiveObjectiveReactionIds()`. 
-This will display a list of objective IDs, and you can verify if the biomass reaction is included.
+If you don't know the biomass reaction ID of the model, there are a couple of ways to find it. 
+First of all, you can look it up in the SBML model. 
+Alternatively, you can assess if the model's active objective 
+function is set to the biomass reaction with :code:`model.getActiveObjectiveReactionIds()`. 
+This returns a list of objective IDs where you can look for the biomass reaction.
 
-In this example, we have utilized two models included in the package: *E. coli core metabolism*
-and *Streptococcus thermophilus*. If desired, you can provide an optional list of alternative IDs to refer to the single models.
+In our demonstration, we've incorporated two pre-existing models: *E. coli core metabolism* and *Streptococcus thermophilus*. 
+If desired, you can provide an optional list of alternative IDs to refer to the single models.
 This can be done by supplying a list of strings as the third argument to the function. 
-If no alternative IDs are provided, the community matrix will default to using the model identifiers.
-Lastly, you have the option to assign an ID of your own choosing to the new combined model. If not provided the default ID will be used.
-
-It is important to note that the ``CommunityModel`` class is derived from the base ``cbmpy.CBModel`` class, meaning that the 
-``CommunityModel`` is still an instance of ``cbmpy.CBModel``. With the newly initialized object we can obtain even more information.
-Check the API for all functionality. 
+If no alternative IDs are provided, the community matrix will default to using the original model identifiers.
 
 .. warning::
     If you want to create a community model of N identical models, it is mandatory to specify the alternative ids.
@@ -64,40 +67,57 @@ Check the API for all functionality.
 4.3. Rules 
 ----------
 
-Maybe move this to an advanced section?
-
 During the initialization of the community model a new ``cbmpy.CBModel`` object is created. In the new object all compartments,
-reactions, reagents and species are copied from the provided models. To implement this process, following considerations were made for each:
+reactions, reagents and species are copied from the provided models. To build a functional community model, we made the following considerations for each section of the old models:
 
 Compartments:
 *************
 
+In our community model, we utilize a compartmentalized design to accurately simulate the natural structure and behavior of microbial communities.
+Therefore we handle the ``Compartments`` as follows: 
 
-In the new model, all organisms share the same external environment, all compartments from the individual models are copied, 
-except for the `external` or `e` compartment, which is only created once in the new model. All copied compartment ids get a prefix of the id of the model
-they belonged to such that we know which compartment corresponds to which organism.
+**Unified External Environment:** 
+All organisms in the model share a common external environment.
 
-The new model comprises a total of :math:`\Sigma_{i=1}^{n} (c_i-1) + 1` compartments, where c represents the number 
-of compartments in each model i.
+**Compartmentalization:** 
+While organisms share the same external environment, we consider each individual organism to be a separate compartment in the model. Furthermore we retain the 
+compartments that were already present in the original models.
 
-This design ensures that there is only one external compartment in which all species and reactions from all models coexist.
+**Design Specifics:**
+The `external` or `e` compartment from individual models is singular and shared in the community model. This ensures that all external species from all models coexist. When compartments from individual models are copied into the community model, they are appended with a suffix based on the provided ID. This procedure helps in tracking and identifying which organism each compartment corresponds to.
 
-By following this approach, the new model achieves compartmental organization while consolidating all species and reactions 
-within a unified external compartment. 
+Mathematically, the total number of compartments in the community model is given by:
+
+.. math::
+
+   \Sigma_{i=1}^{n} (c_i-1) + 1
+
+Where :math:`c_i` represents the number of compartments in each individual model \(i\).
 
 Reactions:
 **********
 
-Just like the compartments, all reactions are duplicated, and each reaction ID is augmented with its corresponding model ID. This 
-holds up for all reactions except for the exchange reactions. If two models share an exchange reaction only one is saved in the new 
-combined model.
+For the ``Reactions`` we consider the following: 
 
-Reagents and species
+**Reaction Duplication:** 
+All reactions, similar to compartments, are duplicated within the community model. To maintain traceability, each reaction ID is supplemented with the originating model ID.
+
+**Handling Exchange Reactions:** 
+A distinctive approach is employed for exchange reactions. When identical exchange reactions are present in multiple models,
+only a single instance is retained in the combined community model.
+
+
+Reagents and Species
 ********************
 
-Since the community shares all external metabolites only one copy of each external metabolite is stored in the combined model.
-All other species are copied to the new model, only receiving a suffix if the species occurs in more than one model.
+Lastly the ``Reagents`` and their corresponding ``Species``:
 
+**External Metabolites:** 
+Given that the community shares all external metabolites, only a single instance of each external metabolite is retained in the combined model.
+
+**Species Duplication and Identification:** 
+All other Species are copied to the community model. However, to maintain clarity and avoid confusion, 
+a species receives a distinguishing suffix only when it's present in more than one original model.
 
 .. warning:: 
     It is crucial to verify that the identical reactions and species within different models have consistent IDs before 
@@ -105,5 +125,5 @@ All other species are copied to the new model, only receiving a suffix if the sp
     extracellular space. If these IDs are not uniform, despite referring to the same reactions or species, the CommunityModel 
     class cannot determine their equivalence accurately.
 
-    Please ensure that the corresponding IDs for these reactions and species are harmonized to guarantee the proper 
-    functioning of the CommunityModel.
+    Please ensure that the corresponding IDs for these reactions and species are compatible to guarantee the proper 
+    functioning of the community model.

@@ -114,8 +114,8 @@ class DynamicFBABase(StaticOptimizationModelBase):
 
             self.update_concentrations(FBAsol, dt)
 
+            # TODO maybe this is obsolete
             species_id = self.check_solution_feasibility()
-
             if species_id != "":
                 dt_hat = self.reset_dt(species_id, FBAsol)
                 used_time = used_time[:-1]
