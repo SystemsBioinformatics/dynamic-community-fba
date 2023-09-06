@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="2. Dynamic FBA" href="../3_DynamicFBA/home.html" />
+    <link rel="next" title="3. Dynamic FBA" href="../3_DynamicFBA/home.html" />
     <link rel="prev" title="1. Installation and Requirements" href="../1_installation/home.html" /> 
 </head>
 
@@ -57,11 +57,11 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">2. Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">3. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">6. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">7. EndPointFBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
@@ -96,7 +96,7 @@
 <p class="linemarker linemarker-4">Before delving into the modeling of microbial communities, let’s establish a solid foundation by exploring the core principles of the <cite>CBMPy</cite> package.
 We will guide you through a series of instructive examples that illuminate key operations for GSMM’s. These examples will demonstrate the foundational techniques
 for loading and manipulating models. For these examples we will use the <em>E. coli core metabolism</em> which comes with the <cite>CBMPy</cite> package.
-Through these hands-on demonstrations, you’ll swiftly grasp the fundamental maneuvers that underpin effective model manipulation.
+Through these hands-on demonstrations, you’ll swiftly grasp the fundamental operations that underpin effective model manipulation.
 For a more comprehensive understanding and explanation of all the functionalities available in  <cite>CBMPy</cite>, we recommend you to read the extensive <a class="reference external" href="https://pythonhosted.org/cbmpy/modules_doc.html">documentation</a>.</p>
 <p class="linemarker linemarker-10">For those who have prior experience with CPBRApy, the transition to CBMPy will feel remarkably intuitive, as the two share notable similarities in their approach and methodology.</p>
 <section id="loading-a-model-using-cbmpy">
@@ -133,7 +133,7 @@ a <cite>COBRA</cite> model into <cite>CBMPy</cite> therefore always check if the
 <span class="n">cbmpy</span><span class="o">.</span><span class="n">saveModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;adjusted_model.xml&quot;</span><span class="p">)</span> <span class="c1">#Save the new model to a XML file</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-58">If you don’t want to save the model to to the latest version of SBML or you wan’t to save it to a <cite>COBRApy</cite> model you can call one of the below functions:</p>
+<p class="linemarker linemarker-58">If you want to save the model to to the latest version of SBML or you want to save it to a <cite>COBRApy</cite> model you can call one of the corresponding function as stated below:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cbmpy</span><span class="o">.</span><span class="n">writeCOBRASBML</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">cbmpy</span><span class="o">.</span><span class="n">writeFVAtoCSV</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">cbmpy</span><span class="o">.</span><span class="n">writeModelToExcel97</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -248,7 +248,7 @@ reaction with id <cite>R_BIOMASS_Ecoli_core_w_GAM</cite> is maximized.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../1_installation/home.html" class="btn btn-neutral float-left" title="1. Installation and Requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../3_DynamicFBA/home.html" class="btn btn-neutral float-right" title="2. Dynamic FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../3_DynamicFBA/home.html" class="btn btn-neutral float-right" title="3. Dynamic FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,4 +1,4 @@
-3. Parallel Dynamic FBA
+6. Parallel Dynamic FBA
 =======================
 
 The second method to model microbial interactions available through this package is Dynamic Parallel FBA. 
