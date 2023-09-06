@@ -2,38 +2,25 @@ from cbmpy.CBModel import Model, Reaction, Species
 
 
 class Transporters:
-    """Accessing Importers, Exporters, and Transporters
+    """
+    Facilitate access and operations on importers, exporters, and transporters of a metabolic model.
 
-    The purpose of this class is to provide easy access to importers,
-    exporters, and transporters within a system. Importers represent reactions
-    that uptake metabolites from the external space, while exporters represent
-    reactions that excrete metabolites to the external space. Both importers
-    and exporters are stored as dictionaries, where the
-    reaction identifiers (rid) serve as keys, and the associated species are
-    stored as values.
+    This class is designed to manage and interact with importers (reactions that uptake metabolites from external space)
+    and exporters (reactions that excrete metabolites to external space). Both importers and exporters are stored
+    as dictionaries where reaction identifiers (rid) are keys and the associated species are values.
 
-    This class helps users identify, work with, and analyze importers,
-    exporters, and transporters, which are frequently accessed during various
-    computational tasks.
+    Attributes:
+        m_importers (dict[str, list[str]]): Dictionary storing the import reactions and their corresponding species.
+        m_exporters (dict[str, list[str]]): Dictionary storing the export reactions and their corresponding species.
 
-    Usage:
-    Add new importers or exporters using the add_importer() and add_exporter()
-    Retrieve the combined importers and exporters dictionary using get_transporters()
-    Retrieve importers using the get_importers() method,
-    and optionally iterate over the results using the iterable flag.
-    Retrieve exporters using the get_exporters() method, and optionally
-    iterate over the results using the iterable flag.
-    Obtain the species associated with a specific reaction using the
-    get_reaction_species() method.
-    Check if a reaction is an importer or exporter using the is_importer() and
-    is_exporter() methods.
-    Access specific lists of importers or exporters using the provided methods.
     """
 
     m_importers: dict[str, list[str]] = {}
     m_exporters: dict[str, list[str]] = {}
 
     def __init__(self, model: Model) -> None:
+        """Initialize the Transporters class based on a metabolic model."""
+
         importers = {}
         exporters = {}
         for rid in model.getReactionIds():
@@ -52,24 +39,33 @@ class Transporters:
         self.m_exporters = exporters
 
     def add_importer(self, rid: str, species: list[str]) -> None:
+        """Add a new importer reaction along with its associated species."""
+
         self.m_importers[rid] = species
 
     def add_exporter(self, rid: str, species: list[str]) -> list[str]:
+        """Add a new exporter reaction along with its associated species."""
         self.m_exporters[rid] = species
 
     def get_transporters(self) -> dict[str, list[str]]:
-        """Get the combined importers and exporters
+        """
+        Retrieve combined dictionary of both importers and exporters.
 
         Returns:
-            dict[str, list[str]]: dict with reactions and all species
+            dict[str, list[str]]: Combined dictionary of importers and exporters.
         """
+
         return {**self.m_importers, **self.m_exporters}
 
     def get_importers(self, iterable=False) -> dict[str, list[str]]:
-        """Get all the import reactions of the model
+        """
+        Retrieve the import reactions and their associated species.
+
+        Args:
+            iterable (bool): If True, return as dictionary items. Default is False.
 
         Returns:
-            dict[str, list[str]]: Return the entire dictionary
+            dict[str, list[str]]: Dictionary of import reactions and species.
         """
         if iterable:
             return self.m_importers.items()
@@ -77,11 +73,14 @@ class Transporters:
         return self.m_importers
 
     def get_exporters(self, iterable=False) -> dict[str, list[str]]:
-        """Get the exporters of the model
+        """
+        Retrieve the export reactions and their associated species.
+
+        Args:
+            iterable (bool): If True, return as dictionary items. Default is False.
 
         Returns:
-            dict[str, list[str]]:: The dictionary containing the export
-            reactions
+            dict[str, list[str]]: Dictionary of export reactions and species.
         """
         if iterable:
             return self.m_exporters.items()

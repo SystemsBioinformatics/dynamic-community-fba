@@ -1,4 +1,4 @@
-2. Dynamic FBA
+3. Dynamic FBA
 ==============
 
 Dynamic Flux Balance Analysis (DFBA) stands as a powerful computational framework that merges the principles of Flux Balance Analysis (FBA) with dynamic modeling, 

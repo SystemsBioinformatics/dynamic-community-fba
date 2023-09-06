@@ -1,11 +1,11 @@
-2. Dynamic FBA
+3. Dynamic FBA
 ==============
 
-Dynamic Flux Balance Analysis (DFBA) stands as a powerful computational framework that merges the principles of Flux Balance Analysis (FBA) with dynamic modeling, 
+Dynamic Flux Balance Analysis (dFBA) stands as a powerful computational framework that merges the principles of Flux Balance Analysis (FBA) with dynamic modeling, 
 enabling the simulation and analysis of time-evolving metabolic processes within biological systems. Here we've implemented the Static Optimization approach as described 
 by *Mahadevan et. al (2002)* [#ref_dfba]_. 
 
-Simply put, Dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.  
+Simply put, dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.  
 With each iteration, external metabolites and biomasses are adjusted, followed by another FBA run. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
 or the final time point is reached. This modeling approach enables the exploration of metabolic network adjustments to evolving environmental factors, substrate availability, and cellular demands.
 

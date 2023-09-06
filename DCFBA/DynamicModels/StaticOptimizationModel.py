@@ -5,7 +5,8 @@ from .DynamicModelBase import DynamicModelBase
 from ..Exceptions import NoLimitingSubstrateFound
 
 
-class StaticOptimizationModel(DynamicModelBase):
+class StaticOptimizationModelBase(DynamicModelBase):
+
     """Base class providing a framework for the static optimization approaches (SOA)
     methods; using time steps to track biomass and metabolite concentrations over time.
     """
@@ -18,7 +19,6 @@ class StaticOptimizationModel(DynamicModelBase):
     ) -> None:
         """Sets initial concentrations of metabolites based on provided values
         or reaction bounds.
-
         This method sets the initial concentrations using either the provided
         concentrations or the lower bounds of the model's exchange reactions.
 
@@ -27,7 +27,9 @@ class StaticOptimizationModel(DynamicModelBase):
             initial_concentrations (dict[str, float]): Dictionary containing
                 the initial concentrations as key-value pairs for different
                 metabolites.
+
         """
+
         for exchange in model.getExchangeReactionIds():
             reaction: Reaction = model.getReaction(exchange)
             species_id: str = reaction.reagents[0].getSpecies()
@@ -67,9 +69,7 @@ class StaticOptimizationModel(DynamicModelBase):
         deviate=None,
     ):
         """Placeholder for dynamic FBA simulation over specified time intervals.
-
         This method should be overridden in subclasses to implement specific simulation logic.
-
 
         Args:
             dt (float): The time step for simulation.
@@ -80,12 +80,13 @@ class StaticOptimizationModel(DynamicModelBase):
                 Defaults to 0.001.
             kinetics_func (function, optional): A user-defined function to
                 calculate kinetics. Defaults to None.
-           deviate (function, optional): A function to apply model changes during the simulation.
+            deviate (function, optional): A function to apply model changes during the simulation.
                 Should accept: the model, biomass concentrations, metabolite concentrations, and dt as parameters.
                 Defaults to None.
             deviation_time (int, optional): The time step when the deviation
                 function should be called.
                 Defaults to 0.
+
         """
         pass
 
@@ -164,6 +165,7 @@ class StaticOptimizationModel(DynamicModelBase):
              transporters (Transporters): A Transporters object of the model.
              kinetics (Kinetics): A Kinetics object for kinetic parameter
              retrieval.
+
         Raises:
              NoLimitingSubstrateFound: Raised if the reaction isn't an import reaction and
              no limiting substrate was provided or if the provided substrate isn't external.

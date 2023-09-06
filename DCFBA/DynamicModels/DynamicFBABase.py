@@ -2,14 +2,15 @@ import cbmpy
 import math
 from cbmpy.CBModel import Reaction
 from ..Models import KineticsStruct, Transporters, CommunityModel
-from .StaticOptimzationModel import StaticOptimizationModel
+from .StaticOptimizationModel import StaticOptimizationModelBase
 
 
-class DynamicFBABase(StaticOptimizationModel):
-    """Base class for SingleDynamicFBA and JointFBA
-    Here the code for simulating both is implemented
-    The two models only differ in the fact that there is
-    a Community Biomass in Dynamic JointFBA
+class DynamicFBABase(StaticOptimizationModelBase):
+    """
+    Base class for SingleDynamicFBA and JointFBA.
+
+    Implements the core code for simulating both models. The distinction
+    between the two is the presence of a Community Biomass in Dynamic JointFBA.
     """
 
     m_model: CommunityModel
@@ -23,18 +24,15 @@ class DynamicFBABase(StaticOptimizationModel):
         initial_concentrations: dict[str, float] = {},
         kinetics: KineticsStruct = KineticsStruct({}),
     ):
-        """Initialize the DynamicFBABase class.
+        """
+        Initialize the DynamicFBABase class.
 
         Args:
-            model (CommunityModel): The community model to simulate.
-            biomasses (list[float]): Initial biomass concentrations for each
-                organism.
-            initial_concentrations (dict[str, float], optional): Initial
-                metabolite concentrations. Defaults to an empty dictionary.
-            kinetics (Kinetics, optional): Kinetic parameters for reactions.
-                Defaults to an empty Kinetics object.
+            model (CommunityModel): The community model for simulation.
+            biomasses (list[float]): List of initial biomass concentrations for each organism.
+            initial_concentrations (dict[str, float], optional): Initial metabolite concentrations. Defaults to an empty dictionary.
+            kinetics (KineticsStruct, optional): Kinetic parameters for reactions. Defaults to an empty KineticsStruct object.
         """
-
         self.m_transporters = Transporters(model)
 
         model_biomasses = model.get_model_biomass_ids()
@@ -68,12 +66,17 @@ class DynamicFBABase(StaticOptimizationModel):
         kinetics_func=None,
         deviate=None,
     ):
-        """Perform a dynamic joint FBA simulation.
+        """
+        Perform a dynamic joint FBA simulation.
 
         Returns:
-            list: A list containing the simulation results -
-                [used_time, metabolite_concentrations, biomass_concentrations, fluxes].
+            list: Contains the simulation results in the following order:
+                  1. Used time steps
+                  2. Metabolite concentrations over time
+                  3. Biomass concentrations over time
+                  4. Flux values over time.
         """
+
         used_time = [0]
         dt_hat = -1
         dt_save = dt
@@ -97,7 +100,7 @@ class DynamicFBABase(StaticOptimizationModel):
             self.update_reaction_bounds(kinetics_func)
             self.update_exchanges(dt)
 
-            solution = cbmpy.doFBA(self.m_model, quiet=False)
+            solution = cbmpy.doFBA(self.m_model, quiet=True)
 
             if math.isnan(solution) or solution <= epsilon:
                 break
@@ -131,27 +134,31 @@ class DynamicFBABase(StaticOptimizationModel):
             fluxes,
         ]
 
-    def update_exchanges(self, dt) -> None:
-        """Update exchange reaction lower bounds to the metabolite
-        concentration of that time step
-        """
+    def update_exchanges(self, dt: float) -> None:
+        """Update exchange reaction lower bounds based on the metabolite
+        concentration of the current time step."""
 
         for rid in self.m_model.getExchangeReactionIds():
             reaction: Reaction = self.m_model.getReaction(rid)
             # Exchanges only have one species:
             sid = reaction.getSpeciesIds()[0]
             # TODO DISCUSS  (1/dt)
+            # How I explain it: We normalize the exchange flux for how much the exchange can take up
+            # in 1 unit of time. In all other formulas we multiple by dt, making sure that the flux gets scaled to
+            # what it can take up in dt time.
             reaction.setLowerBound(
                 min(0, -self.m_metabolite_concentrations[sid][-1] * (1 / dt))
             )
 
-    def update_concentrations(self, FBAsol, dt) -> None:
-        """Update metabolite concentrations after an FBA step.
+    def update_concentrations(
+        self, FBAsol: dict[str, float], dt: float
+    ) -> None:
+        """
+        Update metabolite concentrations after an FBA simulation step.
 
         Args:
             FBAsol (dict): The solution vector from the FBA.
             dt (float): The time step for the simulation.
-
         """
 
         # Update external metabolites
@@ -180,12 +187,13 @@ class DynamicFBABase(StaticOptimizationModel):
                 )
 
     def update_reaction_bounds(self, kinetics_func) -> None:
-        """Update the reaction bounds for the simulation.
+        """
+        Update the reaction bounds for the simulation based on either provided
+        kinetics or standard bounds.
 
         Args:
-            kinetics_func (function): A custom function to update reaction
-                bounds based on kinetics. If None, standard bounds are used.
-
+            kinetics_func (function): A custom function to adjust reaction
+                bounds based on kinetics. Uses standard bounds if None.
         """
         for rid in self.m_model.getReactionIds():
             # TODO discuss this
@@ -219,15 +227,15 @@ class DynamicFBABase(StaticOptimizationModel):
                     )
 
     def reset_dt(self, species_id: str, FBAsol) -> float:
-        """Recalculate the time step if a species becomes infeasible.
+        """
+        Adjust the time step if a species becomes infeasible during the simulation.
 
         Args:
-            species_id (str): The ID of the species to reset the time step for.
+            species_id (str): The ID of the infeasible species.
             FBAsol (dict): The solution vector from the FBA.
 
         Returns:
-            float: The updated time step.
-
+            float: The recalculated time step.
         """
 
         # Remove last metabolite concentration

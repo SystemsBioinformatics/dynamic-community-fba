@@ -1,16 +1,20 @@
-import cbmpy
-import math
 from .DynamicFBABase import DynamicFBABase
 from cbmpy.CBModel import Reaction
 from ..Models import KineticsStruct, Transporters, CommunityModel
 
 
 class DynamicJointFBA(DynamicFBABase):
-    """A class representing a dynamic joint Flux Balance Analysis simulation.
+    """
+    A class to perform dynamic joint Flux Balance Analysis (FBA) on a community model.
 
-    This class extends the TimeStepDynamicFBABase and provides functionality
-    for performing dynamic joint FBA simulations on a community model.
+    This class facilitates dynamic joint FBA simulations by providing methods to set up
+    and manage the community model, including the creation and management of community biomass reactions.
 
+    Attributes:
+        m_model (CommunityModel): The community metabolic model being simulated.
+        m_transporters (Transporters): Transporters associated with the community model.
+        m_initial_bounds (dict[str, tuple[float, float]], optional): Initial bounds for the model reactions.
+            Defaults to an empty dictionary.
     """
 
     m_model: CommunityModel
@@ -24,6 +28,18 @@ class DynamicJointFBA(DynamicFBABase):
         initial_concentrations: dict[str, float] = {},
         kinetics: KineticsStruct = KineticsStruct({}),
     ):
+        """
+        Initialize the DynamicJointFBA class.
+
+        Args:
+            model (CommunityModel): The community metabolic model to simulate.
+            biomasses (list[float]): List of initial biomass concentrations for each model in the community.
+            initial_concentrations (dict[str, float], optional): Initial concentrations for metabolites.
+                Defaults to an empty dictionary.
+            kinetics (KineticsStruct, optional): Kinetic parameters for reactions in the model.
+                Defaults to an empty KineticsStruct.
+        """
+
         super().__init__(model, biomasses, initial_concentrations, kinetics)
 
         # Set X_C to be exporter since it increases over time
@@ -32,22 +48,22 @@ class DynamicJointFBA(DynamicFBABase):
         self.m_metabolite_concentrations["X_c"] = [sum(biomasses)]
 
     def get_joint_model(self) -> CommunityModel:
-        """Get the community model appended with the Community
-        Biomass function.
+        """
+        Retrieve the community model, which includes the Community Biomass function.
 
         Returns:
-            CommunityModel: The community model used for the simulation.
-
+            CommunityModel: The underlying community model used for simulation.
         """
+
         return self.m_model
 
-    def set_community_biomass_reaction(self):
-        """Create and set up the community biomass reaction.
+    def set_community_biomass_reaction(self) -> None:
+        """
+        Set up the community biomass reaction.
 
-        This method creates the community biomass species 'X_c' which
-        will be created in each model's biomass reaction. Next the
-        community biomass exchange reaction (X_comm) is created and set to be
-        the objective function of the model.
+        This method establishes the community biomass species 'X_c' and associates it with
+        each model's biomass reaction. Additionally, a community biomass exchange reaction (X_comm)
+        is created and designated as the model's objective function.
         """
         self.m_model.createSpecies(
             "X_c", False, "The community biomass", compartment="e"

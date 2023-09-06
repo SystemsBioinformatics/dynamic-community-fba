@@ -4,7 +4,7 @@
 Prerequisites
 -------------
 The dynamic-community-fba package relies on the `CBMPy` library [#ref_cbmpy]_ for handling constraint-based metabolic models. Like 
-`COBRApy`, `CBMPy` is a Python package that simplifies the creation, loading, and manipulation of constraint-based models, allowing interaction with LP-solvers like `CPLEX` [#ref_cplex]_.
+`COBRApy` [#ref_cobra]_, `CBMPy` is a Python package that simplifies the creation, loading, and manipulation of constraint-based models, allowing interaction with LP-solvers like `CPLEX` [#ref_cplex]_.
 
 To install `CBMPy`, you can use the following command:
 
@@ -29,13 +29,14 @@ After the installation of `CBMPY` you can install dynamic community FBA using th
    pip install NAME
 
 
-Escher
-----------
+.. Escher
+.. ----------
 
-Maybe we can write some easy converter functions for known maps. To display the models
-have to think about this
+.. Maybe we can write some easy converter functions for known maps. To display the models
+.. have to think about this
 
 
 
 .. [#ref_cbmpy] PySCeS Constraint Based Modelling (http://cbmpy.sourceforge.net) Copyright (C) 2010-2023 Brett G. Olivier, Vrije Universiteit Amsterdam, Amsterdam, The Netherlands
-.. [#ref_cplex]  IBM (2017) IBM ILOG CPLEX 12.7 User’s Manual (IBM ILOG CPLEX Division, Incline Village, NV).1
+.. [#ref_cobra] Ebrahim, A., Lerman, J.A., Palsson, B.O. et al. COBRApy: COnstraints-Based Reconstruction and Analysis for Python. BMC Syst Biol 7, 74 (2013). https://doi.org/10.1186/1752-0509-7-74
+.. [#ref_cplex] IBM (2017) IBM ILOG CPLEX 12.7 User’s Manual (IBM ILOG CPLEX Division, Incline Village, NV).1

@@ -2,13 +2,16 @@ import matplotlib.pyplot as plt
 from ..DynamicModels import EndPointFBA
 
 
-def plot_biomasses(ep: EndPointFBA):
+def plot_biomasses(ep: EndPointFBA, ls: list[str] = []):
     FBAsol = ep.m_model.getSolutionVector(names=True)
     FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
     # Set model ids and initial biomasses
     modelIds = ep.m_model.get_model_ids()
-    for i, mid in enumerate(modelIds):
+    if len(ls) == 0:
+        ls = modelIds
+
+    for i, mid in enumerate(ls):
         ls = []
         ls.append(-1 * FBAsol[f"BM_{mid}_exchange"])
         for key, value in FBAsol.items():
