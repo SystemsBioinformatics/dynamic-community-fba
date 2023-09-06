@@ -4,21 +4,22 @@
 The final method implemented in this package is called `EndPointFBA`. 
 EndPointFBA is a dynamic simulation method for microbial 
 communities provided by this package. 
-Unlike the other methods which run FBA for each time 
-point within a given interval, EndPointFBA constructs a 
-`CommunityModel` for every time point. These models are than 
-interconnected, enabling metabolites and biomass to flow from 
-one time point to the next, but not backward. This set-up then 
-allows for a single FBA to be run over the interconnected models.
+
+Unlike other methods provided by the package that run FBA foreach time point, EndPointFBA adopts a distinct approach.
+It generates a new `CommunityModel` for each time point. 
+These individual models are then interconnected, allowing for the forward flow of metabolites and biomass from one time point to the next without 
+the possibility of reverse flow. With this structure in place, a singular FBA can be executed across the interconnected models.
 
 7.1 Example
 -----------
 
 We'll use a lightweight toy model for this example to ensure the 
 computational load remains manageable. 
-This toy model is bundled with the package:
 
-.. code-block::python 
+The toy model is bundled with the package:
+
+.. code-block:: python 
+    
     from DCFBA.ToyModels import model_a, model_b
 
     m_a: Model = model_a.build_toy_model_fba_A()
@@ -56,19 +57,24 @@ This toy model is bundled with the package:
 
 Next, let's set the initial ``CommunityModel``:
 
-.. code-block::python 
+.. code-block:: python 
+
     from DCFBA.Models import CommunityModel
 
     community_model = CommunityModel(
         [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
     )
 
-To simulate using ``EndPointFBA``, we first instantiate the model 
-with the `CommunityModel`, desired number of time points, 
-initial concentrations of both biomasses and metabolites, 
-and the time step size.
+To run a simulation with ``EndPointFBA``, you'll need to initialize the object by providing the following:
 
-.. code-block::python
+- The ``CommunityModel``
+- The desired number of time points
+- Initial concentrations for both biomass and metabolites
+- The time step size
+
+
+.. code-block:: python
+
     from DCFBA.DynamicModels import EndPointFBA
 
     n = 25
@@ -82,20 +88,20 @@ and the time step size.
 
 
     solution = ep.simulate()
-    print(solution) #12.778
+    print(solution) 
+    #12.778
 
 This provides the community biomass value after 25 intervals of 0.1 time units each.
 
 7.2 Examining the results
 -------------------------
 
-You can interrogate the `EndPointFBA` object just as you would 
-any CBMPy model after performing an FBA. 
+From the ``EndPointFBA`` object we can retrieve the ``CommunityModel``, which we can examine as any other ``cbmpy.CBModel`` object.
+
 For instance, to view biomass values of model A at the start of 
 the 10th interval and at the last time point:
 
-
-.. code-block::python 
+.. code-block:: python 
 
     FBAsol = ep.m_model.getSolutionVector(names=True)
     FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
@@ -108,7 +114,7 @@ the 10th interval and at the last time point:
 
 Reactions in the ``EndPointFBA`` model have unique IDs formed by 
 appending their original IDs with the time ID (e.g., R_1_timeNN). 
-Also, metabolite flows between time points are represented with a 
+Also, metabolite flow between time points are represented with a 
 unique ID combining the metabolite's ID and the start and end 
 interval IDs.
 

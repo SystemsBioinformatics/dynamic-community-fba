@@ -45,7 +45,7 @@
 <li class="toctree-l1"><a class="reference internal" href="3_DynamicFBA/home.html">3. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5_djoint/home.html">5. Dynamic Joint FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="6_parallel_dfba/home.html">6. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_parallel_dfba/home.html">6. Dynamic Parallel FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="7_endpoint_fba/home.html">7. EndPointFBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="8_Advanced/home.html">7. Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="9_faq/home.html">8. FAQ</a></li>
@@ -110,7 +110,7 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.check_solution_feasibility">check_solution_feasibility() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.check_solution_feasibility">check_solution_feasibility() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       <li><a href="10_API/DCFBA.html#DCFBA.Models.CommunityModel.CommunityModel.clone">clone() (DCFBA.Models.CommunityModel.CommunityModel method)</a>
 </li>
@@ -245,7 +245,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="10_API/DCFBA.html#DCFBA.Models.CommunityModel.CommunityModel.identify_model_from_reaction">identify_model_from_reaction() (DCFBA.Models.CommunityModel.CommunityModel method)</a>
 </li>
-      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.importers_species_concentration">importers_species_concentration() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.importers_species_concentration">importers_species_concentration() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -289,7 +289,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.EndPointFBA.EndPointFBA.mm_approximation">mm_approximation() (DCFBA.DynamicModels.EndPointFBA.EndPointFBA method)</a>
 </li>
-      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.mm_kinetics">mm_kinetics() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.mm_kinetics">mm_kinetics() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       <li>
     module
@@ -327,7 +327,7 @@
       <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.reset_dt">reset_dt() (DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase method)</a>
 
       <ul>
-        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.reset_dt">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.reset_dt">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -343,7 +343,7 @@
       <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.EndPointFBA.EndPointFBA.set_initial_concentrations">set_initial_concentrations() (DCFBA.DynamicModels.EndPointFBA.EndPointFBA method)</a>
 
       <ul>
-        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.set_initial_concentrations">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.set_initial_concentrations">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -355,10 +355,10 @@
       <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.simulate">simulate() (DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase method)</a>
 
       <ul>
-        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.simulate">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.simulate">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       </ul></li>
-      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel">StaticOptimizationModel (class in DCFBA.DynamicModels.StaticOptimizationModel)</a>
+      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase">StaticOptimizationModelBase (class in DCFBA.DynamicModels.StaticOptimizationModel)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -374,12 +374,12 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.update_biomasses">update_biomasses() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+      <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_biomasses">update_biomasses() (DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.update_concentrations">update_concentrations() (DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase method)</a>
 
       <ul>
-        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.update_concentrations">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_concentrations">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -389,7 +389,7 @@
       <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase.update_reaction_bounds">update_reaction_bounds() (DCFBA.DynamicModels.DynamicFBABase.DynamicFBABase method)</a>
 
       <ul>
-        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel.update_reaction_bounds">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModel method)</a>
+        <li><a href="10_API/DCFBA.html#DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_reaction_bounds">(DCFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase method)</a>
 </li>
       </ul></li>
   </ul></td>

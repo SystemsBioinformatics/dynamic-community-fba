@@ -38,7 +38,7 @@ To perform dFBA run the following:
 
     #Plot the results
     ax = plt.subplot(111)
-    ax.plot(T, biomassess[""])
+    ax.plot(T, biomasses[""])
     ax2 = plt.twinx(ax)
     ax2.plot(T, metabolites["M_glc__D_e"], color="r")
 

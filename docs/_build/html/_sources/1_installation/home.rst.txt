@@ -29,11 +29,11 @@ After the installation of `CBMPY` you can install dynamic community FBA using th
    pip install NAME
 
 
-Escher
-----------
+.. Escher
+.. ----------
 
-Maybe we can write some easy converter functions for known maps. To display the models
-have to think about this
+.. Maybe we can write some easy converter functions for known maps. To display the models
+.. have to think about this
 
 
 

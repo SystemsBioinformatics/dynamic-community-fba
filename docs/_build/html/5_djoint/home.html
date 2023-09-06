@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="3. Parallel Dynamic FBA" href="../6_parallel_dfba/home.html" />
+    <link rel="next" title="6. Dynamic Parallel FBA" href="../6_parallel_dfba/home.html" />
     <link rel="prev" title="4. The community model" href="../4_community_matrix/home.html" /> 
 </head>
 
@@ -45,14 +45,14 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../1_installation/home.html">1. Installation and Requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../2_getting_started/home.html">2. CBMPy Quick Start Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">2. Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">3. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">5. Dynamic Joint FBA</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">3. Parallel Dynamic FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">6. EndpointFBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Dynamic Parallel FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">7. EndPointFBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
@@ -84,14 +84,11 @@
              
   <section id="dynamic-joint-fba">
 <h1>5. Dynamic Joint FBA<a class="headerlink" href="#dynamic-joint-fba" title="Permalink to this heading"></a></h1>
-<p>Now that we’ve defined and can construct a <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> let’s dive into its practical use for studying how different organisms function collectively.
-In this section, we’ll introduce the initial approach for modeling microbial communities, known as Dynamic Joint FBA. This method allows researchers to simulate the
-interactions between different organisms at the community level using Dynamic Joint FBA. Through this, we can uncover valuable insights into the interdependencies,
-collaborations, competitions, and overall dynamics present within the community of organisms.</p>
-<p>The core principle behind Dynamic Joint FBA is quite straightforward. Firstly, we introduce a new species into the model, which we aptly term the <cite>community biomass</cite>
-denoted as <code class="docutils literal notranslate"><span class="pre">X_c</span></code>. Next, we integrate <code class="docutils literal notranslate"><span class="pre">X_c</span></code> to be a product of the biomass reactions of all the models used to build the community matrix.
-Finally, we set the objective function to the exchange reaction of <code class="docutils literal notranslate"><span class="pre">X_c</span></code>.
-By doing so Dynamic Joint FBA effectively identifies the most optimal flux distribution through the system, that maximizes the creation of community biomass.</p>
+<p>Dynamic Joint Flux Balance Analysis (djFBA) is a method to dynamically model microbial communities. The core principle of djFBA is the formation of
+<cite>community biomass</cite>, denoted as <code class="docutils literal notranslate"><span class="pre">X_c</span></code>. Which is introduced in the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> to be the total sum of individual biomasses. The formation of
+this mock species is than set to be the objective function for FBA.</p>
+<p>Using this in combination with the static optimization approaches as introduced in the dFBA section. We now have our first method to model microbial communities!</p>
+<p>** citation from Dynamic Joint FBA</p>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
 <p>Here we will give use the example of a combining the  <em>E. coli core metabolism</em> model with the <em>Streptococcus thermophilus</em> (iRZ476) model.
@@ -162,7 +159,7 @@ Second, it returns a <code class="docutils literal notranslate"><span class="pre
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../4_community_matrix/home.html" class="btn btn-neutral float-left" title="4. The community model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../6_parallel_dfba/home.html" class="btn btn-neutral float-right" title="3. Parallel Dynamic FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../6_parallel_dfba/home.html" class="btn btn-neutral float-right" title="6. Dynamic Parallel FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
