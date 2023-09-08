@@ -1,6 +1,6 @@
 import cbmpy
 import math
-from cbmpy.CBModel import Reaction
+from cbmpy.CBModel import Reaction, Species
 from ..Models import KineticsStruct, Transporters, CommunityModel
 from .StaticOptimizationModel import StaticOptimizationModelBase
 
@@ -97,17 +97,21 @@ class DynamicFBABase(StaticOptimizationModelBase):
                     run_condition,
                 )
 
-            self.update_reaction_bounds(kinetics_func)
+            self.update_reaction_bounds(kinetics_func, dt)
             # self.update_exchanges(dt)
 
-            solution = cbmpy.doFBA(self.m_model, quiet=True)
+            solution = cbmpy.doFBA(self.m_model, quiet=False)
 
-            if math.isnan(solution) or solution <= epsilon or dt < 0.0001:
+            if math.isnan(solution) or solution <= epsilon or dt < epsilon:
                 break
 
             FBAsol = self.m_model.getSolutionVector(names=True)
             FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
+            print(self.m_metabolite_concentrations["A_e"])
+            print(self.m_metabolite_concentrations["B_e"])
+
+            # input(FBAsol)
             used_time.append(used_time[-1] + dt)
 
             fluxes.append(FBAsol)
@@ -189,7 +193,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
                     8,
                 )
 
-    def update_reaction_bounds(self, kinetics_func) -> None:
+    def update_reaction_bounds(self, kinetics_func, dt) -> None:
         """
         Update the reaction bounds for the simulation based on either provided
         kinetics or standard bounds.
@@ -224,6 +228,23 @@ class DynamicFBABase(StaticOptimizationModelBase):
                         reaction, X_k_t, self.m_transporters, self.m_kinetics
                     )
 
+                elif self.m_transporters.is_importer(rid):
+                    species_ids = reaction.getSpeciesIds()
+                    mini = 1e10
+                    for sid in species_ids:
+                        species: Species = self.m_model.getSpecies(sid)
+                        if (
+                            species.getCompartmentId() == "e"
+                            and self.m_metabolite_concentrations[sid][-1]
+                            < mini
+                        ):
+                            mini = self.m_metabolite_concentrations[sid][-1]
+                    reaction.setUpperBound(
+                        min(
+                            (self.m_initial_bounds[rid][1] * X_k_t * 100),
+                            max(0, mini) * 100,
+                        )
+                    )
                 else:
                     reaction.setUpperBound(
                         self.m_initial_bounds[rid][1] * X_k_t
