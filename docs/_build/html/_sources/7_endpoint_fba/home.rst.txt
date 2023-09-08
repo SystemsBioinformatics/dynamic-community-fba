@@ -88,18 +88,18 @@ To run a simulation with ``EndPointFBA``, you'll need to initialize the object b
 
 
     solution = ep.simulate()
-    print(solution) #12.778
+    print(solution) 
+    #12.778
 
 This provides the community biomass value after 25 intervals of 0.1 time units each.
 
 7.2 Examining the results
 -------------------------
 
-You can interrogate the `EndPointFBA` object just as you would 
-any CBMPy model after performing an FBA. 
+From the ``EndPointFBA`` object we can retrieve the ``CommunityModel``, which we can examine as any other ``cbmpy.CBModel`` object.
+
 For instance, to view biomass values of model A at the start of 
 the 10th interval and at the last time point:
-
 
 .. code-block:: python 
 
@@ -114,7 +114,7 @@ the 10th interval and at the last time point:
 
 Reactions in the ``EndPointFBA`` model have unique IDs formed by 
 appending their original IDs with the time ID (e.g., R_1_timeNN). 
-Also, metabolite flows between time points are represented with a 
+Also, metabolite flow between time points are represented with a 
 unique ID combining the metabolite's ID and the start and end 
 interval IDs.
 

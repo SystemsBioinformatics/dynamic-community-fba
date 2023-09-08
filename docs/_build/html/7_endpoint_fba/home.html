@@ -167,16 +167,16 @@ computational load remains manageable.</p>
 
 
 <span class="n">solution</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span> <span class="c1">#12.778</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+<span class="c1">#12.778</span>
 </pre></div>
 </div>
 <p>This provides the community biomass value after 25 intervals of 0.1 time units each.</p>
 </section>
 <section id="examining-the-results">
 <h2>7.2 Examining the results<a class="headerlink" href="#examining-the-results" title="Permalink to this heading"></a></h2>
-<p>You can interrogate the <cite>EndPointFBA</cite> object just as you would
-any CBMPy model after performing an FBA.
-For instance, to view biomass values of model A at the start of
+<p>From the <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> object we can retrieve the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>, which we can examine as any other <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object.</p>
+<p>For instance, to view biomass values of model A at the start of
 the 10th interval and at the last time point:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">FBAsol</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">m_model</span><span class="o">.</span><span class="n">getSolutionVector</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">FBAsol</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">FBAsol</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">FBAsol</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -190,7 +190,7 @@ the 10th interval and at the last time point:</p>
 </div>
 <p>Reactions in the <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> model have unique IDs formed by
 appending their original IDs with the time ID (e.g., R_1_timeNN).
-Also, metabolite flows between time points are represented with a
+Also, metabolite flow between time points are represented with a
 unique ID combining the metabolite’s ID and the start and end
 interval IDs.</p>
 <p>Built-in plotting functions allow for visualizing metabolite flows and biomass concentrations over time:</p>

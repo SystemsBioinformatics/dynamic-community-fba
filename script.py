@@ -1,28 +1,81 @@
 import cbmpy
-from DCFBA.DynamicModels import DynamicSingleFBA
-from DCFBA.Models import KineticsStruct
 import matplotlib.pyplot as plt
-from DCFBA.ToyModels.model_c import build_model_C
+from cbmpy.CBModel import Model, Reaction
+from DCFBA.ToyModels import model_a, model_b
+from DCFBA.Models.CommunityModel import CommunityModel
+from DCFBA.Models.Kinetics import KineticsStruct
+from DCFBA.DynamicModels import EndPointFBA
+from DCFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 
-model = build_model_C()
-model.getReaction("R_1").setUpperBound(1)
+m_a: Model = model_a.build_toy_model_fba_A()
 
-db = DynamicSingleFBA(model, "R_BM_C", 1, {"S_e": 10})
+m_a.getReaction("R_1").setUpperBound(10)
+m_a.getReaction("R_4").setUpperBound(3)
+m_a.getReaction("R_6").setUpperBound(1)
 
-T, metabolites, biomasses, fluxes = db.simulate(dt=0.1)
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_a.getReaction("R_BM_A").deleteReagentWithSpeciesRef(
+    "BM_e_A"
+)
 
-print(metabolites["S_e"])
-print(biomasses)
-print(T)
-rv6 = list(map(lambda d: d["S_exchange"], fluxes))
-print(rv6)
+# m_a.getReaction("R_import_B").setUpperBound(1)
 
-# Plot the results
-ax = plt.subplot(111)
-ax.plot(T, biomasses[""])
-ax2 = plt.twinx(ax)
-ax2.plot(T, metabolites["S_e"], color="r")
+m_a.getReaction("R_1").setLowerBound(0)
+m_a.getReaction("R_4").setLowerBound(0)
+m_a.getReaction("R_6").setLowerBound(0)
 
-ax.set_ylabel("Biomass", color="b")
-ax2.set_ylabel("S", color="r")
-plt.show()
+m_b: Model = model_b.build_toy_model_fba_B()
+m_b.getReaction("R_1").setUpperBound(10)
+m_b.getReaction("R_3").setUpperBound(1)
+m_b.getReaction("R_5").setUpperBound(1)
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_b.getReaction("R_BM_B").deleteReagentWithSpeciesRef(
+    "BM_e_B"
+)
+
+
+m_b.getReaction("R_1").setLowerBound(0)
+m_b.getReaction("R_3").setLowerBound(0)
+m_b.getReaction("R_5").setLowerBound(0)
+
+
+kin = KineticsStruct(
+    {
+        "R_1_modelA": ["", 10, 10],
+        "R_4_modelA": ["B_e", 5, 3],
+        "R_6_modelA": ["B_e", 3, 1],
+        # B
+        "R_1_modelB": ["", 10, 10],
+        "R_3_modelB": ["A_e", 2, 1],
+    }
+)
+
+
+community_model = CommunityModel(
+    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+)
+
+# Are set by the model as often required by other GSMM
+community_model.deleteReactionAndBounds("BM_e_A_exchange")
+community_model.deleteReactionAndBounds("BM_e_B_exchange")
+
+# community_model.getReaction("B_exchange").setLowerBound(-100)
+# community_model.getReaction("A_exchange").setLowerBound(-100)
+
+
+# community_model.getReaction("S_exchange").setLowerBound(-100)
+
+n = 21
+dj = EndPointFBA(
+    community_model,
+    n,
+    {"modelA": 1.0, "modelB": 2.0},
+    {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+    0.1,
+)
+
+
+solution = dj.simulate()
+
+plot_biomasses(dj)
+plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})

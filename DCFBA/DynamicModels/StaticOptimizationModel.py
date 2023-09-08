@@ -13,6 +13,8 @@ class StaticOptimizationModelBase(DynamicModelBase):
 
     m_biomass_concentrations: dict[str, list[float]] = {}
     m_metabolite_concentrations: dict[str, list[float]] = {}
+    m_initial_bounds = {}
+    m_kinetics: KineticsStruct
 
     def set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]
@@ -104,6 +106,9 @@ class StaticOptimizationModelBase(DynamicModelBase):
 
     def update_concentrations(self) -> None:
         """Update all metabolite concentrations"""
+        pass
+
+    def update_exchanges(self, dt: float) -> None:
         pass
 
     def update_biomasses(self) -> None:

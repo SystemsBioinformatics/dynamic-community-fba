@@ -51,6 +51,7 @@ def find_max_solution(
     dt,
 ):
     prev = 0
+    print(cm.getReactionIds())
     ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt)
     value = ep.simulate()
     while round(prev, 5) < round(value, 5):

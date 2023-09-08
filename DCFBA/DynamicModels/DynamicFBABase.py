@@ -98,11 +98,11 @@ class DynamicFBABase(StaticOptimizationModelBase):
                 )
 
             self.update_reaction_bounds(kinetics_func)
-            self.update_exchanges(dt)
+            # self.update_exchanges(dt)
 
             solution = cbmpy.doFBA(self.m_model, quiet=True)
 
-            if math.isnan(solution) or solution <= epsilon:
+            if math.isnan(solution) or solution <= epsilon or dt < 0.0001:
                 break
 
             FBAsol = self.m_model.getSolutionVector(names=True)
@@ -117,6 +117,9 @@ class DynamicFBABase(StaticOptimizationModelBase):
             # TODO maybe this is obsolete
             species_id = self.check_solution_feasibility()
             if species_id != "":
+                print(FBAsol)
+                input(species_id)
+
                 dt_hat = self.reset_dt(species_id, FBAsol)
                 used_time = used_time[:-1]
 
