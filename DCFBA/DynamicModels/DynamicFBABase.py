@@ -114,17 +114,6 @@ class DynamicFBABase(StaticOptimizationModelBase):
 
             self.update_concentrations(FBAsol, dt)
 
-            # TODO maybe this is obsolete
-            species_id = self.check_solution_feasibility()
-            if species_id != "":
-                print(FBAsol)
-                input(species_id)
-
-                dt_hat = self.reset_dt(species_id, FBAsol)
-                used_time = used_time[:-1]
-
-                continue
-
             for _, rid in self.m_model.get_model_biomass_ids().items():
                 mid = self.m_model.identify_model_from_reaction(rid)
                 Xt = self.m_biomass_concentrations[mid][-1] + FBAsol[rid] * dt
@@ -166,27 +155,13 @@ class DynamicFBABase(StaticOptimizationModelBase):
 
         # Update external metabolites
 
-        # TODO just use exchange reactions?
+        for e in self.m_model.getExchangeReactionIds():
+            exchange: Reaction = self.m_model.getReaction(e)
 
-        for key in self.m_metabolite_concentrations.keys():
-            self.m_metabolite_concentrations[key].append(
-                self.m_metabolite_concentrations[key][-1]
-            )
-
-        for rid, species_ids in self.m_transporters.get_exporters(True):
-            for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] = round(
-                    self.m_metabolite_concentrations[sid][-1]
-                    + FBAsol[rid] * dt,
-                    8,
-                )
-
-        for rid, species_ids in self.m_transporters.get_importers(True):
-            for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] = round(
-                    self.m_metabolite_concentrations[sid][-1]
-                    - FBAsol[rid] * dt,
-                    8,
+            sid = exchange.getSpeciesIds()[0]
+            if sid not in self.m_model.m_single_model_biomass_reaction_ids:
+                self.m_metabolite_concentrations[sid].append(
+                    self.m_metabolite_concentrations[sid][-1] + FBAsol[e] * dt
                 )
 
     def update_reaction_bounds(self, kinetics_func) -> None:
@@ -228,36 +203,3 @@ class DynamicFBABase(StaticOptimizationModelBase):
                     reaction.setUpperBound(
                         self.m_initial_bounds[rid][1] * X_k_t
                     )
-
-    def reset_dt(self, species_id: str, FBAsol) -> float:
-        """
-        Adjust the time step if a species becomes infeasible during the simulation.
-
-        Args:
-            species_id (str): The ID of the infeasible species.
-            FBAsol (dict): The solution vector from the FBA.
-
-        Returns:
-            float: The recalculated time step.
-        """
-
-        # Remove last metabolite concentration
-        self.m_metabolite_concentrations = {
-            key: lst[:-1]
-            for key, lst in self.m_metabolite_concentrations.items()
-        }
-
-        # Maybe some metabolite was exported/created, by an organism
-        # Unfortunately to check what is create we would
-        # have to know the new dt which we don'...
-        # So we accept a small error.
-
-        total = 0
-        for (
-            rid,
-            species_ids,
-        ) in self.m_transporters.get_importers(True):
-            if species_id in species_ids:
-                total += FBAsol[rid]
-
-        return self.m_metabolite_concentrations[species_id][-1] / total

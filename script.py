@@ -69,7 +69,7 @@ community_model = CommunityModel(
 dj = DynamicJointFBA(
     community_model, [1, 1], {"S_e": 100, "A_e": 0.0, "B_e": 0.0}
 )
-T, metabolites, biomasses, fluxes = dj.simulate(0.1)
+T, metabolites, biomasses, fluxes = dj.simulate(0.01)
 index = 0
 
 # for a in fluxes:
