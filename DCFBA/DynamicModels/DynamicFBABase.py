@@ -98,7 +98,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
                 )
 
             self.update_reaction_bounds(kinetics_func)
-            # self.update_exchanges(dt)
+            self.update_exchanges(dt)
 
             solution = cbmpy.doFBA(self.m_model, quiet=True)
 
