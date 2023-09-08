@@ -166,27 +166,13 @@ class DynamicFBABase(StaticOptimizationModelBase):
 
         # Update external metabolites
 
-        # TODO just use exchange reactions?
+        for e in self.m_model.getExchangeReactionIds():
+            exchange: Reaction = self.m_model.getReaction(e)
 
-        for key in self.m_metabolite_concentrations.keys():
-            self.m_metabolite_concentrations[key].append(
-                self.m_metabolite_concentrations[key][-1]
-            )
-
-        for rid, species_ids in self.m_transporters.get_exporters(True):
-            for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] = round(
-                    self.m_metabolite_concentrations[sid][-1]
-                    + FBAsol[rid] * dt,
-                    8,
-                )
-
-        for rid, species_ids in self.m_transporters.get_importers(True):
-            for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] = round(
-                    self.m_metabolite_concentrations[sid][-1]
-                    - FBAsol[rid] * dt,
-                    8,
+            sid = exchange.getSpeciesIds()[0]
+            if sid not in self.m_model.m_single_model_biomass_reaction_ids:
+                self.m_metabolite_concentrations[sid].append(
+                    self.m_metabolite_concentrations[sid][-1] + FBAsol[e] * dt
                 )
 
     def update_reaction_bounds(self, kinetics_func) -> None:
