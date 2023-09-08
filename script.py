@@ -36,7 +36,7 @@ community_model.getReaction("A_e_exchange").setLowerBound(-100000)
 community_model.getReaction("B_e_exchange").setLowerBound(-100000)
 
 dj = DynamicJointFBA(
-    community_model, [1, 1], {"S_e": 100, "A_e": 0.01, "B_e": 0.01}
+    community_model, [1, 1], {"S_e": 100, "A_e": 0.01, "B_e": 0.1}
 )
 T, metabolites, biomasses, fluxes = dj.simulate(0.01)
 index = 0

@@ -98,7 +98,6 @@ class DynamicFBABase(StaticOptimizationModelBase):
                 )
 
             self.update_reaction_bounds(kinetics_func, dt)
-            # self.update_exchanges(dt)
 
             solution = cbmpy.doFBA(self.m_model, quiet=False)
 
@@ -140,22 +139,6 @@ class DynamicFBABase(StaticOptimizationModelBase):
             self.m_biomass_concentrations,
             fluxes,
         ]
-
-    def update_exchanges(self, dt: float) -> None:
-        """Update exchange reaction lower bounds based on the metabolite
-        concentration of the current time step."""
-
-        for rid in self.m_model.getExchangeReactionIds():
-            reaction: Reaction = self.m_model.getReaction(rid)
-            # Exchanges only have one species:
-            sid = reaction.getSpeciesIds()[0]
-            # TODO DISCUSS  (1/dt)
-            # How I explain it: We normalize the exchange flux for how much the exchange can take up
-            # in 1 unit of time. In all other formulas we multiple by dt, making sure that the flux gets scaled to
-            # what it can take up in dt time.
-            reaction.setLowerBound(
-                min(0, -self.m_metabolite_concentrations[sid][-1] * (1 / dt))
-            )
 
     def update_concentrations(
         self, FBAsol: dict[str, float], dt: float
@@ -241,8 +224,8 @@ class DynamicFBABase(StaticOptimizationModelBase):
                             mini = self.m_metabolite_concentrations[sid][-1]
                     reaction.setUpperBound(
                         min(
-                            (self.m_initial_bounds[rid][1] * X_k_t * 100),
-                            max(0, mini) * 100,
+                            (self.m_initial_bounds[rid][1] * X_k_t),
+                            max(0, mini),
                         )
                     )
                 else:
