@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="6. Parallel Dynamic FBA" href="../6_parallel_dfba/home.html" />
+    <link rel="next" title="6. Dynamic Parallel FBA" href="../6_parallel_dfba/home.html" />
     <link rel="prev" title="4. The community model" href="../4_community_matrix/home.html" /> 
 </head>
 
@@ -51,7 +51,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Dynamic Parallel FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">7. EndPointFBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../8_Advanced/home.html">7. Advanced Topics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
@@ -84,17 +84,14 @@
              
   <section id="dynamic-joint-fba">
 <h1>5. Dynamic Joint FBA<a class="headerlink" href="#dynamic-joint-fba" title="Permalink to this heading"></a></h1>
-<p class="linemarker linemarker-5">Now that we’ve defined and can construct a <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> let’s dive into its practical use for studying how different organisms function collectively.
-In this section, we’ll introduce the initial approach for modeling microbial communities, known as Dynamic Joint FBA. This method allows researchers to simulate the
-interactions between different organisms at the community level using Dynamic Joint FBA. Through this, we can uncover valuable insights into the interdependencies,
-collaborations, competitions, and overall dynamics present within the community of organisms.</p>
-<p class="linemarker linemarker-10">The core principle behind Dynamic Joint FBA is quite straightforward. Firstly, we introduce a new species into the model, which we aptly term the <cite>community biomass</cite>
-denoted as <code class="docutils literal notranslate"><span class="pre">X_c</span></code>. Next, we integrate <code class="docutils literal notranslate"><span class="pre">X_c</span></code> to be a product of the biomass reactions of all the models used to build the community matrix.
-Finally, we set the objective function to the exchange reaction of <code class="docutils literal notranslate"><span class="pre">X_c</span></code>.
-By doing so Dynamic Joint FBA effectively identifies the most optimal flux distribution through the system, that maximizes the creation of community biomass.</p>
+<p class="linemarker linemarker-4">Dynamic Joint Flux Balance Analysis (djFBA) is a method to dynamically model microbial communities. The core principle of djFBA is the formation of
+<cite>community biomass</cite>, denoted as <code class="docutils literal notranslate"><span class="pre">X_c</span></code>. Which is introduced in the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> to be the total sum of individual biomasses. The formation of
+this mock species is than set to be the objective function for FBA.</p>
+<p class="linemarker linemarker-8">Using this in combination with the static optimization approaches as introduced in the dFBA section. We now have our first method to model microbial communities!</p>
+<p class="linemarker linemarker-10">** citation from Dynamic Joint FBA</p>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-20">Here we will give use the example of a combining the  <em>E. coli core metabolism</em> model with the <em>Streptococcus thermophilus</em> (iRZ476) model.
+<p class="linemarker linemarker-15">Here we will give use the example of a combining the  <em>E. coli core metabolism</em> model with the <em>Streptococcus thermophilus</em> (iRZ476) model.
 To perform the Dynamic Joint FBA we first define the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> and use this to initialize a <code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code> object:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">cbmpy</span>
@@ -125,14 +122,14 @@ To perform the Dynamic Joint FBA we first define the <code class="docutils liter
 <span class="p">)</span> <span class="c1">#Create a DynamicJointFBA object, set the initial concentrations of glucose and lactose to 100</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-53">Now that the model is in place we can run the simulation using time steps of 0.1:</p>
+<p class="linemarker linemarker-48">Now that the model is in place we can run the simulation using time steps of 0.1:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">,</span> <span class="n">fluxes</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-59">The <code class="docutils literal notranslate"><span class="pre">simulate</span></code> method returns a tuple with four elements. First, it provides a list of time points for the simulation.
+<p class="linemarker linemarker-54">The <code class="docutils literal notranslate"><span class="pre">simulate</span></code> method returns a tuple with four elements. First, it provides a list of time points for the simulation.
 Second, it returns a <code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the species_ids and their corresponding concentrations at each time point. Third, we get a
 <code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the biomasses of the models, accessed through their IDs. Lastly we get the fluxes of all reactions for each time point.</p>
-<p class="linemarker linemarker-63">You can now easily plot the species concentration over time:</p>
+<p class="linemarker linemarker-58">You can now easily plot the species concentration over time:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Glucose]&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_lcts_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Lactose]&quot;</span><span class="p">)</span>
 
@@ -143,7 +140,7 @@ Second, it returns a <code class="docutils literal notranslate"><span class="pre
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/Metabolites_DJFBA.png"><img alt="Biomass concentrations" class="align-center" src="../_images/Metabolites_DJFBA.png" style="width: 500px;" /></a>
-<p class="linemarker linemarker-82">And the biomasses of both species over time</p>
+<p class="linemarker linemarker-77">And the biomasses of both species over time</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;ecoli&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ecoli&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;strep&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;strep&quot;</span><span class="p">)</span>
 
@@ -162,7 +159,7 @@ Second, it returns a <code class="docutils literal notranslate"><span class="pre
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../4_community_matrix/home.html" class="btn btn-neutral float-left" title="4. The community model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../6_parallel_dfba/home.html" class="btn btn-neutral float-right" title="6. Parallel Dynamic FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../6_parallel_dfba/home.html" class="btn btn-neutral float-right" title="6. Dynamic Parallel FBA" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

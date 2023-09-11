@@ -55,7 +55,7 @@ There are two ways to save a cbmpy model. The easiest way is to save your altere
 
     cbmpy.saveModel(model, "adjusted_model.xml") #Save the new model to a XML file
 
-If you want to save the model to to the latest version of SBML or you want to save it to a `COBRApy` model you can call one of the corresponding function as stated below:
+You can save the modified model in a file format of your choice using any of the following methods:
 
 .. code-block:: python
     
@@ -82,7 +82,7 @@ To list all the reactions in the model, or list the reaction containing a certai
     modelRxns = model.getReactionIds() #All the reactions, as a list[str]
     print(modelRxns)
 
-    model.getReactionIds('PG') #Outputs only reactions with "PG" in their ID
+    print(model.getReactionIds('PG'))  #Outputs only reactions with "PG" in their ID
 
 Once you have identified your reaction of interest, you can easily access its key details, including the reagents, upper and lower bounds, and equation, as follows:
 
@@ -111,7 +111,7 @@ Furthermore you can check if a reaction is reversible and if it is an exchange r
 
 
 You can easily add your own defined reactions to the model using ``model.createReaction()``, if we for example want to add the 
-reaction: :literal:`ATP + H2O -> ADP + Pi` we can do this with the following code:
+irreversible reaction: :literal:`ATP + H2O -> ADP + Pi` we can do this with the following code:
 
 .. code-block:: python 
 
@@ -128,7 +128,7 @@ reaction: :literal:`ATP + H2O -> ADP + Pi` we can do this with the following cod
 Reagents
 ********
 
-Tohe ``Reagent`` class  represents a reagent within a reaction, providing essential information about its properties and characteristics. 
+The ``Reagent`` class  represents a reagent within a reaction, providing essential information about its properties and characteristics. 
 Within the class, users can access and manipulate the reagents associated with a specific reaction within the model. The reagent itself 
 is linked to a ``Species`` which we will cover shortly. 
 You can access a reagent by retrieving it from an instance of the ``Reaction`` class, given the `R_PGK` reaction from the previous example
@@ -149,7 +149,7 @@ If a reagent has a negative coefficient it is consumed by the reaction, if the r
 Species
 *******
 
-Species represent the metabolites in the system using the ``Species`` object you can easily retrieve details such as the species' molecular formula, charge, and compartment information.
+Species represent the metabolites in the system using the ``Species`` object you can easily retrieve details such as the molecular formula, charge, and the compartment of the species.
 Furthermore you can list the reactions in which a species is consumed or created
 
 .. code-block:: python 
@@ -167,18 +167,20 @@ Furthermore you can list the reactions in which a species is consumed or created
 Objective function 
 ******************
 
-To perform FBA on the model you need to set an objective function. The out put of FBA 
-will be a flux distribution which maximizes/minimizes this objective function. 
+To perform FBA on the model you need to set an objective function. The output of FBA 
+will be a flux distribution which minimizes/maximizes this objective function. 
 
 To check what the active objective function of the model is you can write: 
 
 .. code-block:: python 
 
     objective_ids = model.getActiveObjectiveReactionIds() #Returns the IDs of the reactions which have been set as objective reaction
+    
+    print(objective_ids)
     #['R_BIOMASS_Ecoli_core_w_GAM']
     
     objective = model.getActiveObjective()
-    objective.getOperation()
+    print(objective.getOperation())
     #Maximize
 
     solution = cbmpy.doFBA(model)
@@ -187,6 +189,4 @@ To check what the active objective function of the model is you can write:
 Calling ``cbmpy.doFBA(model)``  will calculate the fluxes such that the flux through the 
 reaction with id `R_BIOMASS_Ecoli_core_w_GAM` is maximized. 
 
-
-Next we will explore how CBMPy models can be used to model the behaviors of microbial communities. 
-
+Next, we'll delve into dynamic modeling of CBMPy models. Once we lay this foundation, we'll journey into the fascinating realm of modeling microbial communities.

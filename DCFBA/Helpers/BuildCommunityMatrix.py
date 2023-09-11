@@ -151,13 +151,11 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str) -> None:
         is_exchange_reaction: bool = False
         reaction: Reaction = model.getReaction(reaction_id)
 
-        if reaction_id.startswith("R_EX"):
-            is_exchange_reaction = True
-
-        if reaction_id in exchange_reactions:
-            is_exchange_reaction = True
-        # SBO termin for exchange reaction
-        if reaction.getSBOterm() == "SBO:0000627":
+        if (
+            reaction_id.startswith("R_EX")
+            or reaction_id in exchange_reactions
+            or reaction.getSBOterm() == "SBO:0000627"
+        ):
             is_exchange_reaction = True
 
         # if it is an exchange reaction and it is not yet in the model add it
@@ -273,6 +271,7 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
             )
         )
         out = None
+    print(m_targ.getReaction(rid))
     if (
         out is not None
         and m_targ.getReaction(rid) is not None
@@ -327,10 +326,11 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
         else:
             out["existing_species"].append(s)
         out["reagents"].append(s)
-    # TODO ask Brett
-    if R.getId().startswith("R_EX"):
+
+    if R.getId().startswith("R_EX") or R.getSBOterm() == "SBO:0000627":
         R.is_exchange = True
-    m_targ.addReaction(R, create_default_bounds=True, silent=True)
+
+    m_targ.addReaction(R, create_default_bounds=False, silent=True)
     m_targ.setReactionBounds(
         R.id, old_reaction.getLowerBound(), old_reaction.getUpperBound()
     )

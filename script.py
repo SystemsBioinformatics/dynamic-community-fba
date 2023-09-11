@@ -1,41 +1,81 @@
-import matplotlib.pyplot as plt
 import cbmpy
-from cbmpy.CBModel import Model
-from DCFBA.Models import CommunityModel
-from DCFBA.DynamicModels import DynamicJointFBA
+import matplotlib.pyplot as plt
+from cbmpy.CBModel import Model, Reaction
+from DCFBA.ToyModels import model_a, model_b
+from DCFBA.Models.CommunityModel import CommunityModel
+from DCFBA.Models.Kinetics import KineticsStruct
+from DCFBA.DynamicModels import EndPointFBA
+from DCFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 
 
-model1: Model = cbmpy.loadModel(
-    "models/bigg_models/e_coli_core.xml"
-)  # load e_coli core
-model2: Model = cbmpy.loadModel(
-    "models/bigg_models/strep_therm.xml"
-)  # load the Streptococcus model
+m_a: Model = model_a.build_toy_model_fba_A()
 
-# Set the import bounds for glucose in both models
-model1.getReaction("R_GLCpts").setUpperBound(10)
-model2.getReaction("R_GLCpts").setUpperBound(6)
+m_a.getReaction("R_1").setUpperBound(10)
+m_a.getReaction("R_4").setUpperBound(3)
+m_a.getReaction("R_6").setUpperBound(1)
 
-# The biomass reactions ids
-biomass_reaction_model_1: str = "R_BIOMASS_Ecoli_core_w_GAM"
-biomass_reaction_model_2: str = "R_biomass_STR"
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_a.getReaction("R_BM_A").deleteReagentWithSpeciesRef(
+    "BM_e_A"
+)
 
-cm = CommunityModel(
-    [model1, model2],
-    [biomass_reaction_model_1, biomass_reaction_model_2],
-    ["ecoli", "strep"],
-)  # Define the community model
+# m_a.getReaction("R_import_B").setUpperBound(1)
 
-dynamic_fba = DynamicJointFBA(
-    cm, [1.0, 1.0], {"M_glc__D_e": 100, "M_gal_e": 0, "M_lcts_e": 100}
-)  # Create a DynamicJointFBA object, set the initial concentrations of glucose and lactose to 100
+m_a.getReaction("R_1").setLowerBound(0)
+m_a.getReaction("R_4").setLowerBound(0)
+m_a.getReaction("R_6").setLowerBound(0)
 
-T, metabolites, biomasses, fluxes = dynamic_fba.simulate(0.1)
+m_b: Model = model_b.build_toy_model_fba_B()
+m_b.getReaction("R_1").setUpperBound(10)
+m_b.getReaction("R_3").setUpperBound(1)
+m_b.getReaction("R_5").setUpperBound(1)
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_b.getReaction("R_BM_B").deleteReagentWithSpeciesRef(
+    "BM_e_B"
+)
 
-plt.plot(T, metabolites["M_glc__D_e"], color="blue", label="[Glucose]")
-plt.plot(T, metabolites["M_lcts_e"], color="orange", label="[Lactose]")
 
-plt.xlabel("Time")
-plt.ylabel("Concentration")
-plt.legend()
-plt.show()
+m_b.getReaction("R_1").setLowerBound(0)
+m_b.getReaction("R_3").setLowerBound(0)
+m_b.getReaction("R_5").setLowerBound(0)
+
+
+kin = KineticsStruct(
+    {
+        "R_1_modelA": ["", 10, 10],
+        "R_4_modelA": ["B_e", 5, 3],
+        "R_6_modelA": ["B_e", 3, 1],
+        # B
+        "R_1_modelB": ["", 10, 10],
+        "R_3_modelB": ["A_e", 2, 1],
+    }
+)
+print(m_a.getReaction("test"))
+community_model = CommunityModel(
+    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+)
+
+# Are set by the model as often required by other GSMM
+community_model.deleteReactionAndBounds("BM_e_A_exchange")
+community_model.deleteReactionAndBounds("BM_e_B_exchange")
+
+# community_model.getReaction("B_exchange").setLowerBound(-100)
+# community_model.getReaction("A_exchange").setLowerBound(-100)
+
+
+# community_model.getReaction("S_exchange").setLowerBound(-100)
+
+n = 21
+dj = EndPointFBA(
+    community_model,
+    n,
+    {"modelA": 1.0, "modelB": 2.0},
+    {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+    0.1,
+)
+
+
+solution = dj.simulate()
+
+plot_biomasses(dj)
+plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
