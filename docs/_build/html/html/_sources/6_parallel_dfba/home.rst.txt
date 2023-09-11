@@ -1,13 +1,13 @@
-6. Parallel Dynamic FBA
+6. Dynamic Parallel FBA
 =======================
 
-The second method to model microbial interactions available through this package is Dynamic Parallel FBA. 
+The second method to model microbial interactions available through this package is Dynamic Parallel FBA (dpFBA). 
 The key idea is to perform FBA on individual models while keeping track of a *pool* of external metabolites from which all models grow.
 Again we keep track of the overall concentrations of biomass and external metabolites and update this using the set time interval.
 
 Example
 -------
-To run a simulation with Parallel Dynamic FBA, you first need to define your ``ParallelDynamicFBA`` model.
+To run a simulation with Dynamic Parallel FBA, you first need to define your ``ParallelDynamicFBA`` model.
 
 .. code-block:: python
 

@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="7. Advanced Topics" href="../8_Advanced/home.html" />
-    <link rel="prev" title="6. Parallel Dynamic FBA" href="../6_parallel_dfba/home.html" /> 
+    <link rel="prev" title="6. Dynamic Parallel FBA" href="../6_parallel_dfba/home.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../3_DynamicFBA/home.html">3. Dynamic FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../4_community_matrix/home.html">4. The community model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Parallel Dynamic FBA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Dynamic Parallel FBA</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">7. EndPointFBA</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#example">7.1 Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#examining-the-results">7.2 Examining the results</a></li>
@@ -94,37 +94,106 @@
 <h1>7. EndPointFBA<a class="headerlink" href="#endpointfba" title="Permalink to this heading"></a></h1>
 <p class="linemarker linemarker-4">The final method implemented in this package is called <cite>EndPointFBA</cite>.
 EndPointFBA is a dynamic simulation method for microbial
-communities provided by this package.
-Unlike the other methods which run FBA for each time
-point within a given interval, EndPointFBA constructs a
-<cite>CommunityModel</cite> for every time point. These models are than
-interconnected, enabling metabolites and biomass to flow from
-one time point to the next, but not backward. This set-up then
-allows for a single FBA to be run over the interconnected models.</p>
+communities provided by this package.</p>
+<p class="linemarker linemarker-8">Unlike other methods provided by the package that run FBA foreach time point, EndPointFBA adopts a distinct approach.
+It generates a new <cite>CommunityModel</cite> for each time point.
+These individual models are then interconnected, allowing for the forward flow of metabolites and biomass from one time point to the next without
+the possibility of reverse flow. With this structure in place, a singular FBA can be executed across the interconnected models.</p>
 <section id="example">
 <h2>7.1 Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-17">We’ll use a lightweight toy model for this example to ensure the
-computational load remains manageable.
-This toy model is bundled with the package:</p>
-<p class="linemarker linemarker-57">Next, let’s set the initial <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>:</p>
-<p class="linemarker linemarker-66">To simulate using <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code>, we first instantiate the model
-with the <cite>CommunityModel</cite>, desired number of time points,
-initial concentrations of both biomasses and metabolites,
-and the time step size.</p>
-<p class="linemarker linemarker-87">This provides the community biomass value after 25 intervals of 0.1 time units each.</p>
+<p class="linemarker linemarker-16">We’ll use a lightweight toy model for this example to ensure the
+computational load remains manageable.</p>
+<p class="linemarker linemarker-19">The toy model is bundled with the package:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">DCFBA.ToyModels</span> <span class="kn">import</span> <span class="n">model_a</span><span class="p">,</span> <span class="n">model_b</span>
+
+<span class="n">m_a</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">model_a</span><span class="o">.</span><span class="n">build_toy_model_fba_A</span><span class="p">()</span>
+
+<span class="c1">#Setting some initial bounds on reactions</span>
+<span class="n">m_a</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">m_a</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_4&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">m_a</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_6&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">m_a</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">m_a</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_4&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">m_a</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_6&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Delete the original biomass model from model A as it is redefined in the endPoint model</span>
+<span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span> <span class="o">=</span> <span class="n">m_a</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_BM_A&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">deleteReagentWithSpeciesRef</span><span class="p">(</span>
+    <span class="s2">&quot;BM_e_A&quot;</span>
+<span class="p">)</span>
+
+<span class="n">m_b</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">model_b</span><span class="o">.</span><span class="n">build_toy_model_fba_B</span><span class="p">()</span>
+
+<span class="c1">#Setting some initial bounds on reactions</span>
+<span class="n">m_b</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">m_b</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_3&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">m_b</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_5&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">m_b</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">m_b</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_3&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">m_b</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_5&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Delete the original biomass model from model B</span>
+<span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span> <span class="o">=</span> <span class="n">m_b</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_BM_B&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">deleteReagentWithSpeciesRef</span><span class="p">(</span>
+    <span class="s2">&quot;BM_e_B&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="linemarker linemarker-58">Next, let’s set the initial <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">DCFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
+
+<span class="n">community_model</span> <span class="o">=</span> <span class="n">CommunityModel</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">m_a</span><span class="p">,</span> <span class="n">m_b</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;R_BM_A&quot;</span><span class="p">,</span> <span class="s2">&quot;R_BM_B&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;modelA&quot;</span><span class="p">,</span> <span class="s2">&quot;modelB&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="linemarker linemarker-68">To run a simulation with <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code>, you’ll need to initialize the object by providing the following:</p>
+<ul class="simple">
+<li><p class="linemarker linemarker-70">The <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code></p></li>
+<li><p class="linemarker linemarker-71">The desired number of time points</p></li>
+<li><p class="linemarker linemarker-72">Initial concentrations for both biomass and metabolites</p></li>
+<li><p class="linemarker linemarker-73">The time step size</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">DCFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">EndPointFBA</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">ep</span> <span class="o">=</span> <span class="n">EndPointFBA</span><span class="p">(</span>
+    <span class="n">community_model</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">,</span>
+    <span class="p">{</span><span class="s2">&quot;modelA&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;modelB&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;S_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;A_e&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;B_e&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">},</span>
+    <span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">solution</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+<span class="c1">#12.778</span>
+</pre></div>
+</div>
+<p class="linemarker linemarker-94">This provides the community biomass value after 25 intervals of 0.1 time units each.</p>
 </section>
 <section id="examining-the-results">
 <h2>7.2 Examining the results<a class="headerlink" href="#examining-the-results" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-92">You can interrogate the <cite>EndPointFBA</cite> object just as you would
-any CBMPy model after performing an FBA.
-For instance, to view biomass values of model A at the start of
+<p class="linemarker linemarker-99">From the <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> object we can retrieve the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>, which we can examine as any other <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object.</p>
+<p class="linemarker linemarker-101">For instance, to view biomass values of model A at the start of
 the 10th interval and at the last time point:</p>
-<p class="linemarker linemarker-109">Reactions in the <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> model have unique IDs formed by
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">FBAsol</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">m_model</span><span class="o">.</span><span class="n">getSolutionVector</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">FBAsol</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">FBAsol</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">FBAsol</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">FBAsol</span><span class="p">[</span><span class="s2">&quot;BM_modelA_time09_time10&quot;</span><span class="p">])</span>
+<span class="c1">#1.629</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">FBAsol</span><span class="p">[</span><span class="s2">&quot;BM_modelA_exchange_final&quot;</span><span class="p">])</span>
+<span class="c1">#2.667</span>
+</pre></div>
+</div>
+<p class="linemarker linemarker-115">Reactions in the <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> model have unique IDs formed by
 appending their original IDs with the time ID (e.g., R_1_timeNN).
-Also, metabolite flows between time points are represented with a
+Also, metabolite flow between time points are represented with a
 unique ID combining the metabolite’s ID and the start and end
 interval IDs.</p>
-<p class="linemarker linemarker-115">Built-in plotting functions allow for visualizing metabolite flows and biomass concentrations over time:</p>
+<p class="linemarker linemarker-121">Built-in plotting functions allow for visualizing metabolite flows and biomass concentrations over time:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">DCFBA.Helpers.PlotsEndPointFBA</span> <span class="kn">import</span> <span class="n">plot_biomasses</span><span class="p">,</span> <span class="n">plot_metabolites</span>
 
 <span class="n">plot_biomasses</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span>
@@ -134,10 +203,10 @@ interval IDs.</p>
 </section>
 <section id="advanced-constraints">
 <h2>7.3 Advanced constraints<a class="headerlink" href="#advanced-constraints" title="Permalink to this heading"></a></h2>
-<p class="linemarker linemarker-129">EndPointFBA offers additional methods for refining your simulation results, enhancing the biological relevance. Here, we discuss these methods and demonstrate their application.</p>
+<p class="linemarker linemarker-135">EndPointFBA offers additional methods for refining your simulation results, enhancing the biological relevance. Here, we discuss these methods and demonstrate their application.</p>
 <section id="optimal-time-search">
 <h3>7.3.1 Optimal time search<a class="headerlink" href="#optimal-time-search" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-134">The <code class="docutils literal notranslate"><span class="pre">OptimalTimeSearch</span></code> module helps determine the optimal number of intervals required to reach the maximum objective method value. By default, the chosen number of intervals might either stretch resources too thinly or not utilize them fully, leading to skewed FBA results.</p>
+<p class="linemarker linemarker-140">The <code class="docutils literal notranslate"><span class="pre">OptimalTimeSearch</span></code> module helps determine the optimal number of intervals required to reach the maximum objective method value. By default, the chosen number of intervals might either stretch resources too thinly or not utilize them fully, leading to skewed FBA results.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">DCFBA.Helpers.OptimalTimeSearch</span> <span class="kn">import</span> <span class="n">search</span>
 
 <span class="n">optimal_timepoints</span> <span class="o">=</span> <span class="n">search</span><span class="p">(</span>
@@ -152,16 +221,16 @@ interval IDs.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p class="linemarker linemarker-150">Keep in mind, this search might be time-consuming as it involves iterative model construction and simulation.</p>
+<p class="linemarker linemarker-156">Keep in mind, this search might be time-consuming as it involves iterative model construction and simulation.</p>
 </div>
-<p class="linemarker linemarker-152">Use the determined optimal number of time points to create a new <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code>
+<p class="linemarker linemarker-158">Use the determined optimal number of time points to create a new <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code>
 model and examine the results of the optimal solution.</p>
 </section>
 <section id="restricting-reaction-bounds">
 <h3>7.3.2 Restricting reaction bounds<a class="headerlink" href="#restricting-reaction-bounds" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-158">In the context of steady-state microbial community dynamics, drastic changes in reaction rates between two successive time points are unlikely.
+<p class="linemarker linemarker-164">In the context of steady-state microbial community dynamics, drastic changes in reaction rates between two successive time points are unlikely.
 To capture this behavior more accurately, we have implemented two methods to minimize these fluctuations.</p>
-<p class="linemarker linemarker-161">The first approach introduces a constraint on the model to ensure that the reaction rate at time <code class="docutils literal notranslate"><span class="pre">N</span></code> doesn’t vary more than a predefined value,
+<p class="linemarker linemarker-167">The first approach introduces a constraint on the model to ensure that the reaction rate at time <code class="docutils literal notranslate"><span class="pre">N</span></code> doesn’t vary more than a predefined value,
 <span class="math notranslate nohighlight">\(\epsilon\)</span>, from its rate at time <code class="docutils literal notranslate"><span class="pre">N-1</span></code>.
 This method effectively smoothens the fluctuations
 in reaction rates, leading to more biologically plausible results.</p>
@@ -180,18 +249,18 @@ in reaction rates, leading to more biologically plausible results.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">FBAsol</span><span class="p">[</span><span class="s2">&quot;R_1_modelA_time03&quot;</span><span class="p">])</span> <span class="c1">#1.975</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-182">As demonstrated, the variation in reaction rates between consecutive time points remains within the <span class="math notranslate nohighlight">\(\epsilon\)</span> boundary of 0.1.</p>
-<p class="linemarker linemarker-184">A more sophisticated approach to minimizing fluctuations in reaction rates involves quadratic programming. The idea is to set the <cite>EndPointFBA</cite> model’s objective to minimize the sum of squared differences between reaction rates at successive time points. Here’s how you can employ this approach:</p>
+<p class="linemarker linemarker-188">As demonstrated, the variation in reaction rates between consecutive time points remains within the <span class="math notranslate nohighlight">\(\epsilon\)</span> boundary of 0.1.</p>
+<p class="linemarker linemarker-190">A more sophisticated approach to minimizing fluctuations in reaction rates involves quadratic programming. The idea is to set the <cite>EndPointFBA</cite> model’s objective to minimize the sum of squared differences between reaction rates at successive time points. Here’s how you can employ this approach:</p>
 <ol class="arabic simple">
-<li><p class="linemarker linemarker-186">First, simulate the <cite>EndPointFBA</cite> model to obtain the optimal solution value.</p></li>
-<li><p class="linemarker linemarker-187">Use the obtained optimal solution value as a constraint for the <cite>EndPointFBA</cite> model.</p></li>
-<li><p class="linemarker linemarker-188">Set the new objective function to minimize the sum of squared differences between reaction rates at two consecutive time points.</p></li>
+<li><p class="linemarker linemarker-192">First, simulate the <cite>EndPointFBA</cite> model to obtain the optimal solution value.</p></li>
+<li><p class="linemarker linemarker-193">Use the obtained optimal solution value as a constraint for the <cite>EndPointFBA</cite> model.</p></li>
+<li><p class="linemarker linemarker-194">Set the new objective function to minimize the sum of squared differences between reaction rates at two consecutive time points.</p></li>
 </ol>
-<p class="linemarker linemarker-190">The resulting objective function is expressed as:</p>
+<p class="linemarker linemarker-196">The resulting objective function is expressed as:</p>
 <div class="math notranslate nohighlight">
 \[\min \sum_{j, n} (r_{j,n} - r_{j,n+1})^2\]</div>
-<p class="linemarker linemarker-195">Where r<sub>j,n</sub>denotes the rate of reaction <code class="docutils literal notranslate"><span class="pre">j</span></code> at time point <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
-<p class="linemarker linemarker-197">The following code demonstrates how to implement this approach:</p>
+<p class="linemarker linemarker-201">Where r<sub>j,n</sub>denotes the rate of reaction <code class="docutils literal notranslate"><span class="pre">j</span></code> at time point <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<p class="linemarker linemarker-203">The following code demonstrates how to implement this approach:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the objective value of community biomass to 12.77</span>
 <span class="n">ep</span><span class="o">.</span><span class="n">set_qp</span><span class="p">(</span><span class="mf">12.77</span><span class="p">)</span>
 
@@ -199,13 +268,13 @@ in reaction rates, leading to more biologically plausible results.</p>
 <span class="n">ep</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-207">Remember, this approach is useful when you want the model to focus on smooth transitions between time points, rather than maximizing any particular objective.</p>
+<p class="linemarker linemarker-213">Remember, this approach is useful when you want the model to focus on smooth transitions between time points, rather than maximizing any particular objective.</p>
 </section>
 <section id="michaelis-menten-approximation">
 <h3>7.3.3 Michaelis-Menten approximation<a class="headerlink" href="#michaelis-menten-approximation" title="Permalink to this heading"></a></h3>
-<p class="linemarker linemarker-212">The last method to refine the model is by making use of the famous Michaelis-Menten curve. Since deriving the MM curve foreach reaction
+<p class="linemarker linemarker-218">The last method to refine the model is by making use of the famous Michaelis-Menten curve. Since deriving the MM curve foreach reaction
 is computational infeasible. We can still make use of any kinetic knowledge that we have for a reaction.</p>
-<p class="linemarker linemarker-215">Here we make use of the MM approximation, that is using the <cite>Km</cite> and <cite>Vmax</cite> of a reaction we derive two linear lines and add these as extra constraints
+<p class="linemarker linemarker-221">Here we make use of the MM approximation, that is using the <cite>Km</cite> and <cite>Vmax</cite> of a reaction we derive two linear lines and add these as extra constraints
 to the linear model. To set these extra constraints we first need to create a <code class="docutils literal notranslate"><span class="pre">KineticStruct</span></code> holding all the kinetic information for the reactions
 for which we know the Kinetics. The <code class="docutils literal notranslate"><span class="pre">KineticStruct</span></code> is created using a dictionary with reaction ids followed by a list of restricting metabolite id,
 Km and Vmax of the reaction.</p>
@@ -222,7 +291,7 @@ Km and Vmax of the reaction.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-234">Using the kinetic struct we can set the MM approximation as follows:</p>
+<p class="linemarker linemarker-240">Using the kinetic struct we can set the MM approximation as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">21</span>
 <span class="n">ep</span> <span class="o">=</span> <span class="n">EndPointFBA</span><span class="p">(</span>
     <span class="n">community_model</span><span class="p">,</span>
@@ -240,7 +309,7 @@ Km and Vmax of the reaction.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="linemarker linemarker-256">Happy modelling!</p>
+<p class="linemarker linemarker-262">Happy modelling!</p>
 </section>
 </section>
 </section>
@@ -249,7 +318,7 @@ Km and Vmax of the reaction.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../6_parallel_dfba/home.html" class="btn btn-neutral float-left" title="6. Parallel Dynamic FBA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../6_parallel_dfba/home.html" class="btn btn-neutral float-left" title="6. Dynamic Parallel FBA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../8_Advanced/home.html" class="btn btn-neutral float-right" title="7. Advanced Topics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
