@@ -149,14 +149,17 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str) -> None:
     exchange_reactions = model.getExchangeReactionIds()
     for reaction_id in model.getReactionIds():
         is_exchange_reaction: bool = False
+        reaction: Reaction = model.getReaction(reaction_id)
 
-        # TODO discuss this
         if reaction_id.startswith("R_EX"):
             is_exchange_reaction = True
+
         if reaction_id in exchange_reactions:
             is_exchange_reaction = True
+        # SBO termin for exchange reaction
+        if reaction.getSBOterm() == "SBO:0000627":
+            is_exchange_reaction = True
 
-        reaction: Reaction = model.getReaction(reaction_id)
         # if it is an exchange reaction and it is not yet in the model add it
         if (
             is_exchange_reaction
