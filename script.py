@@ -1,30 +1,12 @@
 import cbmpy
-from DCFBA.DynamicModels import DynamicSingleFBA
-from DCFBA.Models import KineticsStruct
-import matplotlib.pyplot as plt
+from cbmpy.CBModel import Model
 
-model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")
+lacto: Model = cbmpy.loadModel("models/bigg_models/LBUL_v13.xml")
+strep: Model = cbmpy.loadModel("models/bigg_models/strep_therm.xml")
 
-initial_biomass = 0.1
-initial_concentrations = {"M_glc__D_e": 10}
-kin = KineticsStruct({"R_GLCpts": ("M_glc__D_e", 5, 10)})
+print(lacto.getActiveObjectiveReactionIds())
+print(strep.getActiveObjectiveReactionIds())
 
-ds = DynamicSingleFBA(
-    model,
-    "R_BIOMASS_Ecoli_core_w_GAM",
-    initial_biomass,
-    initial_concentrations,
-    kinetics=kin,
-)
-
-T, metabolites, biomassess, _ = ds.simulate(0.15)
-
-
-ax = plt.subplot(111)
-ax.plot(T, biomassess[""])
-ax2 = plt.twinx(ax)
-ax2.plot(T, metabolites["M_glc__D_e"], color="r")
-
-ax.set_ylabel("Biomass", color="b")
-ax2.set_ylabel("Glucose", color="r")
-plt.show()
+print(lacto.getReaction("R_biomass_LBUL").getEquation())
+print()
+print(strep.getReaction("R_biomass_STR").getEquation())
