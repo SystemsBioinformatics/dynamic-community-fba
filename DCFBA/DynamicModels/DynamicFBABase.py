@@ -83,7 +83,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
         fluxes = []
         run_condition = 0
 
-        for i in range(1, n):
+        for _ in range(1, n):
             if dt_hat != -1:
                 dt = dt_hat
                 dt_hat = -1
@@ -102,7 +102,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
 
             solution = cbmpy.doFBA(self.m_model, quiet=True)
 
-            if math.isnan(solution) or solution <= epsilon or dt < 0.0001:
+            if math.isnan(solution) or solution <= epsilon or dt < epsilon:
                 break
 
             FBAsol = self.m_model.getSolutionVector(names=True)
@@ -113,17 +113,6 @@ class DynamicFBABase(StaticOptimizationModelBase):
             fluxes.append(FBAsol)
 
             self.update_concentrations(FBAsol, dt)
-
-            # TODO maybe this is obsolete
-            species_id = self.check_solution_feasibility()
-            if species_id != "":
-                print(FBAsol)
-                input(species_id)
-
-                dt_hat = self.reset_dt(species_id, FBAsol)
-                used_time = used_time[:-1]
-
-                continue
 
             for _, rid in self.m_model.get_model_biomass_ids().items():
                 mid = self.m_model.identify_model_from_reaction(rid)
@@ -163,8 +152,6 @@ class DynamicFBABase(StaticOptimizationModelBase):
             FBAsol (dict): The solution vector from the FBA.
             dt (float): The time step for the simulation.
         """
-
-        # Update external metabolites
 
         for e in self.m_model.getExchangeReactionIds():
             exchange: Reaction = self.m_model.getReaction(e)
