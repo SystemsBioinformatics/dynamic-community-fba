@@ -32,8 +32,8 @@ class EndPointFBA(DynamicModelBase):
         n: int,
         initial_biomasses: dict[str, float],
         initial_concentrations: dict[str, float] = {},
-        kinetics: KineticsStruct = None,
         dt: float = 0.1,
+        kinetics: KineticsStruct = None,
     ) -> None:
         """Initializes the EndPointFBA class
 
@@ -60,6 +60,7 @@ class EndPointFBA(DynamicModelBase):
         self.m_kinetics = kinetics
         self.set_objective()
         self.set_constraints(n, initial_biomasses, dt)
+
         self.set_initial_concentrations(
             initial_biomasses, initial_concentrations
         )
@@ -82,7 +83,7 @@ class EndPointFBA(DynamicModelBase):
     def simulate(
         self,
     ):
-        return cbmpy.doFBA(self.m_model, quiet=True)
+        return cbmpy.doFBA(self.m_model, quiet=False)
 
     def set_constraints(
         self, n: int, initial_biomasses: dict[str, float], dt: float
@@ -244,7 +245,6 @@ class EndPointFBA(DynamicModelBase):
                         f"{sid}_{self.m_times[i]}_{self.m_times[i+1]}"
                     )
                     t_rid = rid + "_" + self.m_times[i + 1]
-                    print(t_rid)
                     self.m_model.addUserConstraint(
                         f"mm_low_{linking_reaction_id}",
                         [

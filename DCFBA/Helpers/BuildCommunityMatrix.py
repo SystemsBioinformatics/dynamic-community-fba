@@ -271,7 +271,7 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
             )
         )
         out = None
-    print(m_targ.getReaction(rid))
+
     if (
         out is not None
         and m_targ.getReaction(rid) is not None
@@ -286,11 +286,11 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
         out = None
 
     elif altrid is not None:
-        print(
-            'INFO: reaction with id "{}" exists in target model trying alternate id'.format(
-                rid
-            )
-        )
+        # print(
+        #     'INFO: reaction with id "{}" exists in target model trying alternate id'.format(
+        #         rid
+        #     )
+        # )
 
         if m_targ.getReaction(altrid) is not None:
             print(

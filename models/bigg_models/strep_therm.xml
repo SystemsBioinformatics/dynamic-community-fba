@@ -9152,7 +9152,7 @@
           <speciesReference species="M_ura_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
       </reaction>
-      <reaction id="R_EX_NH4_e" name="Ammonium exchange" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_0_bound">
+      <reaction id="R_EX_nh4_e" name="Ammonium exchange" reversible="false" fast="false" fbc:lowerFluxBound="cobra_0_bound" fbc:upperFluxBound="cobra_0_bound">
         <listOfReactants>
           <speciesReference species="M_nh4_e" stoichiometry="1" constant="true"/>
         </listOfReactants>
