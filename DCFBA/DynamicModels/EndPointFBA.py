@@ -100,24 +100,6 @@ class EndPointFBA(DynamicModelBase):
             dt (float): Time step size.
         """
 
-<<<<<<< HEAD
-    def set_constraints(
-        self, n: int, initial_biomasses: dict[str, float], dt: float
-    ):
-        """
-        Configures the constraints for the EndPointFBA model. Unlike using
-        upper and lower bounds, it adjusts constraints for each time point's
-        reaction based on biomass, dt, and the initial bound.
-
-        Args:
-            n (int): Number of time points.
-            initial_biomasses (dict[str, float]): Dictionary mapping model ID
-                to initial biomass concentrations.
-            dt (float): Time step size.
-        """
-
-=======
->>>>>>> main
         rids_t0 = self.m_model.getReactionIds(self.m_times[0])
         for rid in rids_t0:
             reaction = self.m_model.getReaction(rid)
