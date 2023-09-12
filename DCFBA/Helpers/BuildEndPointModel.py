@@ -76,7 +76,7 @@ def set_exchanges(
         )
         new_reaction = final_model.getReaction(exchange)
         new_reaction.setLowerBound(reaction.getLowerBound())
-        new_reaction.setUpperBound(0)
+        new_reaction.setUpperBound(reaction.getUpperBound())
         new_reaction.is_exchange = True
 
         new_species = species.clone()
@@ -234,49 +234,6 @@ def add_time_link(model: CommunityModel, time0, time1):
                 linking_reaction.setUpperBound(numpy.inf)
 
 
-# def create_time_links(
-#     final_model: CommunityModel, time_ids: list[str]
-# ) -> None:
-#     """
-#     Create links between species from different time points
-#     in the CommunityModel.
-#     Links represent reactions foreach reaction,time point
-#         => species_time0 -> species_time1
-
-#     Args:
-#         final_model (CommunityModel): The final time-dependent CommunityModel.
-#         time_ids (list): Ids of the different time points
-
-#     Returns:
-#         None
-
-#     """
-#     index = 0
-#     t = time_ids[index]
-
-#     while t != time_ids[-1]:
-#         for sid in final_model.getSpeciesIds():
-#             old_id = re.match(r"(.*?)_time\d+", sid).group(1)
-
-#             species: Species = final_model.getSpecies(sid)
-#             if species.getCompartmentId() == f"e_{t}":
-#                 rid = f"{sid}_{time_ids[index+1]}"
-#                 linking_reaction = final_model.createReaction(
-#                     rid, reversible=False, silent=True
-#                 )
-
-#                 linking_reaction: Reaction = final_model.getReaction(rid)
-#                 linking_reaction.createReagent(sid, -1)
-#                 linking_reaction.createReagent(
-#                     f"{old_id}_{time_ids[index+1]}", 1
-#                 )
-#                 linking_reaction.setLowerBound(0)
-#                 linking_reaction.setUpperBound(numpy.inf)
-
-#         index += 1
-#         t = time_ids[index]
-
-
 def add_final_exchange(
     final_model: CommunityModel, exchange_reaction: Reaction, time_id: str
 ) -> None:
@@ -306,7 +263,8 @@ def add_final_exchange(
     )
 
     final_exchange = final_model.getReaction(id)
-
+    final_exchange.setLowerBound(0)
+    # TODO discuss Do we want to set this this to Inf or to the upperbound?
     final_exchange.setUpperBound(numpy.inf)
 
     final_exchange.createReagent(f"{old_id}_{time_id}", -1)
