@@ -8,10 +8,7 @@ import cbmpy
 # Remember which numbers were visited
 visited: dict[int, float] = {}
 
-# TODO if nan!!!!!!!!!!!!!!!!
 
-
-# Find the smallest N for which the objective function is maximal
 def search(
     cm: CommunityModel,
     initial_biomasses: dict[str, float],

@@ -166,7 +166,7 @@ def add_biomass_species(initial_model: CommunityModel) -> None:
 
         initial_model.addReaction(exchange_reaction, False, silent=True)
         exchange_reaction.setLowerBound(0)
-        exchange_reaction.setUpperBound(0)
+        exchange_reaction.setUpperBound(numpy.inf)
 
         # Add community biomass
         reaction.createReagent("BM_c", 1)
