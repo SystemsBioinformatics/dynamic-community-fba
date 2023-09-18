@@ -73,10 +73,15 @@ class CommunityModel(Model):
         for i in range(0, len(models)):
             model = models[i]
             new_id = self.m_identifiers[i]
-
+            cm.merge_genes(model, self, new_id)
             cm.merge_compartments(model, self, new_id)
             cm.merge_species(duplicate_species, model, new_id)
             cm.merge_reactions(model, self, new_id)
+            cm.setGeneProteinAssociations(model, self, new_id)
+
+        self.__check_gene_activity__ = any(
+            [m.__check_gene_activity__ for m in models]
+        )
 
         # TODO Old User Constraints arent added to the new community model,
         # should we implement this?

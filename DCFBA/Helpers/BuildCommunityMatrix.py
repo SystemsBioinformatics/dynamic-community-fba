@@ -1,7 +1,15 @@
 """Helper functions for building the CommunityModel 
 """
 
-from cbmpy.CBModel import Model, Species, Reaction, Reagent, Compartment
+from cbmpy.CBModel import (
+    Model,
+    Gene,
+    GeneProteinAssociation,
+    Compartment,
+    Reaction,
+    Reagent,
+    Species,
+)
 import cbmpy
 
 # Add extracellular ids here
@@ -70,9 +78,11 @@ def combine_models(
     for i in range(0, len(models)):
         model = models[i]
         new_id = new_ids[i]
+        merge_genes(model, combined_model, new_id)
         merge_compartments(model, combined_model, new_id)
         merge_species(duplicate_species, model, new_id)
         merge_reactions(model, combined_model, new_id)
+        setGeneProteinAssociations(model, combined_model, new_id)
 
     if len(objective_function) > 0:
         combined_model.createObjectiveFunction(objective_function)
@@ -109,14 +119,48 @@ def create_duplicate_species_dict(models: list[Model]) -> dict[str, int]:
     return {k: v for k, v in species_dict.items() if v >= 2}
 
 
-def merge_compartments(model: Model, combined_model: Model, new_id):
+def merge_genes(model: Model, combined_model: Model, new_id: str):
+    for gid in model.getGeneIds():
+        gene: Gene = model.getGene(gid)
+        new_gene = gene.clone()
+        new_gene.setId(create_new_id(gene.id, new_id))
+        combined_model.addGene(new_gene)
+
+
+def setGeneProteinAssociations(
+    model: Model, combined_model: Model, new_id: str
+):
+    new_dict_ids = {
+        create_new_id(rid, new_id): list(
+            map(lambda gid: create_new_id(gid, new_id), gene_id)
+        )
+        for rid, gene_id in model.getAllGeneProteinAssociations().items()
+    }
+
+    for rid, gls in new_dict_ids.items():
+        if rid in combined_model.getReactionIds():
+            gid = "{}_assoc".format(rid)
+            gpr = GeneProteinAssociation(gid, rid)
+            combined_model.addGPRAssociation(gpr)
+            for gene_id in gls:
+                if gene_id in combined_model.getGeneIds():
+                    gpr.createAssociationAndGeneRefsFromString(gene_id)
+                else:
+                    raise Exception(
+                        "something went wrong with setting the gene_id in the model"
+                    )
+        else:
+            raise Exception("Reaction not recognized")
+
+
+def merge_compartments(model: Model, combined_model: Model, new_id: str):
     """
     Merge compartments from a model into a combined model.
 
     Args:
         model (Model): The source CBModel.
         combined_model (Model): The combined CBModel.
-
+        new_id (str): The suffix of the compartment
     Returns:
         None
     """

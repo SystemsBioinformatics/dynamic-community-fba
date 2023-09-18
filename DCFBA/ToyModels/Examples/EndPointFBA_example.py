@@ -1,4 +1,3 @@
-import cbmpy
 import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model, Reaction
 from dcFBA.ToyModels import model_a, model_b

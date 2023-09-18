@@ -100,7 +100,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
             self.update_reaction_bounds(kinetics_func)
             self.update_exchanges(dt)
 
-            solution = cbmpy.doFBA(self.m_model, quiet=True)
+            solution = cbmpy.doFBA(self.m_model, quiet=False)
 
             if math.isnan(solution) or solution <= epsilon or dt < epsilon:
                 break
@@ -202,35 +202,35 @@ class DynamicFBABase(StaticOptimizationModelBase):
                         self.m_initial_bounds[rid][1] * X_k_t
                     )
 
-    def reset_dt(self, species_id: str, FBAsol) -> float:
-        """
-        Adjust the time step if a species becomes infeasible during the simulation.
+    # def reset_dt(self, species_id: str, FBAsol) -> float:
+    #     """
+    #     Adjust the time step if a species becomes infeasible during the simulation.
 
-        Args:
-            species_id (str): The ID of the infeasible species.
-            FBAsol (dict): The solution vector from the FBA.
+    #     Args:
+    #         species_id (str): The ID of the infeasible species.
+    #         FBAsol (dict): The solution vector from the FBA.
 
-        Returns:
-            float: The recalculated time step.
-        """
+    #     Returns:
+    #         float: The recalculated time step.
+    #     """
 
-        # Remove last metabolite concentration
-        self.m_metabolite_concentrations = {
-            key: lst[:-1]
-            for key, lst in self.m_metabolite_concentrations.items()
-        }
+    #     # Remove last metabolite concentration
+    #     self.m_metabolite_concentrations = {
+    #         key: lst[:-1]
+    #         for key, lst in self.m_metabolite_concentrations.items()
+    #     }
 
-        # Maybe some metabolite was exported/created, by an organism
-        # Unfortunately to check what is create we would
-        # have to know the new dt which we don'...
-        # So we accept a small error.
+    #     # Maybe some metabolite was exported/created, by an organism
+    #     # Unfortunately to check what is create we would
+    #     # have to know the new dt which we don'...
+    #     # So we accept a small error.
 
-        total = 0
-        for (
-            rid,
-            species_ids,
-        ) in self.m_transporters.get_importers(True):
-            if species_id in species_ids:
-                total += FBAsol[rid]
+    #     total = 0
+    #     for (
+    #         rid,
+    #         species_ids,
+    #     ) in self.m_transporters.get_importers(True):
+    #         if species_id in species_ids:
+    #             total += FBAsol[rid]
 
-        return self.m_metabolite_concentrations[species_id][-1] / total
+    #     return self.m_metabolite_concentrations[species_id][-1] / total

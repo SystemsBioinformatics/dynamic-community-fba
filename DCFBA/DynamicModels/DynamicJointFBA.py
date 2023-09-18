@@ -1,3 +1,4 @@
+import cbmpy
 from .DynamicFBABase import DynamicFBABase
 from cbmpy.CBModel import Reaction
 from ..Models import KineticsStruct, Transporters, CommunityModel
@@ -76,7 +77,7 @@ class DynamicJointFBA(DynamicFBABase):
         self.m_model.createReaction("X_comm")
         out: Reaction = self.m_model.getReaction("X_comm")
         out.is_exchange = True
-        out.setUpperBound(1000)
+        out.setUpperBound(cbmpy.INF)
         out.setLowerBound(0)
         out.createReagent("X_c", -1)
 
