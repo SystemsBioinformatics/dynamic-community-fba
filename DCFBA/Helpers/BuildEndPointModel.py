@@ -265,6 +265,7 @@ def add_final_exchange(
     final_exchange = final_model.getReaction(id)
     final_exchange.setLowerBound(0)
     # TODO discuss Do we want to set this this to Inf or to the upperbound?
+    # final_exchange.setUpperBound(max(exchange_reaction.getUpperBound(), 0))
     final_exchange.setUpperBound(numpy.inf)
 
     final_exchange.createReagent(f"{old_id}_{time_id}", -1)

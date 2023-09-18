@@ -176,82 +176,96 @@ def build_toy_model_fba_A():
     model.createCompartment("e", "external")
 
     model.createReaction(
-        "R_1", "Import S external to the cytosol", reversible=True
+        "R_1", "Import S external to the cytosol", reversible=True, silent=True
     )
 
     model.createReactionReagent("R_1", "S_e", -1)
     model.createReactionReagent("R_1", "S_c", 1)
     model.setReactionBounds("R_1", -1000.0, 1000.0)
 
-    model.createReaction("R_2", "Create X from S_c", reversible=True)
+    model.createReaction(
+        "R_2", "Create X from S_c", reversible=True, silent=True
+    )
     model.createReactionReagent("R_2", "S_c", -2)
     model.createReactionReagent("R_2", "X_c", 1)
     model.setReactionBounds("R_2", -1000.0, 1000.0)
 
-    model.createReaction("R_3", "Create Y_c and A_e from S_c", reversible=True)
+    model.createReaction(
+        "R_3", "Create Y_c and A_e from S_c", reversible=True, silent=True
+    )
     model.createReactionReagent("R_3", "X_c", -1)
     model.createReactionReagent("R_3", "Y_c", 1)
     model.createReactionReagent("R_3", "A_c", 2)
     model.setReactionBounds("R_3", -1000.0, 1000.0)
 
     model.createReaction(
-        "R_4", "Create Biomass from Y_c and B_c", reversible=False
+        "R_4", "Create Biomass from Y_c and B_c", reversible=False, silent=True
     )
     model.createReactionReagent("R_4", "Y_c", -10)
     model.createReactionReagent("R_4", "B_c", -1)
     model.createReactionReagent("R_4", "BM_c_A", 1)
     model.setReactionBounds("R_4", 0.0, 1000.0)
 
-    model.createReaction("R_5", "Create Z from S_int", reversible=True)
+    model.createReaction(
+        "R_5", "Create Z from S_int", reversible=True, silent=True
+    )
     model.createReactionReagent("R_5", "S_c", -1)
     model.createReactionReagent("R_5", "Z_c", 1)
     model.setReactionBounds("R_5", -1000.0, 1000.0)
 
-    model.createReaction("R_6", "Create BM_c_A from Z and B", reversible=False)
+    model.createReaction(
+        "R_6", "Create BM_c_A from Z and B", reversible=False, silent=True
+    )
     model.createReactionReagent("R_6", "Z_c", -8)
     model.createReactionReagent("R_6", "B_c", -3)
     model.createReactionReagent("R_6", "BM_c_A", 1)
     model.setReactionBounds("R_6", 0.0, 1000.0)
 
     # Import B
-    model.createReaction("R_import_B", "Import B_e to B_c", reversible=True)
+    model.createReaction(
+        "R_import_B", "Import B_e to B_c", reversible=True, silent=True
+    )
     model.createReactionReagent("R_import_B", "B_e", -1)
     model.createReactionReagent("R_import_B", "B_c", 1)
     model.setReactionBounds("R_import_B", -1000.0, 1000.0)
 
     # Import A
-    model.createReaction("R_export_A", "Export A_c to A_e", reversible=True)
+    model.createReaction(
+        "R_export_A", "Export A_c to A_e", reversible=True, silent=True
+    )
     model.createReactionReagent("R_export_A", "A_c", -1)
     model.createReactionReagent("R_export_A", "A_e", 1)
     model.setReactionBounds("R_export_A", -1000.0, 1000.0)
 
     # Import B
-    model.createReaction("R_BM_A", "Biomass reaction", reversible=True)
+    model.createReaction(
+        "R_BM_A", "Biomass reaction", reversible=True, silent=True
+    )
     model.createReactionReagent("R_BM_A", "BM_c_A", -1)
     model.createReactionReagent("R_BM_A", "BM_e_A", 1)
     model.setReactionBounds("R_BM_A", -1000.0, 1000.0)
 
     # EXchange reactions:
-    model.createReaction("S_e_exchange", reversible=True)
+    model.createReaction("S_e_exchange", reversible=True, silent=True)
     model.createReactionReagent("S_e_exchange", "S_e", -1)
     model.setReactionBounds("S_e_exchange", lower=-1000.0, upper=1000.0)
     model.getReaction("S_e_exchange").is_exchange = True
 
     model.createReaction(
-        "B_e_exchange", reversible=True
+        "B_e_exchange", reversible=True, silent=True
     )  # Q2.0 - should 'reversible' be True or False?
     model.createReactionReagent("B_e_exchange", "B_e", -1)
     model.setReactionBounds("B_e_exchange", lower=-1000.0, upper=1000.0)
     model.getReaction("B_e_exchange").is_exchange = True
 
-    model.createReaction("A_e_exchange", reversible=True)
-    model.createReactionReagent("A_e_exchange", "A_e", -1)
+    model.createReaction("A_e_exchange", reversible=True, silent=True)
+    model.createReactionReagent("A_e_exchange", "A_e", -1, silent=True)
     model.setReactionBounds("A_e_exchange", -1000.0, 1000)
     model.getReaction("A_e_exchange").is_exchange = True
 
     # BM sink
-    model.createReaction("BM_e_A_exchange", reversible=False)
-    model.createReactionReagent("BM_e_A_exchange", "BM_e_A", -1)
+    model.createReaction("BM_e_A_exchange", reversible=False, silent=True)
+    model.createReactionReagent("BM_e_A_exchange", "BM_e_A", -1, silent=True)
     model.setReactionBounds("BM_e_A_exchange", 0, 1000)
     model.getReaction("BM_e_A_exchange").is_exchange = True
 

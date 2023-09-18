@@ -42,6 +42,10 @@ class StaticOptimizationModelBase(DynamicModelBase):
                 ]
             else:
                 # Max such that positive lower bounds in exchanges are not set
+                # code to make compatible with ParallelFBA if no species concentrairon
+                # is defined in the initial_concentrations than we keep track of the lowest
+                # exchange reaction of all models provided
+                # TODO check this
                 concentration = (
                     0
                     if species_id

@@ -1,6 +1,6 @@
 import cbmpy
-from DCFBA.DynamicModels import DynamicSingleFBA
-from DCFBA.Models import KineticsStruct
+from dcFBA.DynamicModels import DynamicSingleFBA
+from dcFBA.Models import KineticsStruct
 import matplotlib.pyplot as plt
 
 model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")

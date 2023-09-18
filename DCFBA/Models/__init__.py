@@ -1,3 +1,3 @@
-from DCFBA.Models.Kinetics import KineticsStruct
-from DCFBA.Models.Transporters import Transporters
-from DCFBA.Models.CommunityModel import CommunityModel
+from dcFBA.Models.Kinetics import KineticsStruct
+from dcFBA.Models.Transporters import Transporters
+from dcFBA.Models.CommunityModel import CommunityModel

@@ -1,11 +1,11 @@
 import cbmpy
 import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model, Reaction
-from DCFBA.ToyModels import model_a, model_b
-from DCFBA.Models.CommunityModel import CommunityModel
-from DCFBA.Models.Kinetics import KineticsStruct
-from DCFBA.DynamicModels import EndPointFBA
-from DCFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
+from dcFBA.ToyModels import model_a, model_b
+from dcFBA.Models.CommunityModel import CommunityModel
+from dcFBA.Models.Kinetics import KineticsStruct
+from dcFBA.DynamicModels import EndPointFBA
+from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 
 m_a: Model = model_a.build_toy_model_fba_A()
 

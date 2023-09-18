@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model
-from DCFBA.ToyModels import model_a, model_b
-from DCFBA.DynamicModels.DynamicParallelFBA import DynamicParallelFBA
-from DCFBA.Models.Kinetics import KineticsStruct
+from dcFBA.ToyModels import model_a, model_b
+from dcFBA.DynamicModels.DynamicParallelFBA import DynamicParallelFBA
+from dcFBA.Models.Kinetics import KineticsStruct
 
 # TODO discuss with Francesco; If the upperBounds are multiplied by 0.1 than I get the same results
 # But I do not think this should be done? Since we multiply by the delta in the update concentration method
