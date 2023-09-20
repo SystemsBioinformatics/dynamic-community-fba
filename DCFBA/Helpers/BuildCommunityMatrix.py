@@ -119,7 +119,14 @@ def create_duplicate_species_dict(models: list[Model]) -> dict[str, int]:
     return {k: v for k, v in species_dict.items() if v >= 2}
 
 
-def merge_genes(model: Model, combined_model: Model, new_id: str):
+def merge_genes(model: Model, combined_model: Model, new_id: str) -> None:
+    """Copy the genes from the sub-models to the new model
+
+    Args:
+        model (Model): Model from which genes are copied
+        combined_model (Model): The new model
+        new_id (str): Gene suffix to be used for the new model
+    """
     for gid in model.getGeneIds():
         gene: Gene = model.getGene(gid)
         new_gene = gene.clone()
@@ -129,7 +136,21 @@ def merge_genes(model: Model, combined_model: Model, new_id: str):
 
 def setGeneProteinAssociations(
     model: Model, combined_model: Model, new_id: str
-):
+) -> None:
+    """Copy the gene protein associations from the sub models
+    to the combined model
+
+    Args:
+        model (Model): sub-model from which the gene protein associations are copied
+        combined_model (Model): The new community model
+        new_id (str): The id suffix to be used
+
+    Raises:
+        Exception: If the Reaction is not found in the combined model
+            throw an error
+        Exception: If the gene was not found in the combined model
+            throw an error
+    """
     new_dict_ids = {
         create_new_id(rid, new_id): list(
             map(lambda gid: create_new_id(gid, new_id), gene_id)

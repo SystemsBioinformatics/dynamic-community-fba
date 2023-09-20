@@ -1,6 +1,8 @@
 import cbmpy
-from numpy import Inf
+import numpy
 from cbmpy.CBModel import Reaction, Species
+
+from ..Exceptions import SpeciesNotFound
 from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
 from .DynamicModelBase import DynamicModelBase
@@ -72,7 +74,7 @@ class EndPointFBA(DynamicModelBase):
         self.m_model.createReaction("X_comm", silent=True)
         out: Reaction = self.m_model.getReaction("X_comm")
         out.is_exchange = True
-        out.setUpperBound(Inf)
+        out.setUpperBound(cbmpy.INF)
         out.setLowerBound(0)
         out.createReagent("BM_c_" + self.m_times[-1], -1)
 
@@ -129,16 +131,37 @@ class EndPointFBA(DynamicModelBase):
 
                 # r_x_t = biomass_rid + times[i - 1]
                 ub = reaction.getUpperBound()
-                self.m_model.addUserConstraint(
-                    f"{rid}_ub",
-                    [
-                        [1, rid],
-                        [-1 * dt * ub, r_x_t],
-                    ],
-                    "<=",
-                    0.0,
-                )
-                reaction.setUpperBound(cbmpy.INF)
+
+                # Check if zero. This speeds up the process
+                if ub != 0:
+                    # TODO both if statements can be deleted if cbmpy package fixes
+                    # set user constraint for inf
+
+                    if ub != cbmpy.INF or ub != numpy.inf:
+                        self.m_model.addUserConstraint(
+                            f"{rid}_ub",
+                            [
+                                [1, rid],
+                                [-1 * dt * ub, r_x_t],
+                            ],
+                            "<=",
+                            0.0,
+                        )
+                        reaction.setUpperBound(cbmpy.INF)
+
+                lb = reaction.getLowerBound()
+                if lb != 0:
+                    if lb != cbmpy.NINF or lb != -numpy.inf:
+                        self.m_model.addUserConstraint(
+                            f"{rid}_lb",
+                            [
+                                [1, rid],
+                                [-1 * dt * lb, r_x_t],
+                            ],
+                            ">=",
+                            0.0,
+                        )
+                        reaction.setLowerBound(cbmpy.NINF)
 
     def set_initial_concentrations(
         self,
@@ -154,17 +177,27 @@ class EndPointFBA(DynamicModelBase):
                 to initial biomass concentrations.
             initial_concentrations (dict[str, float]): Dictionary mapping
                 metabolite IDs to their initial concentrations.
+        Raises:
+            SpeciesNotFound: If the species defined in the initial_concentrations
+                dictionaries keys is not in the model raise an exception
+
         """
         for key, value in initial_concentrations.items():
+            sid = key + "_" + self.m_times[0]
+            if sid not in self.m_model.getSpeciesIds():
+                raise SpeciesNotFound(
+                    "The species id defined as  \
+                                      initial concentrations was not found in the model"
+                )
+
             # get species and it's corresponding exchange reaction
-            species: Species = self.m_model.getSpecies(
-                key + "_" + self.m_times[0]
-            )
+            species: Species = self.m_model.getSpecies(sid)
             rids = species.getReagentOf()
             for rid in rids:
                 reaction: Reaction = self.m_model.getReaction(rid)
                 if reaction.is_exchange:
                     reaction.setLowerBound(-value)
+                    reaction.setUpperBound(-value)
 
         for key, value in initial_biomasses.items():
             self.m_model.setReactionBounds(

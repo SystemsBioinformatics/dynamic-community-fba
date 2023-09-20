@@ -127,6 +127,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             for model in self.m_models:
                 solution = cbmpy.doFBA(model, quiet=True)
 
+                # TODO continue when the others can still grow??????? but if one is nan stop?
                 if math.isnan(solution) or solution < epsilon or dt < epsilon:
                     return [
                         used_time[:-1],
