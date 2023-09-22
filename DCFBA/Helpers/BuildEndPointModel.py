@@ -22,6 +22,10 @@ def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
     """
 
     initial_model: CommunityModel = cm.clone()
+    # strip the intial model gene protein associations for the EndPointModel
+    # TODO SetUpperBOund for inactive genes!!!
+    initial_model.gpr = None
+    initial_model.genes = None
     final_model = CommunityModel(
         [],
         [],

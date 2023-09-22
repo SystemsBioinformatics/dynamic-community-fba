@@ -14,18 +14,14 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
     Attributes:
     m_models (list[Model]): List of metabolic models to simulate in parallel.
-    m_initial_bounds (dict[str, dict[str, tuple[float, float]]]): Original reaction
-        bounds for each model, indexed by model ID and reaction ID.
-    m_model_transporters (dict[str, Transporters]): Mapping of model ID to associated
-        transporters.
-    m_model_kinetics (dict[str, KineticsStruct]): Mapping of model ID to associated
-        kinetic parameters for reactions.
-
+    m_initial_bounds (dict[str, dict[str, tuple[float, float]]]): Original
+        reaction bounds for each model, indexed by model ID and reaction ID.
+    m_model_kinetics (dict[str, KineticsStruct]): Mapping of model ID to
+        associated kinetic parameters for reactions.
     """
 
     m_models: list[Model]
     m_initial_bounds: dict[str, dict[str, tuple[float, float]]] = {}
-    m_model_transporters: dict[str, Transporters] = {}
     m_model_kinetics: dict[str, KineticsStruct] = {}
 
     def __init__(
@@ -56,7 +52,6 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             mid = model.getId()
             self.set_initial_concentrations(model, initial_concentrations)
             self.m_biomass_concentrations[mid] = [biomasses[i]]
-            self.m_model_transporters[mid] = Transporters(model)
 
             for rid in model.getReactionIds():
                 reaction: Reaction = model.getReaction(rid)
@@ -127,8 +122,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             for model in self.m_models:
                 solution = cbmpy.doFBA(model, quiet=True)
 
-                # TODO continue when the others can still grow??????? but if one is nan stop?
-                if math.isnan(solution) or solution < epsilon or dt < epsilon:
+                if math.isnan(solution):
                     return [
                         used_time[:-1],
                         self.m_metabolite_concentrations,
@@ -147,10 +141,18 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
             if species_id != "":
                 dt_hat = self.reset_dt(species_id, fluxes)
+                input(dt_hat)
                 step -= 1
                 used_time = used_time[:-1]
 
+            if dt_hat != -1 and dt_hat <= epsilon:
+                return [
+                    used_time,
+                    self.m_metabolite_concentrations,
+                    self.m_biomass_concentrations,
+                ]
             step += 1
+
         return [
             used_time[:-1],
             self.m_metabolite_concentrations,
@@ -205,7 +207,6 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                         self.mm_kinetics(
                             reaction,
                             X_k_t,
-                            self.m_model_transporters[mid],
                             self.m_model_kinetics[mid],
                         )
 
@@ -225,33 +226,20 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             dt (float): Time step interval for the simulation.
         """
 
-        mid = model.getId()
-
         if len(next(iter(self.m_metabolite_concentrations.values()))) == step:
             for key in self.m_metabolite_concentrations.keys():
                 self.m_metabolite_concentrations[key].append(
                     self.m_metabolite_concentrations[key][-1]
                 )
-        # TODO Use exchanges?
-        for rid, species_ids in self.m_model_transporters[mid].get_exporters(
-            True
-        ):
-            for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] = round(
-                    self.m_metabolite_concentrations[sid][-1]
-                    + FBAsol[rid] * dt,
-                    8,
-                )
 
-        for rid, species_ids in self.m_model_transporters[mid].get_importers(
-            True
-        ):
-            for sid in species_ids:
-                self.m_metabolite_concentrations[sid][-1] = round(
-                    self.m_metabolite_concentrations[sid][-1]
-                    - FBAsol[rid] * dt,
-                    8,
-                )
+        for eid in model.getExchangeReactionIds():
+            reaction: Reaction = model.getReaction(eid)
+            sid = reaction.getSpeciesIds()[
+                0
+            ]  # exchanges should only have 1 reactant
+            self.m_metabolite_concentrations[sid][-1] = (
+                self.m_metabolite_concentrations[sid][-1] + FBAsol[eid] * dt
+            )
 
     def update_biomasses(self, model: Model, dt, FBAsol, step) -> None:
         """
@@ -294,10 +282,9 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         total = 0
         for model in self.m_models:
             mid = model.getId()
-            for rid, species_ids in self.m_model_transporters[
-                mid
-            ].get_importers(True):
-                if species_id in species_ids:
-                    total += FBAsol[mid][rid]
+            for eid in model.getExchangeReactionIds():
+                sid = model.getReaction(eid).getSpeciesIds()[0]
+                if sid == species_id:
+                    total += FBAsol[mid][eid]
 
         return self.m_metabolite_concentrations[species_id][-1] / total

@@ -1,54 +1,45 @@
 import matplotlib.pyplot as plt
-import cbmpy
 from cbmpy.CBModel import Model, Reaction
+from dcFBA.ToyModels import model_a, model_b
 from dcFBA.Models.CommunityModel import CommunityModel
-from dcFBA.DynamicModels import EndPointFBA
-import numpy as np
-from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
+from dcFBA.DynamicModels.DynamicJointFBA import DynamicJointFBA
+from dcFBA.Models.Kinetics import KineticsStruct
+import cbmpy
 
-model1: Model = cbmpy.loadModel(
-    "models/bigg_models/e_coli_core.xml"
-)  # load e_coli core
-model2: Model = cbmpy.loadModel(
-    "models/bigg_models/e_coli_core.xml"
-)  # load e_coli core
+m_a: Model = model_a.build_toy_model_fba_A()
+m_a.getReaction("R_1").setUpperBound(10)
+m_a.getReaction("R_4").setUpperBound(3)
+m_a.getReaction("R_6").setUpperBound(1)
 
-model1.getReaction("R_GLCpts").setUpperBound(6)
-model2.getReaction("R_GLCpts").setUpperBound(4)
 
-# model1.getReaction("R_PGK").setLowerBound(cbmpy.NINF)
-# model2.getReaction("R_PGK").setLowerBound(cbmpy.NINF)
+m_a.getReaction("R_1").setLowerBound(0)
+m_a.getReaction("R_4").setLowerBound(0)
+m_a.getReaction("R_6").setLowerBound(0)
 
-# model1.getReaction("R_PGM").setUpperBound(cbmpy.INF)
-# model2.getReaction("R_PGM").setUpperBound(cbmpy.INF)
+m_b: Model = model_b.build_toy_model_fba_B()
+m_b.getReaction("R_1").setUpperBound(10)
+m_b.getReaction("R_3").setUpperBound(1)
+m_b.getReaction("R_5").setUpperBound(1)
+
+
+m_b.getReaction("R_1").setLowerBound(0)
+m_b.getReaction("R_3").setLowerBound(0)
+m_b.getReaction("R_5").setLowerBound(0)
+
+kin = KineticsStruct(
+    {
+        "R_1_modelA": ["S_e", 10, 10],
+        "R_4_modelA": ["B_e", 5, 3],
+        "R_6_modelA": ["B_e", 3, 1],
+        # B
+        "R_1_modelB": ["S_e", 10, 10],
+        "R_3_modelB": ["A_e", 2, 1],
+    }
+)
+
 
 community_model = CommunityModel(
-    [model1, model2],
-    ["R_BIOMASS_Ecoli_core_w_GAM", "R_BIOMASS_Ecoli_core_w_GAM"],
-    ["modelA", "modelB"],
+    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
 )
-
-
-ep = EndPointFBA(
-    community_model,
-    3,
-    {"modelA": 1.0, "modelB": 1.0},
-    {"M_glc__D_e": 1000},
-    dt=0.1,
-)
-print("========")
-print(ep.m_model.getReaction("R_EX_glc__D_e").getLowerBound())
-print("========")
-
-solution = ep.simulate()
-
-FBAsol = ep.m_model.getSolutionVector(names=True)
-FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-
-print(FBAsol["M_glc__D_e_time0_time1"])
-print(FBAsol["M_glc__D_e_time1_time2"])
-print(FBAsol["M_glc__D_e_exchange_final"])
-
-print(solution)
-plot_biomasses(ep)
-plot_metabolites(ep, {"M_glc__D_e": 1000})
+community_model.createObjectiveFunction("R_BM_A_modelA")
+cbmpy.doFVA(m_a)

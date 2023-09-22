@@ -16,7 +16,7 @@ class KineticsStruct:
         - Retrieve the tuple of vmax and km values for a reaction using the get_kinetics() method.
     """
 
-    # kinetics tuple(limiting_species, km. vmax)
+    # kinetics model_id: tuple(limiting_species, km. vmax)
     kinetics: dict[str, tuple[str, float, float]] = {}
 
     def __init__(

@@ -159,7 +159,6 @@ class StaticOptimizationModelBase(DynamicModelBase):
         self,
         reaction: Reaction,
         X: float,
-        transporters: Transporters,
         kinetics: KineticsStruct,
     ) -> None:
         """Computes the Michaelis-Menten kinetics for a given reaction.
@@ -185,19 +184,11 @@ class StaticOptimizationModelBase(DynamicModelBase):
             rid,
         )
 
-        # If the reaction is an importer and no limiting substrate
-        # was supplied use the min of all substrates
-        # this is only possible for importers
-        # If the reaciton is not an import reaction and no limiting substrate
-        # Was set Raise an error
-        if transporters.is_importer(rid) and (
-            sid not in self.m_metabolite_concentrations.keys()
-        ):
-            S = min(self.importers_species_concentration(rid, transporters))
-        elif sid in self.m_metabolite_concentrations.keys():
+        if sid in self.m_metabolite_concentrations.keys():
             S = self.m_metabolite_concentrations[sid][-1]
         else:
             raise NoLimitingSubstrateFound(
                 "The limiting substrate was not an external species"
             )
+
         reaction.setUpperBound(vmax * (S / (km + S)) * X)

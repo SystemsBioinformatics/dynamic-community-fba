@@ -14,7 +14,6 @@ class DynamicFBABase(StaticOptimizationModelBase):
     """
 
     m_model: CommunityModel
-    m_transporters: Transporters
     m_initial_bounds: dict[str, tuple[float, float]] = {}
 
     def __init__(
@@ -33,14 +32,9 @@ class DynamicFBABase(StaticOptimizationModelBase):
             initial_concentrations (dict[str, float], optional): Initial metabolite concentrations. Defaults to an empty dictionary.
             kinetics (KineticsStruct, optional): Kinetic parameters for reactions. Defaults to an empty KineticsStruct object.
         """
-        self.m_transporters = Transporters(model)
 
         model_biomasses = model.get_model_biomass_ids()
         self.m_model = model
-
-        # Set X_C to be exporter since it increases over time
-        # self.set_community_biomass_reaction()
-        # self.m_transporters.add_exporter("X_comm", ["X_c"])
 
         initial_biomasses = [[x] for x in biomasses]
 
@@ -193,9 +187,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
                 reaction.setLowerBound(self.m_initial_bounds[rid][0] * X_k_t)
 
                 if self.m_kinetics.exists(rid):
-                    self.mm_kinetics(
-                        reaction, X_k_t, self.m_transporters, self.m_kinetics
-                    )
+                    self.mm_kinetics(reaction, X_k_t, self.m_kinetics)
 
                 else:
                     reaction.setUpperBound(

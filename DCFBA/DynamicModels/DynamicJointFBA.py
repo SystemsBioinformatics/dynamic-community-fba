@@ -13,13 +13,11 @@ class DynamicJointFBA(DynamicFBABase):
 
     Attributes:
         m_model (CommunityModel): The community metabolic model being simulated.
-        m_transporters (Transporters): Transporters associated with the community model.
         m_initial_bounds (dict[str, tuple[float, float]], optional): Initial bounds for the model reactions.
             Defaults to an empty dictionary.
     """
 
     m_model: CommunityModel
-    m_transporters: Transporters
     m_initial_bounds: dict[str, tuple[float, float]] = {}
 
     def __init__(
@@ -45,7 +43,6 @@ class DynamicJointFBA(DynamicFBABase):
 
         # Set X_C to be exporter since it increases over time
         self.set_community_biomass_reaction()
-        self.m_transporters.add_exporter("X_comm", ["X_c"])
         self.m_metabolite_concentrations["X_c"] = [sum(biomasses)]
 
     def get_joint_model(self) -> CommunityModel:
