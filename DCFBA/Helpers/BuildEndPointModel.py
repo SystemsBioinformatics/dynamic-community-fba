@@ -3,8 +3,20 @@ For further information see DynamicModels.EndPointFBA
 """
 import numpy
 import re
-from cbmpy.CBModel import Model, Compartment, Reaction, Reagent, Species
+from cbmpy.CBModel import (
+    Model,
+    Compartment,
+    Reaction,
+    Reagent,
+    Species,
+    FluxBound,
+)
 from ..Models.CommunityModel import CommunityModel
+
+# import time
+import weakref
+
+# TODO remove print statements for time
 
 
 def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
@@ -20,8 +32,8 @@ def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
         CommunityModel: The final time-dependent CommunityModel.
 
     """
-
     initial_model: CommunityModel = cm.clone()
+
     # strip the intial model gene protein associations for the EndPointModel
     # TODO SetUpperBOund for inactive genes!!!
     initial_model.gpr = None
@@ -60,9 +72,28 @@ def add_time_points(src_model, target_model, times):
 def add_time_point(
     src_model: CommunityModel, target_model: CommunityModel, time_id
 ):
+    # start_time = time.time()
     add_time_compartments(src_model, target_model, time_id)
+    # print(
+    #     "--- add_time_compartments() ------ %s seconds ---"
+    #     % (time.time() - start_time)
+    # )
+
+    # start_time = time.time()
     add_reactions(src_model, target_model, time_id)
+    # print(
+    #     "--- add_reactions() ------ %s seconds ---"
+    #     % (time.time() - start_time)
+    # )
+
+    # start_time = time.time()
+
     copy_species_and_reagents(src_model, target_model, time_id)
+    # print(
+    #     "--- copy_species_and_reagents() ------ %s seconds ---"
+    #     % (time.time() - start_time)
+    # )
+    # print()
 
 
 def set_exchanges(
@@ -140,13 +171,44 @@ def add_reactions(
         reaction: Reaction = initial_model.getReaction(rid)
         if not reaction.is_exchange:
             new_id = rid + "_" + time_id
-            final_model.createReaction(
-                new_id, reaction.name, reaction.reversible, silent=True
+            # start_time = time.time()
+            new_reaction: Reaction = Reaction(
+                new_id, reaction.name, reaction.reversible
             )
-            new_reaction: Reaction = final_model.getReaction(new_id)
+            final_model.addReaction(
+                new_reaction,
+                create_default_bounds=False,
+                silent=True,
+            )
+            # print(
+            #     "--- createReaciton time ------ %s seconds ---"
+            #     % (time.time() - start_time)
+            # )
+            # start_time = time.time()
 
-            new_reaction.setLowerBound(reaction.getLowerBound())
-            new_reaction.setUpperBound(reaction.getUpperBound())
+            # Dirty work around, should be fixed in cbmpy 0.9.0
+            # Than just use: final_model.createReactionBounds(new_id, reaction.getLowerBound(), reaction.getUpperBound())
+            boundId = "%s_%s_bnd" % (new_id, "lower")
+            flux = FluxBound(
+                boundId, new_id, "greaterEqual", reaction.getLowerBound()
+            )
+            final_model.__pushGlobalId__(flux.getId(), flux)
+
+            flux.__objref__ = weakref.ref(final_model)
+            final_model.flux_bounds.append(flux)
+            boundId = "%s_%s_bnd" % (new_id, "upper")
+            flux = FluxBound(
+                boundId, new_id, "lessEqual", reaction.getUpperBound()
+            )
+            final_model.__pushGlobalId__(flux.getId(), flux)
+
+            flux.__objref__ = weakref.ref(final_model)
+            final_model.flux_bounds.append(flux)
+
+            # print(
+            #     "--- setReactionBounds time ------ %s seconds ---"
+            #     % (time.time() - start_time)
+            # )
 
 
 def add_biomass_species(initial_model: CommunityModel) -> None:
