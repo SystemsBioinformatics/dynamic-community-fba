@@ -7,7 +7,6 @@ from ..Models.CommunityModel import CommunityModel
 from ..Helpers.BuildEndPointModel import build_time_model
 from .DynamicModelBase import DynamicModelBase
 from ..Models import KineticsStruct
-import time
 
 
 class EndPointFBA(DynamicModelBase):
@@ -144,11 +143,40 @@ class EndPointFBA(DynamicModelBase):
             new_rid = rid + "_" + self.m_times[0]
             reaction = self.m_model.getReaction(new_rid)
             mid = self.m_model.identify_model_from_reaction(rid)
-            biomass = initial_biomasses[mid]
+
             if rid in rids_lb_to_check:
-                reaction.setLowerBound(reaction.getLowerBound() * biomass * dt)
+                udc = self.m_model.createUserDefinedConstraint(
+                    f"{new_rid}_lb",
+                    0.0,
+                    numpy.Inf,
+                    components=[
+                        (1, new_rid, "linear"),
+                        (
+                            1 * dt * reaction.getLowerBound(),
+                            f"BM_{mid}_exchange",
+                            "linear",
+                        ),
+                    ],
+                )
+                self.m_model.addUserDefinedConstraint(udc)
+                reaction.setLowerBound(cbmpy.NINF)
             if rid in rids_ub_to_check:
-                reaction.setUpperBound(reaction.getUpperBound() * biomass * dt)
+                udc = self.m_model.createUserDefinedConstraint(
+                    f"{new_rid}_ub",
+                    numpy.NINF,
+                    0.0,
+                    components=[
+                        (1, new_rid, "linear"),
+                        (
+                            1 * dt * reaction.getUpperBound(),
+                            f"BM_{mid}_exchange",
+                            "linear",
+                        ),
+                    ],
+                )
+
+                self.m_model.addUserDefinedConstraint(udc)
+                reaction.setUpperBound(cbmpy.INF)
 
         for rid in combined_set:
             reaction: Reaction = initial_model.getReaction(rid)
@@ -355,6 +383,7 @@ class EndPointFBA(DynamicModelBase):
         """
         self.m_kinetics = kin
 
+    # TODO fix this one
     def mm_approximation(self):
         """Using the KineticsStruct you can set constraints on the reaction
         rates with an approximation of the Michaelis-Menten curve.
@@ -402,3 +431,40 @@ class EndPointFBA(DynamicModelBase):
                         "<=",
                         0.0,
                     )
+
+    def balanced_growth(self, Xin, Xm):
+        self.m_model.setReactionBounds("X_comm", Xm - 0.001, Xm + 0.001)
+
+        for mid, _ in self.m_model.get_model_biomass_ids().items():
+            self.m_model.setReactionBounds(f"BM_{mid}_exchange", cbmpy.NINF, 0)
+
+        for mid, _ in self.m_model.get_model_biomass_ids().items():
+            self.m_model.createReaction(
+                f"Phi_{mid}",
+                "Phi, fraction of {mid}",
+                create_default_bounds=False,
+            )
+
+            udc1 = self.m_model.createUserDefinedConstraint(
+                f"biomass_fraction_{mid}_{self.m_times[0]}",
+                0.0,
+                0.0,
+                components=[
+                    (-1.0, f"BM_{mid}_exchange", "linear"),
+                    (-1.0 * Xin, f"Phi_{mid}", "linear"),
+                ],
+            )
+
+            self.m_model.addUserDefinedConstraint(udc1)
+
+            udc2 = self.m_model.createUserDefinedConstraint(
+                f"biomass_fraction_{mid}_{self.m_times[-1]}",
+                0.0,
+                0.0,
+                components=[
+                    (1.0, f"BM_{mid}_exchange_final", "linear"),
+                    (-1.0 * (Xm + Xin), f"Phi_{mid}", "linear"),
+                ],
+            )
+
+            self.m_model.addUserDefinedConstraint(udc2)

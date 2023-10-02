@@ -9,7 +9,7 @@ import cbmpy
 visited: dict[int, float] = {}
 
 
-def search(
+def time_search(
     cm: CommunityModel,
     initial_biomasses: dict[str, float],
     initial_concentrations: dict[str, float] = {},
@@ -17,7 +17,12 @@ def search(
 ):
     low = 1
     high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt)
-    obj = 0
+    input(high)
+
+    ep = EndPointFBA(
+        cm, high, initial_biomasses, initial_concentrations, dt=dt
+    )
+    obj = ep.simulate()
 
     while low < high:
         n = (low + high) // 2
@@ -34,10 +39,44 @@ def search(
         if round(value, 5) >= obj:
             high = n
             obj = value
-        elif round(value, 5) < obj or np.isnan(value):
+        elif round(value, 5) < obj:
             low = n + 1
 
     return [high, obj]
+
+
+# TODO when there is a remove UserDefinedConstraint fix this
+def balance_search(
+    cm: CommunityModel,
+    n,
+    initial_concentrations: dict[str, float],
+    dt,
+    X_initial,
+    objective,
+    epsilon=0.01,
+):
+    low = 1
+    high = objective
+
+    while high - low > epsilon:
+        mid = (low + high) / 2
+        print(f"Trying {mid} ...")
+        ep = EndPointFBA(
+            cm,
+            n,
+            {},
+            initial_concentrations,
+            dt,
+        )
+        ep.balanced_growth(X_initial, objective / mid)
+        solution = ep.simulate()
+
+        if not np.isnan(solution):  # If solution is not NaN
+            high = mid
+        else:
+            low = mid
+
+    return high  # Return the lowest n value for which the solution is not NaN
 
 
 def find_upper_bound(

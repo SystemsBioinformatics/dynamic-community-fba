@@ -5,7 +5,8 @@ from dcFBA.Models.CommunityModel import CommunityModel
 from dcFBA.Models.Kinetics import KineticsStruct
 from dcFBA.DynamicModels import EndPointFBA
 from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
-from dcFBA.Helpers.OptimalTimeSearch import search
+from dcFBA.Helpers.OptimalSearch import time_search, balance_search
+import math
 
 m_a: Model = model_a.build_toy_model_fba_A()
 
@@ -65,29 +66,56 @@ community_model.deleteReactionAndBounds("BM_e_B_exchange")
 
 # community_model.getReaction("S_exchange").setLowerBound(-100)
 
-# n, obj = search(
+# n, high = search(
 #     community_model,
 #     {"modelA": 1.0, "modelB": 2.0},
 #     {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
 #     0.1,
 # )
 
-# print(n)
+
+n = 21
 ep = EndPointFBA(
     community_model,
-    21,
-    {"modelA": 1.0, "modelB": 2.0},
+    n,
+    {"modelA": 1, "modelB": 2},
     {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
     0.1,
 )
 
-ep.m_model.__FBC_VERSION__ = 3
-# print(ep.m_model.user_defined_constraints[0].getConstraintComponentVariables())
-# print(ep.m_model.user_defined_constraints[0].lb)
-# print(ep.m_model.user_defined_constraints[0].ub)
-
-
+ep.balanced_growth(3, 12.777 / 1.005750830078125)
 solution = ep.simulate()
-
 plot_biomasses(ep)
 plot_metabolites(ep, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
+
+# print(
+#     balance_search(
+#         community_model,
+#         n,
+#         {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+#         0.1,
+#         3,
+#         12.7777,
+#     )
+# )
+
+
+# if not math.isnan(solution):
+# FBAsol = ep.m_model.getSolutionVector(names=True)
+# FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+# print(FBAsol["Phi_modelA"])
+# print(FBAsol["Phi_modelB"])
+# print(FBAsol["BM_modelA_exchange_final"])
+# print(FBAsol["BM_modelB_exchange_final"])
+# print("X_comm:" + str(FBAsol["X_comm"]))
+# print()
+# print(
+#     FBAsol["BM_modelA_exchange_final"]
+#     / (
+#         FBAsol["BM_modelB_exchange_final"]
+#         + FBAsol["BM_modelA_exchange_final"]
+#     )
+# )
+
+# plot_biomasses(ep)
+# plot_metabolites(ep, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
