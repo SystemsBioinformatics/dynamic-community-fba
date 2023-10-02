@@ -123,6 +123,8 @@ class EndPointFBA(DynamicModelBase):
                 to initial biomass concentrations.
             dt (float): Time step size.
         """
+        self.m_model.__FBC_VERSION__ = 3
+
         # Lookup time of set is on average O(1)
         rids_lb_to_check = set()
         rids_ub_to_check = set()
@@ -158,30 +160,113 @@ class EndPointFBA(DynamicModelBase):
                 new_rid = rid + "_" + self.m_times[i]
                 reactionN: Reaction = self.m_model.getReaction(new_rid)
 
+                # Amount of biomass at time n
                 r_x_t = f"BM_{mid}_{self.m_times[i-1]}_{self.m_times[i]}"
 
                 if rid in rids_lb_to_check:
-                    self.m_model.addUserConstraint(
+                    udc = self.m_model.createUserDefinedConstraint(
                         f"{new_rid}_lb",
-                        [
-                            [1, new_rid],
-                            [-1 * dt * lb, r_x_t],
-                        ],
-                        ">=",
                         0.0,
+                        numpy.Inf,
+                        components=[
+                            (1, new_rid, "linear"),
+                            (-1 * dt * lb, r_x_t, "linear"),
+                        ],
                     )
+                    self.m_model.addUserDefinedConstraint(udc)
                     reactionN.setLowerBound(cbmpy.NINF)
                 if rid in rids_ub_to_check:
-                    self.m_model.addUserConstraint(
+                    udc = self.m_model.createUserDefinedConstraint(
                         f"{new_rid}_ub",
-                        [
-                            [1, new_rid],
-                            [-1 * dt * ub, r_x_t],
-                        ],
-                        "<=",
+                        numpy.NINF,
                         0.0,
+                        components=[
+                            (1, new_rid, "linear"),
+                            (-1 * dt * ub, r_x_t, "linear"),
+                        ],
                     )
+
+                    self.m_model.addUserDefinedConstraint(udc)
                     reactionN.setUpperBound(cbmpy.INF)
+
+    # For cbmpy < 0.9.0
+    # def set_constraints(
+    #     self,
+    #     initial_model: CommunityModel,
+    #     n: int,
+    #     initial_biomasses: dict[str, float],
+    #     dt: float,
+    # ):
+    #     """
+    #     Configures the constraints for the EndPointFBA model. Unlike using
+    #     upper and lower bounds, it adjusts constraints for each time point's
+    #     reaction based on biomass, dt, and the initial bound.
+
+    #     Args:
+    #         n (int): Number of time points.
+    #         initial_biomasses (dict[str, float]): Dictionary mapping model ID
+    #             to initial biomass concentrations.
+    #         dt (float): Time step size.
+    #     """
+    #     # Lookup time of set is on average O(1)
+    #     rids_lb_to_check = set()
+    #     rids_ub_to_check = set()
+    #     for reaction in initial_model.reactions:
+    #         if reaction.is_exchange:
+    #             continue
+    #         lb = reaction.getLowerBound()
+    #         ub = reaction.getUpperBound()
+    #         if not (lb == 0.0 or lb == cbmpy.INF or lb == cbmpy.NINF):
+    #             rids_lb_to_check.add(reaction.getId())
+    #         if not (ub == 0.0 or ub == cbmpy.INF or ub == cbmpy.NINF):
+    #             rids_ub_to_check.add(reaction.getId())
+
+    #     combined_set = rids_lb_to_check | rids_ub_to_check
+    #     # Reactions at time zero
+    #     for rid in combined_set:
+    #         new_rid = rid + "_" + self.m_times[0]
+    #         reaction = self.m_model.getReaction(new_rid)
+    #         mid = self.m_model.identify_model_from_reaction(rid)
+    #         biomass = initial_biomasses[mid]
+    #         if rid in rids_lb_to_check:
+    #             reaction.setLowerBound(reaction.getLowerBound() * biomass * dt)
+    #         if rid in rids_ub_to_check:
+    #             reaction.setUpperBound(reaction.getUpperBound() * biomass * dt)
+
+    #     for rid in combined_set:
+    #         reaction: Reaction = initial_model.getReaction(rid)
+    #         lb = reaction.getLowerBound()
+    #         ub = reaction.getUpperBound()
+    #         mid = self.m_model.identify_model_from_reaction(rid)
+
+    #         for i in range(1, n):
+    #             new_rid = rid + "_" + self.m_times[i]
+    #             reactionN: Reaction = self.m_model.getReaction(new_rid)
+
+    #             r_x_t = f"BM_{mid}_{self.m_times[i-1]}_{self.m_times[i]}"
+
+    #             if rid in rids_lb_to_check:
+    #                 self.m_model.addUserConstraint(
+    #                     f"{new_rid}_lb",
+    #                     [
+    #                         [1, new_rid],
+    #                         [-1 * dt * lb, r_x_t],
+    #                     ],
+    #                     ">=",
+    #                     0.0,
+    #                 )
+    #                 reactionN.setLowerBound(cbmpy.NINF)
+    #             if rid in rids_ub_to_check:
+    #                 self.m_model.addUserConstraint(
+    #                     f"{new_rid}_ub",
+    #                     [
+    #                         [1, new_rid],
+    #                         [-1 * dt * ub, r_x_t],
+    #                     ],
+    #                     "<=",
+    #                     0.0,
+    #                 )
+    #                 reactionN.setUpperBound(cbmpy.INF)
 
     def set_initial_concentrations(
         self,

@@ -1,7 +1,7 @@
 import cbmpy
 from cbmpy.CBModel import Model, Reaction
 from dcFBA.Models import CommunityModel
-from dcFBA.DynamicModels import DynamicJointFBA
+from dcFBA.DynamicModels import DynamicJointFBA, EndPointFBA
 import pandas as pd
 from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 import matplotlib.pyplot as plt
@@ -87,36 +87,19 @@ community_model.getReaction("R_EX_lys__L_e").setLowerBound(0)
 community_model.getReaction("R_EX_leu__L_e").setUpperBound(0)
 community_model.getReaction("R_EX_lys__L_e").setUpperBound(0)
 
-dj_uptake = DynamicJointFBA(
+medium_co_culture = {
+    "M_glc__D_e": 11.96,
+    "M_leu__L_e": 0,
+    "M_lys__L_e": 0,
+}  # Glucose from the experiment paper Zhang, Reed
+
+ep = EndPointFBA(
     community_model,
-    [0.0027, 0.0027],
-    {"M_glc__D_e": 11.96, "M_leu__L_e": 0, "M_lys__L_e": 0},
+    3,
+    {"dleu": 0.0027, "dlys": 0.0027},
+    medium_co_culture,
+    dt=1,
 )
 
 
-def deviate_func(sim, used_time, run_condition):
-    if (
-        sim.m_biomass_concentrations["dleu"][-1]
-        + sim.m_biomass_concentrations["dlys"][-1]
-        >= 0.083
-    ):
-        # Stop the simulation by setting community reaction to zero, solution will be zero or nan
-        sim.m_model.getReaction("X_comm").setUpperBound(0)
-
-    return 0
-
-
-d = deviate_func
-(
-    T_uptake,
-    metabolites_uptake,
-    biomasses_uptake,
-    fluxes_uptake,
-) = dj_uptake.simulate(0.1, epsilon=0.00001, deviate=d, n=160)
-
-plt.plot(T_uptake, biomasses_uptake["dleu"], color="blue", label="dleusine")
-plt.plot(T_uptake, biomasses_uptake["dlys"], color="orange", label="dlysine")
-plt.xlabel("Time")
-plt.ylabel("Concentration")
-plt.legend()
-plt.show()
+print(ep.simulate())

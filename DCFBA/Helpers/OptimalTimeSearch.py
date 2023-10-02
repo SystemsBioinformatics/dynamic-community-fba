@@ -21,7 +21,7 @@ def search(
 
     while low < high:
         n = (low + high) // 2
-
+        print(f"Trying {n} ...")
         if n in visited.keys():
             value = visited[n]
         else:
@@ -34,7 +34,7 @@ def search(
         if round(value, 5) >= obj:
             high = n
             obj = value
-        elif round(value, 5) < obj:
+        elif round(value, 5) < obj or np.isnan(value):
             low = n + 1
 
     return [high, obj]
