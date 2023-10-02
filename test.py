@@ -1,12 +1,17 @@
 import cbmpy
 from cbmpy.CBModel import Model, Reaction
 from dcFBA.Models import CommunityModel
-from dcFBA.DynamicModels import EndPointFBA
-from dcFBA.Helpers import ScanUnusedReactions
-import time
+from dcFBA.DynamicModels import DynamicJointFBA
 import pandas as pd
+from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
+import matplotlib.pyplot as plt
 
 iAF1260: Model = cbmpy.loadModel("models/bigg_models/iAF1260.xml")
+
+iAF1260.getReaction("R_EX_lys__L_e").setLowerBound(0)
+iAF1260.getReaction("R_EX_leu__L_e").setLowerBound(0)
+
+
 reaction: Reaction
 for reaction in iAF1260.reactions:
     if reaction.getSBOterm() == "SBO:0000627":
@@ -18,126 +23,100 @@ for reaction in iAF1260.reactions:
     if reaction.getUpperBound() == 999999.0:
         reaction.setUpperBound(cbmpy.INF)
 
-iAF1260_2 = iAF1260.clone()
+leucine_knock_out = iAF1260.clone()
+lysine_knock_out = iAF1260.clone()
 
-iAF1260.getReaction("R_GLCtex_copy1").setUpperBound(8)
-iAF1260.getReaction("R_GLCtex_copy2").setUpperBound(0)
-iAF1260_2.getReaction("R_GLCtex_copy1").setUpperBound(8)
-iAF1260_2.getReaction("R_GLCtex_copy2").setUpperBound(0)
+leucine_knock_out.getReaction("R_IPPS").setUpperBound(0)
+lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
 
-# Restrict the uptake of leucine in the knockout:
-iAF1260.getReaction("R_LEUtex").setUpperBound(3)
-# Restrict the lysine uptake in lysine knock out
-iAF1260_2.getReaction("R_LYStex").setUpperBound(3)
+# Set creation of the metabolites to zero
+leucine_knock_out.getReaction("R_IPPS").setUpperBound(0)
+lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
 
 
-community_model = CommunityModel(
-    [iAF1260, iAF1260_2],
+# uptake simulation from paper:
+# leucine_knock_out.getReaction("R_LEUtex").setLowerBound(-1)
+# leucine_knock_out.getReaction("R_LEUtex").setUpperBound(1)
+
+leucine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
+leucine_knock_out.getReaction("R_LYStex").setUpperBound(1000)
+
+
+# lysine_knock_out.getReaction("R_LYStex").setLowerBound(-1)
+# lysine_knock_out.getReaction("R_LYStex").setUpperBound(1)
+
+lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
+lysine_knock_out.getReaction("R_LEUtex").setUpperBound(1000)
+
+
+# Restrict the uptake of glucose
+leucine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
+leucine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
+lysine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
+lysine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
+
+
+# R_FE3tex settings from paper
+leucine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
+lysine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
+
+# Build the community model
+community_model: CommunityModel = CommunityModel(
+    [leucine_knock_out, lysine_knock_out],
     ["R_BIOMASS_Ec_iAF1260_core_59p81M", "R_BIOMASS_Ec_iAF1260_core_59p81M"],
     ["dleu", "dlys"],
 )
-community_model.createObjectiveFunction
 
-community_model.getReaction("R_IPPS_dleu").setUpperBound(0)
-community_model.getReaction("R_DAPDC_dlys").setUpperBound(0)
+# R_O2tex oxygen
+# community_model.getReaction("R_O2tex_dleu").setLowerBound(-15)
+# community_model.getReaction("R_O2tex_dlys").setLowerBound(-15)
+
+community_model.getReaction("R_EX_o2_e").setLowerBound(
+    -30
+)  # Vou;d also be set to 2* 18.5
+community_model.getReaction("R_EX_cbl1_e").setLowerBound(
+    -0.02
+)  # 2 * initial value of 0.01
 
 
-# start_time = time.time()
-# EndPointFBA(
-#     community_model,
-#     2,
-#     {"dleu": 1.0, "dlys": 1.0},
-#     {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0},
-#     dt=0.1,
-# )
-# print(f"--- total time: {2} ------ {(time.time() - start_time)} seconds ---")
-# print()
+# First try if accumulation of the metabolites is enough to stop
+# the corss feeding
+community_model.getReaction("R_EX_leu__L_e").setLowerBound(0)
+community_model.getReaction("R_EX_lys__L_e").setLowerBound(0)
 
-df = pd.read_csv(
-    "/Users/stevenwijnen/Bioinformatica/year2/SysBio_lab/results/code/ecoli/fva_zero_reactions_iAF1260_community.csv"
-)
-fva_list = first_column_list = df.iloc[:, 0].tolist()
-for rid in fva_list:
-    community_model.deleteReactionAndBounds(rid)
+community_model.getReaction("R_EX_leu__L_e").setUpperBound(0)
+community_model.getReaction("R_EX_lys__L_e").setUpperBound(0)
 
-community_model.deleteNonReactingSpecies()
-
-start_time = time.time()
-ep = EndPointFBA(
+dj_uptake = DynamicJointFBA(
     community_model,
-    20,
-    {"dleu": 1.0, "dlys": 1.0},
-    {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0},
-    dt=0.1,
+    [0.0027, 0.0027],
+    {"M_glc__D_e": 11.96, "M_leu__L_e": 0, "M_lys__L_e": 0},
 )
-print(f"--- total time: {3} ------ {(time.time() - start_time)} seconds ---")
-print(ep.simulate())
-
-# start_time = time.time()
-# EndPointFBA(
-#     community_model,
-#     4,
-#     {"dleu": 1.0, "dlys": 1.0},
-#     {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0},
-#     dt=0.1,
-# )
-
-# print(f"--- total time: {4} ------ {(time.time() - start_time)} seconds ---")
-# print()
-
-# start_time = time.time()
-# EndPointFBA(
-#     community_model,
-#     5,
-#     {"dleu": 1.0, "dlys": 1.0},
-#     {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0},
-#     dt=0.1,
-# )
-# print(f"--- total time: {5} ------ {(time.time() - start_time)} seconds ---")
-# print()
-
-# start_time = time.time()
-# EndPointFBA(
-#     community_model,
-#     6,
-#     {"dleu": 1.0, "dlys": 1.0},
-#     {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0},
-#     dt=0.1,
-# )
-# print(f"--- total time: {6} ------ {(time.time() - start_time)} seconds ---")
 
 
-# ScanUnusedReactions.scan_unused_reactions(
-#     community_model, {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0}, True
-# )
+def deviate_func(sim, used_time, run_condition):
+    if (
+        sim.m_biomass_concentrations["dleu"][-1]
+        + sim.m_biomass_concentrations["dlys"][-1]
+        >= 0.083
+    ):
+        # Stop the simulation by setting community reaction to zero, solution will be zero or nan
+        sim.m_model.getReaction("X_comm").setUpperBound(0)
 
-# start_time = time.time()
-# ep = EndPointFBA(
-#     community_model,
-#     7,
-#     {"dleu": 1.0, "dlys": 1.0},
-#     {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0},
-#     dt=0.1,
-# )
+    return 0
 
-# print(
-#     "--- EndPointModel 7 time removed reactions------ %s seconds ---"
-#     % (time.time() - start_time)
-# )
 
-# print(ep.simulate())
+d = deviate_func
+(
+    T_uptake,
+    metabolites_uptake,
+    biomasses_uptake,
+    fluxes_uptake,
+) = dj_uptake.simulate(0.1, epsilon=0.00001, deviate=d, n=160)
 
-# community_model.deleteNonReactingSpecies()
-# start_time = time.time()
-# ep = EndPointFBA(
-#     community_model,
-#     7,
-#     {"dleu": 1.0, "dlys": 1.0},
-#     {"M_glc__D_e": 24, "M_leu__L_e": 0, "M_lys__L_e": 0},
-#     dt=0.1,
-# )
-# print(
-#     "--- EndPointModel 7 time no redunant reactions no non reacting species ------ %s seconds ---"
-#     % (time.time() - start_time)
-# )
-# print(ep.simulate())
+plt.plot(T_uptake, biomasses_uptake["dleu"], color="blue", label="dleusine")
+plt.plot(T_uptake, biomasses_uptake["dlys"], color="orange", label="dlysine")
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
+plt.show()

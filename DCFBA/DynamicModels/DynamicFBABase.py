@@ -33,8 +33,9 @@ class DynamicFBABase(StaticOptimizationModelBase):
             kinetics (KineticsStruct, optional): Kinetic parameters for reactions. Defaults to an empty KineticsStruct object.
         """
 
+        self.m_model = model.clone()
+
         model_biomasses = model.get_model_biomass_ids()
-        self.m_model = model
 
         initial_biomasses = [[x] for x in biomasses]
 
