@@ -441,11 +441,11 @@ class EndPointFBA(DynamicModelBase):
         for mid, _ in self.m_model.get_model_biomass_ids().items():
             self.m_model.createReaction(
                 f"Phi_{mid}",
-                "Phi, fraction of {mid}",
+                f"Phi, fraction of {mid}",
                 create_default_bounds=False,
             )
 
-            udc1 = self.m_model.createUserDefinedConstraint(
+            udc = self.m_model.createUserDefinedConstraint(
                 f"biomass_fraction_{mid}_{self.m_times[0]}",
                 0.0,
                 0.0,
@@ -455,9 +455,9 @@ class EndPointFBA(DynamicModelBase):
                 ],
             )
 
-            self.m_model.addUserDefinedConstraint(udc1)
+            self.m_model.addUserDefinedConstraint(udc)
 
-            udc2 = self.m_model.createUserDefinedConstraint(
+            udc = self.m_model.createUserDefinedConstraint(
                 f"biomass_fraction_{mid}_{self.m_times[-1]}",
                 0.0,
                 0.0,
@@ -467,4 +467,26 @@ class EndPointFBA(DynamicModelBase):
                 ],
             )
 
-            self.m_model.addUserDefinedConstraint(udc2)
+            self.m_model.addUserDefinedConstraint(udc)
+
+    # In construction
+    def remove_balanced_growth_constraints(self, initial_biomasses={}):
+        """Restore the EndPointFBA model to before balanced growth constraints
+            were added
+
+        Args:
+            initial_biomasses (dict, optional): _description_. Defaults to {}.
+        """
+        if initial_biomasses:
+            for mid, value in initial_biomasses.items():
+                self.m_model.setReactionBounds(
+                    f"BM_{mid}_exchange", -value, -value
+                )
+        for mid, _ in self.m_model.get_model_biomass_ids().items():
+            self.m_model.deleteReactionAndBounds(f"Phi_{mid}")
+            self.m_model.__popGlobalId__(
+                f"biomass_fraction_{mid}_{self.m_times[0]}"
+            )
+            self.m_model.__popGlobalId__(
+                f"biomass_fraction_{mid}_{self.m_times[-1]}"
+            )

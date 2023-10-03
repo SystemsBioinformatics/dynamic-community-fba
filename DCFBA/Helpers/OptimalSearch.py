@@ -46,37 +46,83 @@ def time_search(
 
 
 # TODO when there is a remove UserDefinedConstraint fix this
-def balance_search(
-    cm: CommunityModel,
+def balance_search_clean(
+    community_model,
     n,
-    initial_concentrations: dict[str, float],
+    initial_concentrations,
     dt,
     X_initial,
     objective,
     epsilon=0.01,
 ):
-    low = 1
-    high = objective
+    low = 0
+    high = 1
 
     while high - low > epsilon:
-        mid = (low + high) / 2
-        print(f"Trying {mid} ...")
-        ep = EndPointFBA(
-            cm,
-            n,
-            {},
-            initial_concentrations,
-            dt,
-        )
-        ep.balanced_growth(X_initial, objective / mid)
+        mid_point = (low + high) / 2
+        print(f"Trying {mid_point} ...")
+        ep = EndPointFBA(community_model, n, {}, initial_concentrations, dt)
+        ep.balanced_growth(X_initial, objective * mid_point)
         solution = ep.simulate()
 
         if not np.isnan(solution):  # If solution is not NaN
-            high = mid
+            low = mid_point
         else:
-            low = mid
+            high = mid_point
 
-    return high  # Return the lowest n value for which the solution is not NaN
+    return low  # Return the n closest to 1 for which the solution is not NaN
+
+
+# TODO Clean this code once deleteUserdefinedConstraint is implemented in cbmpy
+def balanced_search_quick(ep: EndPointFBA, X_initial, objective, epsilon=0.01):
+    """Run this one if you know what you are doing, quick and dirty solution"""
+    low = 0
+    high = 1
+    ep.balanced_growth(X_initial, objective)
+    solution = 0
+    while high - low > epsilon:
+        mid_point = (low + high) / 2
+        print(f"Trying {mid_point} ...")
+        for mid, _ in ep.m_model.get_model_biomass_ids().items():
+            # Should be replaced with remove user defined constraint once this is
+            #  implemented
+            old_udc = ep.m_model.getObject(
+                f"biomass_fraction_{mid}_{ep.m_times[-1]}"
+            )
+
+            # for cid in old_udc.getConstraintComponentIDs():
+            #     ep.m_model.unRegisterObjectInGlobalStore(cid)
+            old_udc.constraint_components = []
+
+            ep.m_model.unRegisterObjectInGlobalStore(old_udc.getId())
+
+            value = objective * mid_point
+            ep.m_model.setReactionBounds(
+                "X_comm", value - 0.001, value + 0.001
+            )
+            udc = ep.m_model.createUserDefinedConstraint(
+                f"biomass_fraction_{mid}_{ep.m_times[-1]}",
+                0.0,
+                0.0,
+                components=[
+                    (1.0, f"BM_{mid}_exchange_final", "linear"),
+                    (
+                        -1.0 * (value + X_initial),
+                        f"Phi_{mid}",
+                        "linear",
+                    ),
+                ],
+            )
+
+            ep.m_model.addUserDefinedConstraint(udc)
+        solution = ep.simulate()
+
+        if not np.isnan(solution):  # If solution is not NaN
+            low = mid_point
+        else:
+            high = mid_point
+
+    return low  # Return the n closest to 1 for which the solution is not NaN
 
 
 def find_upper_bound(

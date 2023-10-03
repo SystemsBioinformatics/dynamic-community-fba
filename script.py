@@ -5,7 +5,10 @@ from dcFBA.Models.CommunityModel import CommunityModel
 from dcFBA.Models.Kinetics import KineticsStruct
 from dcFBA.DynamicModels import EndPointFBA
 from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
-from dcFBA.Helpers.OptimalSearch import time_search, balance_search
+from dcFBA.Helpers.OptimalSearch import (
+    balance_search_clean,
+    balanced_search_quick,
+)
 import math
 
 m_a: Model = model_a.build_toy_model_fba_A()
@@ -74,6 +77,28 @@ community_model.deleteReactionAndBounds("BM_e_B_exchange")
 # )
 
 
+# print(
+#     balance_search(
+#         community_model,
+#         21,
+#         {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+#         0.1,
+#         3,
+#         12.7777,
+#         epsilon=0.0001,
+#     )
+# )
+
+n = 21
+ep = EndPointFBA(
+    community_model,
+    n,
+    {"modelA": 1, "modelB": 2},
+    {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+    1,
+)
+
+solution1 = ep.simulate()
 n = 21
 ep = EndPointFBA(
     community_model,
@@ -83,11 +108,41 @@ ep = EndPointFBA(
     0.1,
 )
 
-ep.balanced_growth(3, 12.777 / 1.005750830078125)
-solution = ep.simulate()
-plot_biomasses(ep)
-plot_metabolites(ep, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
+e = balance_search_clean(
+    community_model,
+    n,
+    {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+    0.1,
+    3,
+    12.777,
+    0.001,
+)
+input(e)
+e = balanced_search_quick(ep, 3, 12.777, 0.001)
 
+
+n = 21
+ep = EndPointFBA(
+    community_model,
+    n,
+    {"modelA": 1, "modelB": 2},
+    {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+    0.1,
+)
+
+ep.balanced_growth(3, 12.777 * e)
+
+
+solution2 = ep.simulate()
+print(solution1)
+print(solution2)
+
+print(e)
+plot_biomasses(ep)
+
+# plot_metabolites(ep, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
+#  0.9957275390625
+# 0.9921875
 # print(
 #     balance_search(
 #         community_model,

@@ -5,6 +5,9 @@ from dcFBA.DynamicModels import DynamicJointFBA, EndPointFBA
 import pandas as pd
 from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 import matplotlib.pyplot as plt
+import time
+from dcFBA.Helpers.OptimalSearch import balance_search
+import json
 
 iAF1260: Model = cbmpy.loadModel("models/bigg_models/iAF1260.xml")
 
@@ -78,6 +81,16 @@ community_model.getReaction("R_EX_cbl1_e").setLowerBound(
     -0.02
 )  # 2 * initial value of 0.01
 
+df = pd.read_csv(
+    "/Users/stevenwijnen/Bioinformatica/year2/SysBio_lab/major_research_project_sysbio/results/code/ecoli/fva_zero_reactions_iAF1260_community.csv"
+)
+
+fva_list = first_column_list = df.iloc[:, 0].tolist()
+
+for rid in fva_list:
+    community_model.deleteReactionAndBounds(rid)
+
+community_model.deleteNonReactingSpecies()
 
 # First try if accumulation of the metabolites is enough to stop
 # the corss feeding
@@ -93,13 +106,41 @@ medium_co_culture = {
     "M_lys__L_e": 0,
 }  # Glucose from the experiment paper Zhang, Reed
 
-ep = EndPointFBA(
+start_time = time.time()
+
+value = balance_search(
     community_model,
-    3,
-    {"dleu": 0.0027, "dlys": 0.0027},
+    32,
     medium_co_culture,
-    dt=1,
+    0.5,
+    0.0027 * 2,
+    0.083,
+    epsilon=0.01,
+)
+print(value)
+
+print(
+    f"--- build_time_model: {32} ------ {(time.time() - start_time)} seconds ---"
 )
 
+value_to_write = f"balanced search with n=32, dt=0.5, objective=0.083, epsilon=0.01: \n value={value}"
+
+# Open the file in write mode
+with open("balanced_search.txt", "w") as file:
+    file.write(value_to_write)
+
+
+ep = EndPointFBA(
+    community_model,
+    32,
+    {"dleu": 0.0027, "dlys": 0.0027},
+    medium_co_culture,
+    dt=0.5,
+)
 
 print(ep.simulate())
+FBAsol = ep.m_model.getSolutionVector(names=True)
+FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+
+with open("FBAsol_after_search.json", "w") as json_file:
+    json.dump(FBAsol, json_file)  # 'indent=4' for pretty-printing
