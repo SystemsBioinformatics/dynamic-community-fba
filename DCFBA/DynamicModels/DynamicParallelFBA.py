@@ -99,6 +99,11 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         run_condition = 0
         step = 1
 
+        fluxes = {}
+
+        for m in self.m_models:
+            fluxes[m.getId()] = []
+
         for _ in range(1, n):
             if dt_hat != -1:
                 dt = dt_hat
@@ -118,7 +123,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             self.update_exchanges(dt)
 
             used_time.append(used_time[-1] + dt)
-            fluxes = {}
+            temp_fba = {}
             for model in self.m_models:
                 solution = cbmpy.doFBA(model, quiet=True)
 
@@ -132,7 +137,9 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 FBAsol = model.getSolutionVector(names=True)
                 FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
-                fluxes[model.getId()] = FBAsol
+                temp_fba[model.getId()] = FBAsol
+
+                fluxes[model.getId()].append(FBAsol)
 
                 self.update_concentrations(model, FBAsol, step, dt)
                 self.update_biomasses(model, dt, FBAsol, step)
@@ -140,8 +147,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             species_id = self.check_solution_feasibility()
 
             if species_id != "":
-                dt_hat = self.reset_dt(species_id, fluxes)
-                input(dt_hat)
+                dt_hat = self.reset_dt(species_id, temp_fba)
                 step -= 1
                 used_time = used_time[:-1]
 
@@ -150,6 +156,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                     used_time,
                     self.m_metabolite_concentrations,
                     self.m_biomass_concentrations,
+                    fluxes,
                 ]
             step += 1
 
@@ -157,6 +164,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             used_time[:-1],
             self.m_metabolite_concentrations,
             self.m_biomass_concentrations,
+            fluxes,
         ]
 
     def update_exchanges(self, dt):

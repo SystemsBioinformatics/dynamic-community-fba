@@ -14,15 +14,37 @@ def time_search(
     initial_biomasses: dict[str, float],
     initial_concentrations: dict[str, float] = {},
     dt=0.1,
-):
-    low = 1
-    high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt)
-    input(high)
+    set_values: tuple[float, float] = None,
+) -> list[float, float]:
+    """Finds the lowest number of time points given initial values and a dt
 
-    ep = EndPointFBA(
-        cm, high, initial_biomasses, initial_concentrations, dt=dt
-    )
-    obj = ep.simulate()
+
+    Args:
+        cm (CommunityModel): _description_
+        initial_biomasses (dict[str, float]): _description_
+        initial_concentrations (dict[str, float], optional): _description_. Defaults to {}.
+        dt (float, optional): _description_. Defaults to 0.1.
+        set_values (tuple[float, float], optional): If you already know the
+            max value, or you want to search for when a value is reached you
+            set the objective value and initial guess of n in the tuple. Defaults to None.
+
+    Returns:
+        ist[float, float]: number of time points and the reached objective
+            value
+    """
+    low = 1
+    if set_values is None:
+        high = find_upper_bound(
+            cm, initial_biomasses, initial_concentrations, dt
+        )
+        ep = EndPointFBA(
+            cm, high, initial_biomasses, initial_concentrations, dt=dt
+        )
+        obj = ep.simulate()
+
+    else:
+        obj = set_values[0]
+        high = set_values[1]
 
     while low < high:
         n = (low + high) // 2
@@ -37,10 +59,15 @@ def time_search(
             visited[n] = value
 
         if round(value, 5) >= obj:
+            if set_values:
+                break
             high = n
             obj = value
         elif round(value, 5) < obj:
             low = n + 1
+
+    if set_values and value > set_values[0]:
+        print("IMPORTANTL: Set objective not reached")
 
     return [high, obj]
 
@@ -79,7 +106,9 @@ def balanced_search_quick(ep: EndPointFBA, X_initial, objective, epsilon=0.01):
     low = 0
     high = 1
     ep.balanced_growth(X_initial, objective)
-    solution = 0
+    solution = ep.simulate()
+    if not np.isnan(solution):
+        return 1.0
     while high - low > epsilon:
         mid_point = (low + high) / 2
         print(f"Trying {mid_point} ...")

@@ -433,10 +433,13 @@ class EndPointFBA(DynamicModelBase):
                     )
 
     def balanced_growth(self, Xin, Xm):
-        self.m_model.setReactionBounds("X_comm", Xm - 0.001, Xm + 0.001)
-
+        self.m_model.setReactionBounds("X_comm", Xm, Xm)
+        additional_components = []
+        # At least some of each microbe needs to get into the system
         for mid, _ in self.m_model.get_model_biomass_ids().items():
-            self.m_model.setReactionBounds(f"BM_{mid}_exchange", cbmpy.NINF, 0)
+            self.m_model.setReactionBounds(
+                f"BM_{mid}_exchange", cbmpy.NINF, 0.0
+            )
 
         for mid, _ in self.m_model.get_model_biomass_ids().items():
             self.m_model.createReaction(
@@ -444,7 +447,7 @@ class EndPointFBA(DynamicModelBase):
                 f"Phi, fraction of {mid}",
                 create_default_bounds=False,
             )
-
+            additional_components.append((1.0, f"Phi_{mid}", "linear"))
             udc = self.m_model.createUserDefinedConstraint(
                 f"biomass_fraction_{mid}_{self.m_times[0]}",
                 0.0,
@@ -469,7 +472,13 @@ class EndPointFBA(DynamicModelBase):
 
             self.m_model.addUserDefinedConstraint(udc)
 
-    # In construction
+        udc = self.m_model.createUserDefinedConstraint(
+            "Phi_add_to_one", 1.0, 1.0, components=additional_components
+        )
+
+        self.m_model.addUserDefinedConstraint(udc)
+
+    # TODO In construction
     def remove_balanced_growth_constraints(self, initial_biomasses={}):
         """Restore the EndPointFBA model to before balanced growth constraints
             were added
