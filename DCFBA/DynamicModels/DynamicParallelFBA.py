@@ -3,10 +3,9 @@ import math
 from cbmpy.CBModel import Model, Reaction
 from .StaticOptimizationModel import StaticOptimizationModelBase
 from ..Models.Kinetics import KineticsStruct
-from ..Models.Transporters import Transporters
 
 
-class DynamicParallelFBA(StaticOptimizationModelBase):
+class DynamicParallelFBA2(StaticOptimizationModelBase):
     """A class representing a dynamic parallel FBA simulation.
 
     This class extends the TimeStepDynamicFBABase and provides functionality
@@ -20,7 +19,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         associated kinetic parameters for reactions.
     """
 
-    m_models: list[Model]
+    m_models: dict[str, Model]
     m_initial_bounds: dict[str, dict[str, tuple[float, float]]] = {}
     m_model_kinetics: dict[str, KineticsStruct] = {}
 
@@ -44,11 +43,10 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 IDs with their respective kinetics structures. Defaults to an empty dictionary.
         """
 
-        self.m_models = models
+        self.m_models = {m.getId(): m.clone() for m in models}
         self.m_model_kinetics = kinetics
 
-        for i in range(0, len(models)):
-            model = models[i]
+        for i, model in enumerate(self.m_models.values()):
             mid = model.getId()
             self.set_initial_concentrations(model, initial_concentrations)
             self.m_biomass_concentrations[mid] = [biomasses[i]]
@@ -76,33 +74,13 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         kinetics_func=None,
         deviate=None,
     ) -> list[list[float], dict[str, list[float]], dict[str, list[float]]]:
-        """
-        Execute a dynamic parallel FBA simulation.
+        final_fluxes = {m: [] for m in self.m_models.keys()}
+        used_times = [0]
 
-        Args:
-            dt (float): Time step interval for the simulation.
-            epsilon (float, optional): Convergence threshold. Defaults to 0.001.
-            kinetics_func (function, optional): Custom function to adjust reaction bounds
-                based on kinetics. Defaults to None.
-            deviate (function, optional): Function to add perturbations during the
-                simulation. Defaults to None.
-
-        Returns:
-            list[list[float], dict[str, list[float]], dict[str, list[float]]]: A list containing
-            the simulation results in the order of time utilized, metabolite concentrations,
-            and biomass concentrations.
-        """
-
-        used_time = [0]
-        dt_hat = -1
         dt_save = dt
+        dt_hat = -1
+
         run_condition = 0
-        step = 1
-
-        fluxes = {}
-
-        for m in self.m_models:
-            fluxes[m.getId()] = []
 
         for _ in range(1, n):
             if dt_hat != -1:
@@ -114,74 +92,64 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             if deviate is not None:
                 run_condition += deviate(
                     self,
-                    used_time,
+                    used_times,
                     run_condition,
                 )
 
             self.update_reaction_bounds(kinetics_func)
-
             self.update_exchanges(dt)
 
-            used_time.append(used_time[-1] + dt)
-            temp_fba = {}
-            for model in self.m_models:
-                solution = cbmpy.doFBA(model, quiet=True)
+            temp_fluxes = {m: {} for m in self.m_models.keys()}
 
-                if math.isnan(solution):
-                    return [
-                        used_time[:-1],
-                        self.m_metabolite_concentrations,
-                        self.m_biomass_concentrations,
-                    ]
+            # Perform FBA foreach model
+            for mid, model in self.m_models.items():
+                solution = cbmpy.doFBA(model)
+                if math.isnan(solution) or solution <= epsilon:
+                    continue
 
                 FBAsol = model.getSolutionVector(names=True)
                 FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+                temp_fluxes[mid] = FBAsol
 
-                temp_fba[model.getId()] = FBAsol
+            all_empty = all(
+                not child_dict for child_dict in temp_fluxes.values()
+            )
 
-                fluxes[model.getId()].append(FBAsol)
-
-                self.update_concentrations(model, FBAsol, step, dt)
-                self.update_biomasses(model, dt, FBAsol, step)
-
-            species_id = self.check_solution_feasibility()
-
-            if species_id != "":
-                dt_hat = self.reset_dt(species_id, temp_fba)
-                step -= 1
-                used_time = used_time[:-1]
-
-            if dt_hat != -1 and dt_hat <= epsilon:
+            if all_empty:
                 return [
-                    used_time,
+                    used_times,
                     self.m_metabolite_concentrations,
                     self.m_biomass_concentrations,
-                    fluxes,
+                    final_fluxes,
                 ]
-            step += 1
 
+            self.update_concentrations(temp_fluxes, dt)
+            species_id = self.check_solution_feasibility()
+
+            if species_id:
+                dt_hat = self.reset_dt(species_id, temp_fluxes)
+                if dt_hat != -1 and dt_hat <= epsilon:
+                    return [
+                        used_times,
+                        self.m_metabolite_concentrations,
+                        self.m_biomass_concentrations,
+                        final_fluxes,
+                    ]
+                else:
+                    continue
+
+            self.update_biomasses(temp_fluxes, dt)
+
+            for mid, fbasol in temp_fluxes.items():
+                final_fluxes[mid].append(fbasol)
+
+            used_times.append(used_times[-1] + dt)
         return [
-            used_time[:-1],
+            used_times,
             self.m_metabolite_concentrations,
             self.m_biomass_concentrations,
-            fluxes,
+            final_fluxes,
         ]
-
-    def update_exchanges(self, dt):
-        """
-        Adjust exchange reactions based on the present metabolite concentrations
-
-        Sets the lower bounds for exchange reactions to prevent metabolite import beyond
-        the current concentration.
-        """
-
-        for model in self.m_models:
-            for rid in model.getExchangeReactionIds():
-                reaction: Reaction = model.getReaction(rid)
-                sid = reaction.getSpeciesIds()[0]
-                reaction.setLowerBound(
-                    -self.m_metabolite_concentrations[sid][-1] * (1 / dt)
-                )
 
     def update_reaction_bounds(self, kinetics_func) -> None:
         """Update the reaction bounds for all models.
@@ -191,15 +159,13 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 kinetic data.
 
         """
-        models = self.m_models
 
         if kinetics_func is not None:
             # TODO Give somethings to the kinetics_func, think about this
             kinetics_func()
             return
 
-        for model in models:
-            mid = model.getId()
+        for mid, model in self.m_models.items():
             for rid in model.getReactionIds():
                 reaction: Reaction = model.getReaction(rid)
                 if not reaction.is_exchange:
@@ -223,7 +189,25 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                             self.m_initial_bounds[mid][rid][1] * X_k_t
                         )
 
-    def update_concentrations(self, model: Model, FBAsol, step, dt) -> None:
+    def update_exchanges(self, dt):
+        """
+        Adjust exchange reactions based on the present metabolite concentrations
+
+        Sets the lower bounds for exchange reactions to prevent metabolite import beyond
+        the current concentration.
+        """
+
+        for model in self.m_models.values():
+            for rid in model.getExchangeReactionIds():
+                reaction: Reaction = model.getReaction(rid)
+                sid = reaction.getSpeciesIds()[0]
+                reaction.setLowerBound(
+                    -self.m_metabolite_concentrations[sid][-1] * (1 / dt)
+                )
+
+    def update_concentrations(
+        self, fluxes: dict[str, dict[str, float]], dt: float
+    ) -> None:
         """
         Modify metabolite concentrations following an FBA step.
 
@@ -233,23 +217,25 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             step (int): Current simulation step.
             dt (float): Time step interval for the simulation.
         """
-
-        if len(next(iter(self.m_metabolite_concentrations.values()))) == step:
-            for key in self.m_metabolite_concentrations.keys():
-                self.m_metabolite_concentrations[key].append(
-                    self.m_metabolite_concentrations[key][-1]
-                )
-
-        for eid in model.getExchangeReactionIds():
-            reaction: Reaction = model.getReaction(eid)
-            sid = reaction.getSpeciesIds()[
-                0
-            ]  # exchanges should only have 1 reactant
-            self.m_metabolite_concentrations[sid][-1] = (
-                self.m_metabolite_concentrations[sid][-1] + FBAsol[eid] * dt
+        for key in self.m_metabolite_concentrations.keys():
+            self.m_metabolite_concentrations[key].append(
+                self.m_metabolite_concentrations[key][-1]
             )
 
-    def update_biomasses(self, model: Model, dt, FBAsol, step) -> None:
+        for mid, fbasol in fluxes.items():
+            # Check if dict is empty
+            if fbasol:
+                model = self.m_models[mid]
+                for eid in model.getExchangeReactionIds():
+                    reaction: Reaction = model.getReaction(eid)
+                    sid = reaction.getSpeciesIds()[
+                        0
+                    ]  # exchanges should only have 1 reactant
+                    self.m_metabolite_concentrations[sid][-1] += (
+                        fbasol[eid] * dt
+                    )
+
+    def update_biomasses(self, fluxes, dt) -> None:
         """
         Modify biomass concentrations after completing an FBA step.
 
@@ -259,13 +245,18 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             FBAsol (dict): Solution vector resulting from the FBA.
             step (int): Current simulation step.
         """
+        for mid, fbasol in fluxes.items():
+            # Check if dict is empty
+            if fbasol:
+                model = self.m_models[mid]
+                Xt = (
+                    self.m_biomass_concentrations[mid][-1]
+                    + fbasol[model.getActiveObjectiveReactionIds()[0]] * dt
+                )
+            else:
+                Xt = self.m_biomass_concentrations[mid][-1]
 
-        mid = model.getId()
-        Xt = (
-            self.m_biomass_concentrations[mid][step - 1]
-            + FBAsol[model.getActiveObjectiveReactionIds()[0]] * dt
-        )
-        self.m_biomass_concentrations[mid].append(Xt)
+            self.m_biomass_concentrations[mid].append(Xt)
 
     def reset_dt(self, species_id, FBAsol) -> float:
         """
@@ -279,20 +270,16 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             float: Adjusted time step.
         """
 
+        # Remove all metabolites that were updated
         self.m_metabolite_concentrations = {
             key: lst[:-1]
             for key, lst in self.m_metabolite_concentrations.items()
         }
 
-        self.m_biomass_concentrations = {
-            key: lst[:-1] for key, lst in self.m_biomass_concentrations.items()
-        }
         total = 0
-        for model in self.m_models:
-            mid = model.getId()
+        for mid, model in self.m_models.items():
             for eid in model.getExchangeReactionIds():
                 sid = model.getReaction(eid).getSpeciesIds()[0]
                 if sid == species_id:
-                    total += FBAsol[mid][eid]
-
+                    total += FBAsol[mid][eid] * -1
         return self.m_metabolite_concentrations[species_id][-1] / total

@@ -1,63 +1,137 @@
+import cbmpy
 import matplotlib.pyplot as plt
-from cbmpy.CBModel import Model
-from dcFBA.ToyModels import model_a, model_b
-from dcFBA.DynamicModels.DynamicParallelFBA import DynamicParallelFBA
-from dcFBA.Models.Kinetics import KineticsStruct
+
+from dcFBA.Models import CommunityModel
+from dcFBA.DynamicModels import DynamicParallelFBA2
+from cbmpy.CBModel import Model, Reaction
 
 
-m_a: Model = model_a.build_toy_model_fba_A()
-m_a.getReaction("R_1").setUpperBound(10)
-m_a.getReaction("R_4").setUpperBound(3)
-m_a.getReaction("R_6").setUpperBound(1)
+iAF1260: Model = cbmpy.loadModel("models/bigg_models/iAF1260.xml")
+reaction: Reaction = iAF1260.getReaction("R_LEUTAi")
 
-m_a.getReaction("R_1").setLowerBound(0)
-m_a.getReaction("R_4").setLowerBound(0)
-m_a.getReaction("R_6").setLowerBound(0)
+# Set exchange reactions
+reaction: Reaction
+for reaction in iAF1260.reactions:
+    if reaction.getSBOterm() == "SBO:0000627":
+        reaction.is_exchange = True
+
+for reaction in iAF1260.reactions:
+    if reaction.getLowerBound() == -999999.0:
+        reaction.setLowerBound(cbmpy.NINF)
+    if reaction.getUpperBound() == 999999.0:
+        reaction.setUpperBound(cbmpy.INF)
+
+iAF1260.getReaction("R_EX_lys__L_e").setLowerBound(0)
+iAF1260.getReaction("R_EX_leu__L_e").setLowerBound(0)
 
 
-m_b: Model = model_b.build_toy_model_fba_B()
-m_b.getReaction("R_1").setUpperBound(10)
-m_b.getReaction("R_3").setUpperBound(1)
-m_b.getReaction("R_5").setUpperBound(1)
+def get_leucine_knock_out_model():
+    # Negative leucine (L)
+    iAF1260_N_L: Model = iAF1260.clone()
+    leucine = "M_leu__L_c"
+    knock_out_gene_leucine = "G_b0074"
+    leucine_gene_knock_out_associated_reaction = "R_IPPS"
+    leucine_creating_reaction = "R_LEUTAi"
 
-m_b.getReaction("R_1").setLowerBound(0)
-m_b.getReaction("R_3").setLowerBound(0)
-m_b.getReaction("R_5").setLowerBound(0)
+    # Knock out gene
+    iAF1260_N_L.getGene(knock_out_gene_leucine).setInactive()
 
-kin = KineticsStruct(
-    {
-        "R_1_modelA": ["S_e", 10, 10],
-        "R_4_modelA": ["B_e", 5, 3],
-        "R_6_modelA": ["B_e", 3, 1],
-        # B
-        "R_1_modelB": ["S_e", 10, 10],
-        "R_3_modelB": ["A_e", 2, 1],
-    }
+    return iAF1260_N_L
+
+
+def get_lysine_knock_out_model():
+    # Negative Lysine (K)
+    iAF1260_N_K = iAF1260.clone()
+    lysine = "M_lys__L_c"
+
+    knock_out_gene_lysine = "G_b2838"
+    associated_reaction = "R_DAPDC"
+
+    # Make sure no lysine enters the system
+    iAF1260_N_K.getGene(knock_out_gene_lysine).setInactive()
+
+    return iAF1260_N_K
+
+
+leucine_knock_out = get_leucine_knock_out_model()
+lysine_knock_out = get_lysine_knock_out_model()
+
+# Set creation of the metabolites to zero
+leucine_knock_out.getReaction("R_IPPS").setUpperBound(0)
+lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
+
+
+# constrain release
+leucine_knock_out.getReaction("R_LEUtex").setLowerBound(0.08)
+leucine_knock_out.getReaction("R_LEUtex").setUpperBound(0.08)
+leucine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
+leucine_knock_out.getReaction("R_LYStex").setUpperBound(0)
+
+# constrain release
+lysine_knock_out.getReaction("R_LYStex").setLowerBound(0.06)
+lysine_knock_out.getReaction("R_LYStex").setUpperBound(0.06)
+lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
+lysine_knock_out.getReaction("R_LEUtex").setUpperBound(0)
+
+
+# Restrict the release of glucose
+leucine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
+leucine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
+lysine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
+lysine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
+
+
+# R_FE3tex settings from paper
+leucine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
+lysine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
+
+leucine_knock_out.getReaction("R_EX_leu__L_e").setUpperBound(0)
+leucine_knock_out.getReaction("R_EX_lys__L_e").setUpperBound(0)
+
+lysine_knock_out.getReaction("R_EX_leu__L_e").setUpperBound(0)
+lysine_knock_out.getReaction("R_EX_lys__L_e").setUpperBound(0)
+
+leucine_knock_out.getReaction("R_EX_pyr_e").setLowerBound(0)
+lysine_knock_out.getReaction("R_EX_pyr_e").setLowerBound(0)
+
+
+leucine_knock_out.setId("dleu")
+lysine_knock_out.setId("dlys")
+
+
+dpFBA = DynamicParallelFBA2(
+    [leucine_knock_out, lysine_knock_out],
+    [0.0027, 0.0027],
+    {"M_glc__D_e": 11.96, "M_leu__L_e": 0.001, "M_lys__L_e": 0.001},
 )
 
 
-parallel = DynamicParallelFBA(
-    [m_a, m_b], [1, 1], {"S_e": 100, "A_e": 1, "B_e": 2}
+def deviate_func(sim, used_time, run_condition):
+    if (
+        sim.m_biomass_concentrations["dleu"][-1]
+        + sim.m_biomass_concentrations["dlys"][-1]
+        >= 0.083
+    ):
+        # Stop the simulation by setting community reaction to zero, solution will be zero or nan
+        sim.m_models[0].getReaction(
+            "R_BIOMASS_Ec_iAF1260_core_59p81M"
+        ).setUpperBound(0)
+        sim.m_models[1].getReaction(
+            "R_BIOMASS_Ec_iAF1260_core_59p81M"
+        ).setUpperBound(0)
+    return 0
+
+
+T, metabolites, biomasses, fluxes = dpFBA.simulate(
+    0.1, n=10, epsilon=0.000001, deviate=deviate_func
 )
 
+plt.plot(T, biomasses["dleu"], color="blue", label="A")
+plt.plot(T, biomasses["dlys"], color="orange", label="B")
 
-T, metabolites, biomasses, fluxes = parallel.simulate(0.01)
-
-plt.plot(T, metabolites["A_e"], color="blue", label="A")
-plt.plot(T, metabolites["B_e"], color="orange", label="B")
-plt.legend()
 plt.show()
 
-plt.plot(T, metabolites["S_e"], color="orange", label="S_e")
-plt.show()
-
-
-plt.plot(T, biomasses["Organism_A"], color="blue", label="A")
-plt.plot(T, biomasses["Organism_B"], color="orange", label="B")
-
-# Adding labels and title
-plt.xlabel("Time")
-plt.ylabel("Value")
-plt.title("Plotting Two Lines")
+plt.plot(T, metabolites["M_lys__L_e"], color="blue", label="A")
+plt.plot(T, metabolites["M_leu__L_e"], color="orange", label="B")
 plt.legend()
 plt.show()

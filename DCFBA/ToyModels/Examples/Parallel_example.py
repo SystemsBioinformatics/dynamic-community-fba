@@ -41,7 +41,7 @@ parallel = DynamicParallelFBA(
 )
 
 
-T, metabolites, biomasses = parallel.simulate(0.01)
+T, metabolites, biomasses, fluxes = parallel.simulate(0.01)
 
 plt.plot(T, metabolites["A_e"], color="blue", label="A")
 plt.plot(T, metabolites["B_e"], color="orange", label="B")

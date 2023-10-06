@@ -1,7 +1,7 @@
 import cbmpy
 import math
 from cbmpy.CBModel import Reaction
-from ..Models import KineticsStruct, Transporters, CommunityModel
+from ..Models import KineticsStruct, CommunityModel
 from .StaticOptimizationModel import StaticOptimizationModelBase
 
 

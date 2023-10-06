@@ -38,15 +38,9 @@ lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
 
 
 # uptake simulation from paper:
-# leucine_knock_out.getReaction("R_LEUtex").setLowerBound(-1)
-# leucine_knock_out.getReaction("R_LEUtex").setUpperBound(1)
 
 leucine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
 leucine_knock_out.getReaction("R_LYStex").setUpperBound(1000)
-
-
-# lysine_knock_out.getReaction("R_LYStex").setLowerBound(-1)
-# lysine_knock_out.getReaction("R_LYStex").setUpperBound(1)
 
 lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
 lysine_knock_out.getReaction("R_LEUtex").setUpperBound(1000)
