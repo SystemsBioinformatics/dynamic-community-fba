@@ -221,7 +221,6 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             self.m_metabolite_concentrations[key].append(
                 self.m_metabolite_concentrations[key][-1]
             )
-
         for mid, fbasol in fluxes.items():
             # Check if dict is empty
             if fbasol:
@@ -231,8 +230,8 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                     sid = reaction.getSpeciesIds()[
                         0
                     ]  # exchanges should only have 1 reactant
-                    self.m_metabolite_concentrations[sid][-1] += (
-                        fbasol[eid] * dt
+                    self.m_metabolite_concentrations[sid][-1] += round(
+                        (fbasol[eid] * dt), 5
                     )
 
     def update_biomasses(self, fluxes, dt) -> None:
