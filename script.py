@@ -2,7 +2,7 @@ import cbmpy
 import matplotlib.pyplot as plt
 
 from dcFBA.Models import CommunityModel
-from dcFBA.DynamicModels import DynamicParallelFBA2
+from dcFBA.DynamicModels import DynamicParallelFBA
 from cbmpy.CBModel import Model, Reaction
 
 
@@ -102,7 +102,7 @@ lysine_knock_out.setId("dlys")
 dpFBA = DynamicParallelFBA2(
     [leucine_knock_out, lysine_knock_out],
     [0.0027, 0.0027],
-    {"M_glc__D_e": 11.96, "M_leu__L_e": 0.001, "M_lys__L_e": 0.001},
+    {"M_glc__D_e": 11.96, "M_leu__L_e": 0.08, "M_lys__L_e": 0.06},
 )
 
 

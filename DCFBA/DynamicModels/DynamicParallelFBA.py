@@ -5,7 +5,7 @@ from .StaticOptimizationModel import StaticOptimizationModelBase
 from ..Models.Kinetics import KineticsStruct
 
 
-class DynamicParallelFBA2(StaticOptimizationModelBase):
+class DynamicParallelFBA(StaticOptimizationModelBase):
     """A class representing a dynamic parallel FBA simulation.
 
     This class extends the TimeStepDynamicFBABase and provides functionality
