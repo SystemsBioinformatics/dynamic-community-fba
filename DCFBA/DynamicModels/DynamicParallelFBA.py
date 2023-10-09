@@ -84,11 +84,12 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
         for _ in range(1, n):
             if dt_hat != -1:
-                dt = dt_hat
-                dt_hat = -1
-            else:
                 dt = dt_save
 
+            self.update_reaction_bounds(kinetics_func)
+            self.update_exchanges(dt)
+
+            temp_fluxes = {m: {} for m in self.m_models.keys()}
             if deviate is not None:
                 run_condition += deviate(
                     self,
@@ -96,14 +97,10 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                     run_condition,
                 )
 
-            self.update_reaction_bounds(kinetics_func)
-            self.update_exchanges(dt)
-
-            temp_fluxes = {m: {} for m in self.m_models.keys()}
-
             # Perform FBA foreach model
             for mid, model in self.m_models.items():
                 solution = cbmpy.doFBA(model)
+
                 if math.isnan(solution) or solution <= epsilon:
                     continue
 
@@ -128,15 +125,16 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
             if species_id:
                 dt_hat = self.reset_dt(species_id, temp_fluxes)
-                if dt_hat != -1 and dt_hat <= epsilon:
+                dt = dt_hat
+                if dt_hat <= epsilon:
                     return [
                         used_times,
                         self.m_metabolite_concentrations,
                         self.m_biomass_concentrations,
                         final_fluxes,
                     ]
-                else:
-                    continue
+                self.update_concentrations(temp_fluxes, dt)
+                species_id = self.check_solution_feasibility()
 
             self.update_biomasses(temp_fluxes, dt)
 
@@ -144,6 +142,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 final_fluxes[mid].append(fbasol)
 
             used_times.append(used_times[-1] + dt)
+
         return [
             used_times,
             self.m_metabolite_concentrations,
@@ -248,10 +247,12 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             # Check if dict is empty
             if fbasol:
                 model = self.m_models[mid]
+
                 Xt = (
                     self.m_biomass_concentrations[mid][-1]
                     + fbasol[model.getActiveObjectiveReactionIds()[0]] * dt
                 )
+
             else:
                 Xt = self.m_biomass_concentrations[mid][-1]
 
@@ -281,4 +282,5 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 sid = model.getReaction(eid).getSpeciesIds()[0]
                 if sid == species_id:
                     total += FBAsol[mid][eid] * -1
+
         return self.m_metabolite_concentrations[species_id][-1] / total

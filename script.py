@@ -56,37 +56,10 @@ def get_lysine_knock_out_model():
 leucine_knock_out = get_leucine_knock_out_model()
 lysine_knock_out = get_lysine_knock_out_model()
 
+
 # Set creation of the metabolites to zero
 leucine_knock_out.getReaction("R_IPPS").setUpperBound(0)
 lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
-
-
-leucine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
-# Only way we can make sure the leucine knockout does not take up lysine
-leucine_knock_out.getReaction("R_LYStex").setUpperBound(0)
-
-
-lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
-# Only way we can make sure the lysine knockout does not take up leucine
-lysine_knock_out.getReaction("R_LEUtex").setUpperBound(0)
-
-
-# #R_FE3tex settings from paper
-leucine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
-lysine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
-
-# # constrain release
-# leucine_knock_out.getReaction("R_LEUtex").setLowerBound(0.08)
-# leucine_knock_out.getReaction("R_LEUtex").setUpperBound(0.08)
-# leucine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
-# leucine_knock_out.getReaction("R_LYStex").setUpperBound(0)
-
-# # constrain release
-# lysine_knock_out.getReaction("R_LYStex").setLowerBound(0.06)
-# lysine_knock_out.getReaction("R_LYStex").setUpperBound(0.06)
-# lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
-# lysine_knock_out.getReaction("R_LEUtex").setUpperBound(0)
-
 
 # Restrict the release of glucose
 leucine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
@@ -94,30 +67,31 @@ leucine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
 lysine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
 lysine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
 
+# constrain release
+leucine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
+leucine_knock_out.getReaction("R_LEUtex").setUpperBound(1000)
+leucine_knock_out.getReaction("R_LYStex").setLowerBound(-0.056)
+leucine_knock_out.getReaction("R_LYStex").setUpperBound(-0.056)
+
+# constrain release
+lysine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
+lysine_knock_out.getReaction("R_LYStex").setUpperBound(1000)
+lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-0.086)
+lysine_knock_out.getReaction("R_LEUtex").setUpperBound(-0.086)
+
 
 # R_FE3tex settings from paper
 leucine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
 lysine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
 
-# leucine_knock_out.getReaction("R_EX_leu__L_e").setUpperBound(0)
-# leucine_knock_out.getReaction("R_EX_lys__L_e").setUpperBound(0)
-
-# lysine_knock_out.getReaction("R_EX_leu__L_e").setUpperBound(0)
-# lysine_knock_out.getReaction("R_EX_lys__L_e").setUpperBound(0)
-
 
 leucine_knock_out.setId("dleu")
 lysine_knock_out.setId("dlys")
 
-
 dpFBA = DynamicParallelFBA(
     [leucine_knock_out, lysine_knock_out],
     [0.0027, 0.0027],
-    {
-        "M_glc__D_e": 11.96,
-        "M_leu__L_e": 0.001,
-        "M_lys__L_e": 0.001,
-    },
+    {"M_glc__D_e": 11.96, "M_leu__L_e": 0.0086, "M_lys__L_e": 0.0056},
 )
 
 
@@ -138,15 +112,19 @@ def deviate_func(sim, used_time, run_condition):
 
 
 T, metabolites, biomasses, fluxes = dpFBA.simulate(
-    0.1, n=10, epsilon=0.000001, deviate=deviate_func
+    0.1, n=100, epsilon=0.000001, deviate=deviate_func
 )
 
-plt.plot(T, biomasses["dleu"], color="blue", label="A")
-plt.plot(T, biomasses["dlys"], color="orange", label="B")
 
-plt.show()
+print(T)
+print(biomasses)
+print(metabolites)
 
-plt.plot(T, metabolites["M_lys__L_e"], color="blue", label="A")
-plt.plot(T, metabolites["M_leu__L_e"], color="orange", label="B")
+
+plt.plot(T, biomasses["dleu"], color="blue", label=r"$\Delta$leusine")
+plt.plot(T, biomasses["dlys"], color="orange", label=r"$\Delta$lysine")
+
+plt.xlabel("Time [h]")
+plt.ylabel("Concentration [gDw]")
 plt.legend()
 plt.show()

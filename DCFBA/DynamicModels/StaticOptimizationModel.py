@@ -133,7 +133,7 @@ class StaticOptimizationModelBase(DynamicModelBase):
         low = 1e10
         name = ""
         for key, value in self.m_metabolite_concentrations.items():
-            if value[-1] < 0 and value[-1] < low:
+            if round(value[-1], 8) < 0 and value[-1] < low:
                 low = value[-1]
                 name = key
 
