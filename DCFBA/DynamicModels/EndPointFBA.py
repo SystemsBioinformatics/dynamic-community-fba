@@ -73,7 +73,7 @@ class EndPointFBA(DynamicModelBase):
         # )
 
         # start_time = time.time()
-        self.set_constraints(community_model, n, initial_biomasses, dt)
+        self.set_constraints(community_model, n, dt)
         # print(
         #     f"--- set_constraints: {n} ------ {(time.time() - start_time)} seconds ---"
         # )
@@ -109,7 +109,6 @@ class EndPointFBA(DynamicModelBase):
         self,
         initial_model: CommunityModel,
         n: int,
-        initial_biomasses: dict[str, float],
         dt: float,
     ):
         """
@@ -504,7 +503,9 @@ class EndPointFBA(DynamicModelBase):
     def set_qp(self, solution, epsilon=0.01):
         obj = self.m_model.getActiveObjective()
         obj.setOperation("minimize")
-        qp = []
+        obj.deleteAllFluxObjectives()
+        QP = []
+
         for i, tid in enumerate(self.m_times[:-1]):
             rids = self.m_model.getReactionIds(tid)
             for rid in rids:
@@ -518,13 +519,15 @@ class EndPointFBA(DynamicModelBase):
                     rid_t_t0 = f"{rid}_{self.m_times[i]}"
 
                     if i == 0:
-                        obj.QPObjective.append(((rid_t_t0, rid_t_t0), 1.0))
+                        QP.append([1.0 * 2, rid_t_t0, rid_t_t0, str(i)])
                     else:
-                        obj.QPObjective.append(((rid_t_t0, rid_t_t0), 2.0))
+                        QP.append([2.0 * 2, rid_t_t0, rid_t_t0, str(i)])
+                    if i == len(self.m_times[:-1]) - 1:
+                        QP.append([1.0 * 2, rid_t_t1, rid_t_t1, str(i)])
 
-                    obj.QPObjective.append(((rid_t_t0, rid_t_t1), -2.0))
+                    QP.append([-2.0, rid_t_t0, rid_t_t1, str(i)])
 
-                    obj.QPObjective.append(((rid_t_t1, rid_t_t1), 1.0))
+        obj.createQuadraticFluxObjectives(QP)
 
         self.m_model.getReaction("X_comm").setLowerBound(solution - epsilon)
         self.m_model.getReaction("X_comm").setUpperBound(solution + epsilon)

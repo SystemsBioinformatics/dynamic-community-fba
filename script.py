@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from cbmpy.CBModel import Model, Reaction
+from cbmpy.CBModel import Model, Reaction, Objective
 from dcFBA.ToyModels import model_a, model_b
 from dcFBA.Models.CommunityModel import CommunityModel
 from dcFBA.Models.Kinetics import KineticsStruct
@@ -65,19 +65,21 @@ community_model.deleteReactionAndBounds("BM_e_B_exchange")
 # community_model.getReaction("S_exchange").setLowerBound(-100)
 
 n = 21
-dj = EndPointFBA(
+ep = EndPointFBA(
     community_model,
-    n,
+    21,
     {"modelA": 1.0, "modelB": 2.0},
     {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
     0.1,
 )
+ep.balanced_growth(3.0, 12.72)
+ep.set_qp(12.72, epsilon=0.01)
+obj: Objective = ep.m_model.getActiveObjective()
+i = 0
 
-dj.balanced_growth(3.0, 12.72)
+solution = ep.simulate()
+# FBAsol = dj.m_model.getSolutionVector(names=True)
+# FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
-solution = dj.simulate()
-FBAsol = dj.m_model.getSolutionVector(names=True)
-FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
-
-plot_biomasses(dj)
-plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
+# plot_biomasses(dj)
+# plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
