@@ -1,130 +1,83 @@
-import cbmpy
 import matplotlib.pyplot as plt
-
-from dcFBA.Models import CommunityModel
-from dcFBA.DynamicModels import DynamicParallelFBA
 from cbmpy.CBModel import Model, Reaction
+from dcFBA.ToyModels import model_a, model_b
+from dcFBA.Models.CommunityModel import CommunityModel
+from dcFBA.Models.Kinetics import KineticsStruct
+from dcFBA.DynamicModels import EndPointFBA
+from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 
+m_a: Model = model_a.build_toy_model_fba_A()
 
-iAF1260: Model = cbmpy.loadModel("models/bigg_models/iAF1260.xml")
-reaction: Reaction = iAF1260.getReaction("R_LEUTAi")
+m_a.getReaction("R_1").setUpperBound(10)
+m_a.getReaction("R_4").setUpperBound(3)
+m_a.getReaction("R_6").setUpperBound(1)
 
-# Set exchange reactions
-reaction: Reaction
-for reaction in iAF1260.reactions:
-    if reaction.getSBOterm() == "SBO:0000627":
-        reaction.is_exchange = True
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_a.getReaction("R_BM_A").deleteReagentWithSpeciesRef(
+    "BM_e_A"
+)
 
-for reaction in iAF1260.reactions:
-    if reaction.getLowerBound() == -999999.0:
-        reaction.setLowerBound(cbmpy.NINF)
-    if reaction.getUpperBound() == 999999.0:
-        reaction.setUpperBound(cbmpy.INF)
+# m_a.getReaction("R_import_B").setUpperBound(1)
 
-iAF1260.getReaction("R_EX_lys__L_e").setLowerBound(0)
-iAF1260.getReaction("R_EX_leu__L_e").setLowerBound(0)
+m_a.getReaction("R_1").setLowerBound(0)
+m_a.getReaction("R_4").setLowerBound(0)
+m_a.getReaction("R_6").setLowerBound(0)
 
-
-def get_leucine_knock_out_model():
-    # Negative leucine (L)
-    iAF1260_N_L: Model = iAF1260.clone()
-    leucine = "M_leu__L_c"
-    knock_out_gene_leucine = "G_b0074"
-    leucine_gene_knock_out_associated_reaction = "R_IPPS"
-    leucine_creating_reaction = "R_LEUTAi"
-
-    # Knock out gene
-    iAF1260_N_L.getGene(knock_out_gene_leucine).setInactive()
-
-    return iAF1260_N_L
-
-
-def get_lysine_knock_out_model():
-    # Negative Lysine (K)
-    iAF1260_N_K = iAF1260.clone()
-    lysine = "M_lys__L_c"
-
-    knock_out_gene_lysine = "G_b2838"
-    associated_reaction = "R_DAPDC"
-
-    # Make sure no lysine enters the system
-    iAF1260_N_K.getGene(knock_out_gene_lysine).setInactive()
-
-    return iAF1260_N_K
-
-
-leucine_knock_out = get_leucine_knock_out_model()
-lysine_knock_out = get_lysine_knock_out_model()
-
-
-# Set creation of the metabolites to zero
-leucine_knock_out.getReaction("R_IPPS").setUpperBound(0)
-lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
-
-# Restrict the release of glucose
-leucine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
-leucine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
-lysine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
-lysine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
-
-# constrain release
-leucine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
-leucine_knock_out.getReaction("R_LEUtex").setUpperBound(1000)
-leucine_knock_out.getReaction("R_LYStex").setLowerBound(-0.056)
-leucine_knock_out.getReaction("R_LYStex").setUpperBound(-0.056)
-
-# constrain release
-lysine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
-lysine_knock_out.getReaction("R_LYStex").setUpperBound(1000)
-lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-0.086)
-lysine_knock_out.getReaction("R_LEUtex").setUpperBound(-0.086)
-
-
-# R_FE3tex settings from paper
-leucine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
-lysine_knock_out.getReaction("R_FE3tex").setUpperBound(0)
-
-
-leucine_knock_out.setId("dleu")
-lysine_knock_out.setId("dlys")
-
-dpFBA = DynamicParallelFBA(
-    [leucine_knock_out, lysine_knock_out],
-    [0.0027, 0.0027],
-    {"M_glc__D_e": 11.96, "M_leu__L_e": 0.0086, "M_lys__L_e": 0.0056},
+m_b: Model = model_b.build_toy_model_fba_B()
+m_b.getReaction("R_1").setUpperBound(10)
+m_b.getReaction("R_3").setUpperBound(1)
+m_b.getReaction("R_5").setUpperBound(1)
+# Need to delete biomass model, since it is created in the endPoint model
+reaction: Reaction = m_b.getReaction("R_BM_B").deleteReagentWithSpeciesRef(
+    "BM_e_B"
 )
 
 
-def deviate_func(sim, used_time, run_condition):
-    if (
-        sim.m_biomass_concentrations["dleu"][-1]
-        + sim.m_biomass_concentrations["dlys"][-1]
-        >= 0.083
-    ):
-        # Stop the simulation by setting community reaction to zero, solution will be zero or nan
-        sim.m_models[0].getReaction(
-            "R_BIOMASS_Ec_iAF1260_core_59p81M"
-        ).setUpperBound(0)
-        sim.m_models[1].getReaction(
-            "R_BIOMASS_Ec_iAF1260_core_59p81M"
-        ).setUpperBound(0)
-    return 0
+m_b.getReaction("R_1").setLowerBound(0)
+m_b.getReaction("R_3").setLowerBound(0)
+m_b.getReaction("R_5").setLowerBound(0)
 
 
-T, metabolites, biomasses, fluxes = dpFBA.simulate(
-    0.1, n=100, epsilon=0.000001, deviate=deviate_func
+kin = KineticsStruct(
+    {
+        "R_1_modelA": ["", 10, 10],
+        "R_4_modelA": ["B_e", 5, 3],
+        "R_6_modelA": ["B_e", 3, 1],
+        # B
+        "R_1_modelB": ["", 10, 10],
+        "R_3_modelB": ["A_e", 2, 1],
+    }
 )
 
 
-print(T)
-print(biomasses)
-print(metabolites)
+community_model = CommunityModel(
+    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+)
+
+# Are set by the model as often required by other GSMM
+community_model.deleteReactionAndBounds("BM_e_A_exchange")
+community_model.deleteReactionAndBounds("BM_e_B_exchange")
+
+# community_model.getReaction("B_exchange").setLowerBound(-100)
+# community_model.getReaction("A_exchange").setLowerBound(-100)
 
 
-plt.plot(T, biomasses["dleu"], color="blue", label=r"$\Delta$leusine")
-plt.plot(T, biomasses["dlys"], color="orange", label=r"$\Delta$lysine")
+# community_model.getReaction("S_exchange").setLowerBound(-100)
 
-plt.xlabel("Time [h]")
-plt.ylabel("Concentration [gDw]")
-plt.legend()
-plt.show()
+n = 21
+dj = EndPointFBA(
+    community_model,
+    n,
+    {"modelA": 1.0, "modelB": 2.0},
+    {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+    0.1,
+)
+
+dj.balanced_growth(3.0, 12.72)
+
+solution = dj.simulate()
+FBAsol = dj.m_model.getSolutionVector(names=True)
+FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
+
+plot_biomasses(dj)
+plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})

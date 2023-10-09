@@ -82,13 +82,12 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
         run_condition = 0
 
-        for _ in range(1, n):
+        for i in range(1, n):
             if dt_hat != -1:
                 dt = dt_save
 
             self.update_reaction_bounds(kinetics_func)
             self.update_exchanges(dt)
-
             temp_fluxes = {m: {} for m in self.m_models.keys()}
             if deviate is not None:
                 run_condition += deviate(

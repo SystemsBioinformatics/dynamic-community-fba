@@ -1,5 +1,6 @@
 import cbmpy
 import numpy
+import re
 from cbmpy.CBModel import Reaction, Species
 
 from ..Exceptions import SpeciesNotFound
@@ -499,3 +500,31 @@ class EndPointFBA(DynamicModelBase):
             self.m_model.__popGlobalId__(
                 f"biomass_fraction_{mid}_{self.m_times[-1]}"
             )
+
+    def set_qp(self, solution, epsilon=0.01):
+        obj = self.m_model.getActiveObjective()
+        obj.setOperation("minimize")
+        qp = []
+        for i, tid in enumerate(self.m_times[:-1]):
+            rids = self.m_model.getReactionIds(tid)
+            for rid in rids:
+                reaction = self.m_model.getReaction(rid)
+
+                # R_ are all the original reqactions
+                # We dont want the exchange reactions
+                if rid.startswith("R_") and not reaction.is_exchange:
+                    rid = re.match(r"(.*?)_(time\d*)", rid).group(1)
+                    rid_t_t1 = f"{rid}_{self.m_times[i+1]}"
+                    rid_t_t0 = f"{rid}_{self.m_times[i]}"
+
+                    if i == 0:
+                        obj.QPObjective.append(((rid_t_t0, rid_t_t0), 1.0))
+                    else:
+                        obj.QPObjective.append(((rid_t_t0, rid_t_t0), 2.0))
+
+                    obj.QPObjective.append(((rid_t_t0, rid_t_t1), -2.0))
+
+                    obj.QPObjective.append(((rid_t_t1, rid_t_t1), 1.0))
+
+        self.m_model.getReaction("X_comm").setLowerBound(solution - epsilon)
+        self.m_model.getReaction("X_comm").setUpperBound(solution + epsilon)
