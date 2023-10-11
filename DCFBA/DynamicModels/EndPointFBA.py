@@ -500,7 +500,7 @@ class EndPointFBA(DynamicModelBase):
                 f"biomass_fraction_{mid}_{self.m_times[-1]}"
             )
 
-    def set_qp(self, solution, epsilon=0.01):
+    def set_qp(self, solution: float, epsilon=0.01) -> None:
         obj = self.m_model.getActiveObjective()
         obj.setOperation("minimize")
         obj.deleteAllFluxObjectives()
@@ -526,6 +526,38 @@ class EndPointFBA(DynamicModelBase):
                         QP.append([1.0 * 2, rid_t_t1, rid_t_t1, str(i)])
 
                     QP.append([-2.0, rid_t_t0, rid_t_t1, str(i)])
+
+        obj.createQuadraticFluxObjectives(QP)
+
+        self.m_model.getReaction("X_comm").setLowerBound(solution - epsilon)
+        self.m_model.getReaction("X_comm").setUpperBound(solution + epsilon)
+
+    def set_subset_qp(
+        self, solution: float, reactions: list[str], epsilon=0.01
+    ) -> None:
+        obj = self.m_model.getActiveObjective()
+        obj.setOperation("minimize")
+        obj.deleteAllFluxObjectives()
+        QP = []
+        all_reactions = [
+            f"{r}_{mid}"
+            for mid in self.m_model.get_model_ids()
+            for r in reactions
+        ]
+
+        for i, _ in enumerate(self.m_times[:-1]):
+            for rid in all_reactions:
+                rid_t_t1 = f"{rid}_{self.m_times[i+1]}"
+                rid_t_t0 = f"{rid}_{self.m_times[i]}"
+
+                if i == 0:
+                    QP.append([1.0 * 2, rid_t_t0, rid_t_t0, str(i)])
+                else:
+                    QP.append([2.0 * 2, rid_t_t0, rid_t_t0, str(i)])
+                if i == len(self.m_times[:-1]) - 1:
+                    QP.append([1.0 * 2, rid_t_t1, rid_t_t1, str(i)])
+
+                QP.append([-2.0, rid_t_t0, rid_t_t1, str(i)])
 
         obj.createQuadraticFluxObjectives(QP)
 

@@ -223,6 +223,8 @@ def add_biomass_species(initial_model: CommunityModel) -> None:
             f"BM_{mid}", False, f"Biomass of {mid}", compartment="e"
         )
         reaction.createReagent(f"BM_{mid}", 1)
+        # Add community biomass
+        reaction.createReagent("BM_c", 1)
 
         exchange_reaction = Reaction(
             f"BM_{mid}_exchange", f"Exchange of biomass {mid}", reversible=True
@@ -233,9 +235,6 @@ def add_biomass_species(initial_model: CommunityModel) -> None:
         initial_model.addReaction(exchange_reaction, False, silent=True)
         exchange_reaction.setLowerBound(0)
         exchange_reaction.setUpperBound(numpy.inf)
-
-        # Add community biomass
-        reaction.createReagent("BM_c", 1)
 
 
 def copy_species_and_reagents(
