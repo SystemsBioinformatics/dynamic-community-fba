@@ -97,21 +97,25 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 )
 
             # Perform FBA foreach model
+            step = 0
             for mid, model in self.m_models.items():
                 solution = cbmpy.doFBA(model)
 
-                if math.isnan(solution) or solution <= epsilon:
-                    continue
+                if math.isnan(solution):
+                    return [
+                        used_times,
+                        self.m_metabolite_concentrations,
+                        self.m_biomass_concentrations,
+                        final_fluxes,
+                    ]
+                if solution <= epsilon:
+                    step += 1
 
                 FBAsol = model.getSolutionVector(names=True)
                 FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
                 temp_fluxes[mid] = FBAsol
 
-            all_empty = all(
-                not child_dict for child_dict in temp_fluxes.values()
-            )
-
-            if all_empty:
+            if step == len(self.m_models.keys()):
                 return [
                     used_times,
                     self.m_metabolite_concentrations,
@@ -169,9 +173,8 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 if not reaction.is_exchange:
                     # Organism specific biomass
                     X_k_t = self.m_biomass_concentrations[mid][-1]
-                    reaction.setLowerBound(
-                        self.m_initial_bounds[mid][rid][0] * X_k_t
-                    )
+                    lb, ub = self.m_initial_bounds[mid][rid]
+                    reaction.setLowerBound(lb * X_k_t)
 
                     if (mid in self.m_model_kinetics.keys()) and (
                         self.m_model_kinetics[mid].exists(rid)
@@ -183,9 +186,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                         )
 
                     else:
-                        reaction.setUpperBound(
-                            self.m_initial_bounds[mid][rid][1] * X_k_t
-                        )
+                        reaction.setUpperBound(ub * X_k_t)
 
     def update_exchanges(self, dt):
         """
@@ -220,7 +221,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 self.m_metabolite_concentrations[key][-1]
             )
         for mid, fbasol in fluxes.items():
-            # Check if dict is empty
+            # Check if dict is empty #TODO can be removed?
             if fbasol:
                 model = self.m_models[mid]
                 for eid in model.getExchangeReactionIds():

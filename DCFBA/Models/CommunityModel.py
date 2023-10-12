@@ -17,6 +17,7 @@ class CommunityModel(Model):
             reaction IDs of the individual models.
     """
 
+    # TODO rewrite this using property, underscores etc...
     m_identifiers: list[str]
     m_single_model_ids: list[str]
     m_single_model_biomass_reaction_ids: list[str] = []
@@ -98,6 +99,10 @@ class CommunityModel(Model):
             f"Model: {self.getId()} was build from "
             f"{[id for id in self.m_single_model_ids]}"
         )
+
+    @property
+    def get_model_ids(self):
+        return self.m_identifiers
 
     def clone(self):
         """
@@ -298,7 +303,6 @@ class CommunityModel(Model):
 
         return species_ids
 
-    # TODO prefix with _#id or MT_A
     def identify_model_from_reaction(self, rid: str) -> str:
         """Given a reaction id get the single model this reaction belonged to
 
@@ -342,6 +346,3 @@ class CommunityModel(Model):
         return dict(
             zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids)
         )
-
-    def get_model_ids(self):
-        return self.m_identifiers
