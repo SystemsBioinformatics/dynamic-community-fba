@@ -337,6 +337,7 @@ class EndPointFBA(DynamicModelBase):
                 f"BM_{key}_exchange", -value, -value
             )
 
+    # FIX THIS TO NEW CBMPY
     def constrain_rates(self, epsilon=0.1):
         """
         Constrains the difference in reaction rates between t_n-1 and t_n.

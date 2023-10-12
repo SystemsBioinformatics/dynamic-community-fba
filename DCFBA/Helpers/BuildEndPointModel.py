@@ -13,10 +13,7 @@ from cbmpy.CBModel import (
 )
 from ..Models.CommunityModel import CommunityModel
 
-# import time
 import weakref
-
-# TODO remove print statements for time
 
 
 def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
@@ -74,26 +71,13 @@ def add_time_point(
 ):
     # start_time = time.time()
     add_time_compartments(src_model, target_model, time_id)
-    # print(
-    #     "--- add_time_compartments() ------ %s seconds ---"
-    #     % (time.time() - start_time)
-    # )
 
     # start_time = time.time()
     add_reactions(src_model, target_model, time_id)
-    # print(
-    #     "--- add_reactions() ------ %s seconds ---"
-    #     % (time.time() - start_time)
-    # )
 
     # start_time = time.time()
 
     copy_species_and_reagents(src_model, target_model, time_id)
-    # print(
-    #     "--- copy_species_and_reagents() ------ %s seconds ---"
-    #     % (time.time() - start_time)
-    # )
-    # print()
 
 
 def set_exchanges(
@@ -180,11 +164,6 @@ def add_reactions(
                 create_default_bounds=False,
                 silent=True,
             )
-            # print(
-            #     "--- createReaciton time ------ %s seconds ---"
-            #     % (time.time() - start_time)
-            # )
-            # start_time = time.time()
 
             # Dirty work around, should be fixed in cbmpy 0.9.0
             # Than just use: final_model.createReactionBounds(new_id, reaction.getLowerBound(), reaction.getUpperBound())
@@ -204,11 +183,6 @@ def add_reactions(
 
             flux.__objref__ = weakref.ref(final_model)
             final_model.flux_bounds.append(flux)
-
-            # print(
-            #     "--- setReactionBounds time ------ %s seconds ---"
-            #     % (time.time() - start_time)
-            # )
 
 
 def add_biomass_species(initial_model: CommunityModel) -> None:

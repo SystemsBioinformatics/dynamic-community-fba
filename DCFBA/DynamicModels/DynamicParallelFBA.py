@@ -99,9 +99,10 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             # Perform FBA foreach model
             step = 0
             for mid, model in self.m_models.items():
-                solution = cbmpy.doFBA(model)
+                solution = cbmpy.doFBA(model, quite=True)
 
                 if math.isnan(solution):
+                    print(f"model: {mid} had an infeasible solution")
                     return [
                         used_times,
                         self.m_metabolite_concentrations,
@@ -116,6 +117,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 temp_fluxes[mid] = FBAsol
 
             if step == len(self.m_models.keys()):
+                print("All models had solution value of 0")
                 return [
                     used_times,
                     self.m_metabolite_concentrations,
@@ -130,6 +132,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 dt_hat = self.reset_dt(species_id, temp_fluxes)
                 dt = dt_hat
                 if dt_hat <= epsilon:
+                    print("dt was smaller than provided value of epsilon")
                     return [
                         used_times,
                         self.m_metabolite_concentrations,
@@ -146,6 +149,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
             used_times.append(used_times[-1] + dt)
 
+        print("All n simulation were performed")
         return [
             used_times,
             self.m_metabolite_concentrations,
