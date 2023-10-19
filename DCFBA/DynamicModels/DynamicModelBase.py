@@ -1,28 +1,78 @@
+from ..Models.Kinetics import KineticsStruct
+
+
 class DynamicModelBase:
     """Base class for the Dynamic FBA classes"""
+
+    def __init__(self) -> None:
+        self._biomasses = {}
+        self._metabolites = {}
+        self._fluxes = {}
+        self._times = []
+        self._kinetics: KineticsStruct = None
 
     def simulate(self):
         pass
 
-    # TODO fix this
-    # IDEA of the refactor.
-    # place all properties on nthis base class and than
-    # make private setters, also in epFBA, such that many rdeundant code can be removed
-    # eg in epFBA result you can just ask for the metabolites which got stripped of their time ids
-    # most of the code in djFBA en dpFBA will be the same however also more easy acces to fluxes etc
-    # @property
-    # def fluxes(self):
-    #     return self._fluxes
+    @property
+    def fluxes(self):
+        return self._fluxes
 
-    # @property
-    # def metabolites(self):
-    #     return._metabolites
+    @property
+    def metabolites(self):
+        return self._metabolites
 
-    # def get_flux_values(self, rid):
-    #     pass
+    @property
+    def biomasses(self):
+        return self._biomasses
 
-    # def get_community_growth_rate(self):
-    #     pass
+    @property
+    def kinetics(self):
+        return self._kinetics
 
-    # def get_relative_abundance(self):
-    #     pass
+    @property
+    def times(self):
+        return self._times
+
+    def get_biomasses(self):
+        return self.biomasses
+
+    def get_metabolites(self):
+        return self.metabolites
+
+    def get_fluxes(self):
+        return self.fluxes
+
+    def get_time_points(self):
+        return self.times
+
+    def get_flux_values(self, rid: str):
+        """Get the flux values for each time point
+            given a reaction ID
+
+        Args:
+            rid (str): _description_
+        """
+        pass
+
+    def get_fluxes_values(self, rids: str) -> dict[str, float]:
+        """Get the flux values for each time point
+            given a reaction ID
+
+        Args:
+            rid (str): _description_
+        """
+        values = {}
+        for rid in rids:
+            values[rid] = self.get_flux_values(rid)
+
+    def get_specific_flux_values(self, rid: str):
+        pass
+
+    def get_community_growth_rate(self):
+        """Get the community growth rate over time"""
+        pass
+
+    def get_relative_abundance(self):
+        """Get the percentage of each species for each time point"""
+        pass

@@ -17,9 +17,6 @@ class DynamicJointFBA(DynamicFBABase):
             Defaults to an empty dictionary.
     """
 
-    m_model: CommunityModel
-    m_initial_bounds: dict[str, tuple[float, float]] = {}
-
     def __init__(
         self,
         model: CommunityModel,
@@ -43,7 +40,7 @@ class DynamicJointFBA(DynamicFBABase):
 
         # Set X_C to be exporter since it increases over time
         self.set_community_biomass_reaction()
-        self.m_metabolite_concentrations["X_c"] = [sum(biomasses)]
+        self._metabolites["X_c"] = [sum(biomasses)]
 
     def get_joint_model(self) -> CommunityModel:
         """
@@ -63,21 +60,21 @@ class DynamicJointFBA(DynamicFBABase):
         each model's biomass reaction. Additionally, a community biomass exchange reaction (X_comm)
         is created and designated as the model's objective function.
         """
-        self.m_model.createSpecies(
+        self.model.createSpecies(
             "X_c", False, "The community biomass", compartment="e"
         )
 
-        for _, biomass_id in self.m_model.get_model_biomass_ids().items():
-            reaction: Reaction = self.m_model.getReaction(biomass_id)
+        for _, biomass_id in self.model.get_model_biomass_ids().items():
+            reaction: Reaction = self.model.getReaction(biomass_id)
             reaction.createReagent("X_c", 1)
 
-        self.m_model.createReaction("X_comm")
-        out: Reaction = self.m_model.getReaction("X_comm")
+        self.model.createReaction("X_comm")
+        out: Reaction = self.model.getReaction("X_comm")
         out.is_exchange = True
         out.setUpperBound(cbmpy.INF)
         out.setLowerBound(0)
         out.createReagent("X_c", -1)
 
-        self.m_model.createObjectiveFunction("X_comm")
+        self.model.createObjectiveFunction("X_comm")
 
-        self.m_model.setActiveObjective("X_comm_objective")
+        self.model.setActiveObjective("X_comm_objective")

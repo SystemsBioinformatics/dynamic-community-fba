@@ -10,18 +10,9 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
     This class extends the TimeStepDynamicFBABase and provides functionality
     for performing dynamic FBA simulations on multiple models in parallel.
-
-    Attributes:
-    m_models (list[Model]): List of metabolic models to simulate in parallel.
-    m_initial_bounds (dict[str, dict[str, tuple[float, float]]]): Original
-        reaction bounds for each model, indexed by model ID and reaction ID.
-    m_model_kinetics (dict[str, KineticsStruct]): Mapping of model ID to
-        associated kinetic parameters for reactions.
     """
 
-    m_models: dict[str, Model]
-    m_initial_bounds: dict[str, dict[str, tuple[float, float]]] = {}
-    m_model_kinetics: dict[str, KineticsStruct] = {}
+    # m_models: dict[str, Model]
 
     def __init__(
         self,
@@ -42,29 +33,34 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             kinetics (dict[str, KineticsStruct], optional): Dictionary pairing model
                 IDs with their respective kinetics structures. Defaults to an empty dictionary.
         """
+        super().__init__()
 
-        self.m_models = {m.getId(): m.clone() for m in models}
-        self.m_model_kinetics = kinetics
+        self._models = {m.getId(): m.clone() for m in models}
+        self._kinetics = kinetics
 
-        for i, model in enumerate(self.m_models.values()):
+        for i, model in enumerate(self._models.values()):
             mid = model.getId()
             self.set_initial_concentrations(model, initial_concentrations)
-            self.m_biomass_concentrations[mid] = [biomasses[i]]
+            self._biomasses[mid] = [biomasses[i]]
 
             for rid in model.getReactionIds():
                 reaction: Reaction = model.getReaction(rid)
                 if mid not in self.m_initial_bounds.keys():
-                    self.m_initial_bounds[mid] = {
+                    self._initial_bounds[mid] = {
                         rid: [
                             reaction.getLowerBound(),
                             reaction.getUpperBound(),
                         ]
                     }
                 else:
-                    self.m_initial_bounds[mid][rid] = [
+                    self._initial_bounds[mid][rid] = [
                         reaction.getLowerBound(),
                         reaction.getUpperBound(),
                     ]
+
+    @property
+    def models(self) -> dict[str, Model]:
+        return self._models
 
     def simulate(
         self,
@@ -82,7 +78,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
         run_condition = 0
 
-        for i in range(1, n):
+        for _ in range(1, n):
             if dt_hat != -1:
                 dt = dt_save
 

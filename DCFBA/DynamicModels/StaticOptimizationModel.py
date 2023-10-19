@@ -11,10 +11,9 @@ class StaticOptimizationModelBase(DynamicModelBase):
     methods; using time steps to track biomass and metabolite concentrations over time.
     """
 
-    m_biomass_concentrations: dict[str, list[float]] = {}
-    m_metabolite_concentrations: dict[str, list[float]] = {}
-    m_initial_bounds = {}
-    m_kinetics: KineticsStruct
+    def __init__(self) -> None:
+        super().__init__()
+        self._initial_bounds = {}
 
     def set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]
@@ -37,7 +36,7 @@ class StaticOptimizationModelBase(DynamicModelBase):
             species_id: str = reaction.reagents[0].getSpecies()
 
             if species_id in initial_concentrations.keys():
-                self.m_metabolite_concentrations[species_id] = [
+                self.metabolites[species_id] = [
                     initial_concentrations[species_id]
                 ]
             else:
@@ -48,11 +47,10 @@ class StaticOptimizationModelBase(DynamicModelBase):
                 # TODO check this
                 concentration = (
                     0
-                    if species_id
-                    not in self.m_metabolite_concentrations.keys()
-                    else self.m_metabolite_concentrations[species_id][-1]
+                    if species_id not in self.metabolites.keys()
+                    else self.metabolites[species_id][-1]
                 )
-                self.m_metabolite_concentrations[species_id] = [
+                self.metabolites[species_id] = [
                     max(-reaction.getLowerBound(), concentration)
                 ]
 
@@ -61,10 +59,13 @@ class StaticOptimizationModelBase(DynamicModelBase):
         for species in model.species:
             if (
                 species.getCompartmentId() == "e"
-                and species.getId()
-                not in self.m_metabolite_concentrations.keys()
+                and species.getId() not in self.metabolites.keys()
             ):
-                self.m_metabolite_concentrations[species.getId()] = [0]
+                self.metabolites[species.getId()] = [0]
+
+    @property
+    def initial_bounds(self):
+        return self._initial_bounds
 
     def simulate(
         self,
@@ -132,7 +133,7 @@ class StaticOptimizationModelBase(DynamicModelBase):
 
         low = 1e10
         name = ""
-        for key, value in self.m_metabolite_concentrations.items():
+        for key, value in self.metabolites.items():
             if round(value[-1], 8) < 0 and value[-1] < low:
                 low = value[-1]
                 name = key
@@ -153,7 +154,7 @@ class StaticOptimizationModelBase(DynamicModelBase):
             list[float]: List of species concentrations.
         """
         sids = transporters.get_importers_species(rid)
-        return [self.m_metabolite_concentrations[id][-1] for id in sids]
+        return [self.metabolites[id][-1] for id in sids]
 
     def mm_kinetics(
         self,
@@ -184,8 +185,8 @@ class StaticOptimizationModelBase(DynamicModelBase):
             rid,
         )
 
-        if sid in self.m_metabolite_concentrations.keys():
-            S = self.m_metabolite_concentrations[sid][-1]
+        if sid in self.metabolites.keys():
+            S = self.metabolites[sid][-1]
         else:
             raise NoLimitingSubstrateFound(
                 "The limiting substrate was not an external species"

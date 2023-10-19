@@ -7,6 +7,9 @@ import time
 from dcFBA.Helpers.OptimalSearch import balanced_search_quick, time_search
 import json
 from dcFBA.Models import KineticsStruct
+from dcFBA.DynamicModels import DynamicJointFBA
+
+import matplotlib.pyplot as plt
 
 iAF1260: Model = cbmpy.loadModel("models/bigg_models/iAF1260.xml")
 
@@ -73,21 +76,6 @@ community_model: CommunityModel = CommunityModel(
 # community_model.getReaction("R_O2tex_dleu").setLowerBound(-15)
 # community_model.getReaction("R_O2tex_dlys").setLowerBound(-15)
 
-community_model.getReaction("R_EX_o2_e").setLowerBound(
-    -30
-)  # Vou;d also be set to 2* 18.5
-community_model.getReaction("R_EX_cbl1_e").setLowerBound(
-    -0.02
-)  # 2 * initial value of 0.01
-
-
-# First try if accumulation of the metabolites is enough to stop
-# the corss feeding
-community_model.getReaction("R_EX_leu__L_e").setLowerBound(0)
-community_model.getReaction("R_EX_lys__L_e").setLowerBound(0)
-
-community_model.getReaction("R_EX_leu__L_e").setUpperBound(0)
-community_model.getReaction("R_EX_lys__L_e").setUpperBound(0)
 
 medium_co_culture = {
     "M_glc__D_e": 11.96,
@@ -95,22 +83,63 @@ medium_co_culture = {
     "M_lys__L_e": 0,
 }  # Glucose from the experiment paper Zhang, Reed
 
-start_time = time.time()
-# Some test kinetics
-kinetics = KineticsStruct(
-    {
-        "R_GLCtex_copy1_dleu": ["M_glc__D_e", 0.015, 10],
-        "R_GLCtex_copy1_dlys": ["M_glc__D_e", 0.015, 10],
-        "R_VALtex_copy1_dleu": ["M_val__L_e", 0.0008, 0.0508],
-        "R_VALtex_copy1_dlys": ["M_val__L_e", 0.0008, 0.0508],
-    }
-)
-a, b = time_search(
+
+community_model.getReaction("R_IPPS_dleu").setUpperBound(0)
+community_model.getReaction("R_DAPDC_dlys").setUpperBound(0)
+
+# Restrict the uptake of glucose
+community_model.getReaction("R_GLCtex_copy1_dleu").setUpperBound(10)
+community_model.getReaction("R_GLCtex_copy2_dleu").setUpperBound(0)
+community_model.getReaction("R_GLCtex_copy1_dlys").setUpperBound(10)
+community_model.getReaction("R_GLCtex_copy2_dlys").setUpperBound(0)
+
+
+# R_O2tex oxygen
+community_model.getReaction("R_O2tex_dleu").setLowerBound(-15)
+community_model.getReaction("R_O2tex_dlys").setLowerBound(-15)
+
+community_model.getReaction("R_EX_o2_e").setLowerBound(
+    -30
+)  # could also be set to 2* 18.5
+community_model.getReaction("R_EX_cbl1_e").setLowerBound(
+    -0.02
+)  # 2 * initial value of 0.01
+
+
+# R_FE3tex
+community_model.getReaction("R_FE3tex_dleu").setUpperBound(0)
+community_model.getReaction("R_FE3tex_dlys").setUpperBound(0)
+
+# In the paper they forced that all Leucine and Lysine was consumed by the strains
+# I.E. there can not be outflow of these metabolites or inflow
+community_model.getReaction("R_EX_leu__L_e").setUpperBound(0)
+community_model.getReaction("R_EX_lys__L_e").setUpperBound(0)
+
+community_model.getReaction("R_EX_leu__L_e").setLowerBound(0)
+community_model.getReaction("R_EX_lys__L_e").setLowerBound(0)
+
+community_model.getReaction("R_LEUtex_dleu").setLowerBound(-1000)
+community_model.getReaction("R_LEUtex_dleu").setUpperBound(1000)
+community_model.getReaction("R_LYStex_dleu").setLowerBound(-0.056)
+community_model.getReaction("R_LYStex_dleu").setUpperBound(-0.056)
+
+community_model.getReaction("R_LYStex_dlys").setLowerBound(-1000)
+community_model.getReaction("R_LYStex_dlys").setUpperBound(1000)
+community_model.getReaction("R_LEUtex_dlys").setLowerBound(-0.086)
+community_model.getReaction("R_LEUtex_dlys").setUpperBound(-0.086)
+
+
+dj = DynamicJointFBA(
     community_model,
-    {"dleu": 0.0027, "dlys": 0.0027},
-    medium_co_culture,
-    0.5,
-    (0.076, 8),
+    [0.0027, 0.0027],
+    {"M_glc__D_e": 11.96, "M_leu__L_e": 0, "M_lys__L_e": 0},
 )
 
-print(a, b)
+
+dj.simulate(0.1, n=50, epsilon=0.00001)
+
+
+pps = dj.get_community_growth_rate()
+print(pps)
+plt.plot(dj.get_time_points()[:-1], pps)
+plt.show()
