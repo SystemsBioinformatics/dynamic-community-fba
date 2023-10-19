@@ -99,7 +99,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             # Perform FBA foreach model
             step = 0
             for mid, model in self.m_models.items():
-                solution = cbmpy.doFBA(model, quite=True)
+                solution = cbmpy.doFBA(model, quiet=True)
 
                 if math.isnan(solution):
                     print(f"model: {mid} had an infeasible solution")
@@ -149,7 +149,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
             used_times.append(used_times[-1] + dt)
 
-        print("All n simulation were performed")
+        print(f"All {n} simulation were performed")
         return [
             used_times,
             self.m_metabolite_concentrations,

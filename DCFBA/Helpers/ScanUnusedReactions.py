@@ -7,20 +7,17 @@ from cbmpy.CBModel import Model, Reaction
 
 def scan_unused_reactions(
     model: Model, medium: dict[str, float], inplace=False
-):
+) -> list[str]:
     for eid in model.getExchangeReactionIds():
         reaction: Reaction = model.getReaction(eid)
         sid = reaction.getSpeciesIds()[0]
         if sid in medium.keys():
             # Set all the exchange reactions of the medium
             reaction.setLowerBound(-medium[sid])
-    reactionIds = model.getReactionIds()
-    exchangeIds = model.getExchangeReactionIds()
-    reactionIds = [rid for rid in reactionIds if rid not in exchangeIds]
 
     unused_reactions = []
 
-    for rid in reactionIds:
+    for rid in model.getReactionIds():
         reaction = model.getReaction(rid)
 
         # Check forward flux possibility
@@ -54,4 +51,7 @@ def scan_unused_reactions(
         if not (math.isnan(solution) or solution == 0):
             continue
 
-        model.deleteReactionAndBounds(rid)
+        if inplace:
+            model.deleteReactionAndBounds(rid)
+        unused_reactions.append(rid)
+    return unused_reactions

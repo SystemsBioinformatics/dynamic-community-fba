@@ -4,8 +4,9 @@ from dcFBA.Models import CommunityModel
 from dcFBA.DynamicModels import EndPointFBA
 import pandas as pd
 import time
-from dcFBA.Helpers.OptimalSearch import balanced_search_quick
+from dcFBA.Helpers.OptimalSearch import balanced_search_quick, time_search
 import json
+from dcFBA.Models import KineticsStruct
 
 iAF1260: Model = cbmpy.loadModel("models/bigg_models/iAF1260.xml")
 
@@ -88,7 +89,6 @@ community_model.getReaction("R_EX_lys__L_e").setLowerBound(0)
 community_model.getReaction("R_EX_leu__L_e").setUpperBound(0)
 community_model.getReaction("R_EX_lys__L_e").setUpperBound(0)
 
-
 medium_co_culture = {
     "M_glc__D_e": 11.96,
     "M_leu__L_e": 0,
@@ -96,28 +96,21 @@ medium_co_culture = {
 }  # Glucose from the experiment paper Zhang, Reed
 
 start_time = time.time()
-ep = EndPointFBA(
+# Some test kinetics
+kinetics = KineticsStruct(
+    {
+        "R_GLCtex_copy1_dleu": ["M_glc__D_e", 0.015, 10],
+        "R_GLCtex_copy1_dlys": ["M_glc__D_e", 0.015, 10],
+        "R_VALtex_copy1_dleu": ["M_val__L_e", 0.0008, 0.0508],
+        "R_VALtex_copy1_dlys": ["M_val__L_e", 0.0008, 0.0508],
+    }
+)
+a, b = time_search(
     community_model,
-    3,
     {"dleu": 0.0027, "dlys": 0.0027},
     medium_co_culture,
-    dt=0.9,
+    0.5,
+    (0.076, 8),
 )
 
-
-# ep.balanced_growth(0.0027 * 2, 0.083)
-ep.subset_qp(
-    0.083,
-    [
-        "R_BIOMASS_Ec_iAF1260_core_59p81M",
-        "R_VALtex",
-        "R_LEUtex",
-        "R_LYStex",
-        "R_GLCtex_copy1",
-        "R_ALAtex",
-    ],
-    1,
-)
-start_time = time.time()
-print(ep.simulate())
-print(f"Elapsed time to ====simulate==== n5 dt0.9: {time.time() - start_time}")
+print(a, b)

@@ -105,6 +105,10 @@ class EndPointFBA(DynamicModelBase):
     ):
         return cbmpy.doFBA(self.m_model, quiet=False)
 
+    def fva(self, selected_reactions=None):
+        self.m_model.buildStoichMatrix()
+        return cbmpy.doFVA(self.m_model, selected_reactions=selected_reactions)
+
     def set_constraints(
         self,
         initial_model: CommunityModel,
