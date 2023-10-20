@@ -39,9 +39,11 @@ kin = KineticsStruct(
 parallel = DynamicParallelFBA(
     [m_a, m_b], [1, 1], {"S_e": 100, "A_e": 1, "B_e": 2}
 )
+parallel.simulate(0.01)
 
-
-T, metabolites, biomasses, fluxes = parallel.simulate(0.01)
+T = parallel.get_time_points()
+metabolites = parallel.get_metabolites()
+biomasses = parallel.get_biomasses()
 
 plt.plot(T, metabolites["A_e"], color="blue", label="A")
 plt.plot(T, metabolites["B_e"], color="orange", label="B")

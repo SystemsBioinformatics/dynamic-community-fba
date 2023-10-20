@@ -15,19 +15,7 @@ class EndPointFBA(DynamicModelBase):
 
     This class provides the blueprint and functionality to perform EndPointFBA
     on a CommunityModel.
-
-    Attributes:
-        m_model (CommunityModel): The community model on which EndPointFBA is
-            performed
-        m_times (list[str]): list of time point ids
-        m_kinetics (KineticsStruct): A KineticsStruct object holding
-            information on reaction kinetics
     """
-
-    m_model: CommunityModel
-    m_times: list[str]
-    m_kinetics: KineticsStruct
-    m_dt: float
 
     def __init__(
         self,
@@ -55,59 +43,86 @@ class EndPointFBA(DynamicModelBase):
                 model. Defaults to None.
             dt (float, optional): Size of the time step. Defaults to 0.1.
         """
+        super().__init__()
+
         width = len(str(n))
-        self.m_times = [f"time{i:0{width}d}" for i in range(n)]
-        self.m_dt = dt
-        # start_time = time.time()
-        self.m_model = build_time_model(community_model, self.m_times)
-        # print(
-        #     f"--- build_time_model: {n} ------ {(time.time() - start_time)} seconds ---"
-        # )
+        self._times = [f"time{i:0{width}d}" for i in range(n)]
+        self._dt = dt
 
-        self.m_kinetics = kinetics
+        self._model = build_time_model(community_model, self.times)
 
-        # start_time = time.time()
+        self._kinetics = kinetics
+
         self.set_objective()
-        # print(
-        #     f"--- set Objective: {n} ------ {(time.time() - start_time)} seconds ---"
-        # )
 
-        # start_time = time.time()
         self.set_constraints(community_model, n, dt)
-        # print(
-        #     f"--- set_constraints: {n} ------ {(time.time() - start_time)} seconds ---"
-        # )
-        # start_time = time.time()
-        self.set_initial_concentrations(
-            initial_biomasses, initial_concentrations
-        )
-        # print(
-        #     f"--- set_initial_concentrations: {n} ------ {(time.time() - start_time)} seconds ---"
-        # )
+
+        self._metabolites = initial_concentrations
+        self._biomasses = initial_biomasses
+
+        self.set_initial_concentrations()
+
+    @property
+    def model(self) -> CommunityModel:
+        return self._model
+
+    @property
+    def dt(self) -> CommunityModel:
+        return self._dt
+
+    def _set_biomasses(self):
+        pass
+
+    def _set_metabolites(self):
+        pass
+
+    def _set_fluxes(self):
+        pass
+
+    def get_flux_values(self) -> list[float]:
+        pass
+
+    def get_fluxes_values(self) -> dict[str, float]:
+        pass
+
+    def get_specific_flux_values(self) -> list[float]:
+        pass
+
+    def get_community_growth_rate(self):
+        pass
+
+    def get_relative_abundance(self):
+        pass
+
+    def simulate(
+        self,
+    ):
+        solution = cbmpy.doFBA(self.model, quiet=False)
+
+        self._biomasses = None
+        self._metabolites = None
+        self._fluxes = None
+
+        return solution
 
     def set_objective(self):
         """Creates the community biomass reaction and sets it
         to be the objective of the model"""
 
-        self.m_model.createReaction("X_comm", silent=True)
-        out: Reaction = self.m_model.getReaction("X_comm")
+        self.model.createReaction("X_comm", silent=True)
+        out: Reaction = self.model.getReaction("X_comm")
         out.is_exchange = True
         out.setUpperBound(cbmpy.INF)
         out.setLowerBound(0)
-        out.createReagent("BM_c_" + self.m_times[-1], -1)
+        out.createReagent("BM_c_" + self.times[-1], -1)
 
-        self.m_model.createObjectiveFunction("X_comm")
+        self.model.createObjectiveFunction("X_comm")
 
-        self.m_model.setActiveObjective("X_comm_objective")
-
-    def simulate(
-        self,
-    ):
-        return cbmpy.doFBA(self.m_model, quiet=False)
+        self.model.setActiveObjective("X_comm_objective")
 
     def fva(self, selected_reactions=None):
-        self.m_model.buildStoichMatrix()
-        return cbmpy.doFVA(self.m_model, selected_reactions=selected_reactions)
+        self.model.buildStoichMatrix()
+        return cbmpy.doFVA(self.model, selected_reactions=selected_reactions)
 
     def set_constraints(
         self,
@@ -126,7 +141,7 @@ class EndPointFBA(DynamicModelBase):
                 to initial biomass concentrations.
             dt (float): Time step size.
         """
-        self.m_model.__FBC_VERSION__ = 3
+        self.model.__FBC_VERSION__ = 3
 
         # Lookup time of set is on average O(1)
         rids_lb_to_check = set()
@@ -144,12 +159,12 @@ class EndPointFBA(DynamicModelBase):
         combined_set = rids_lb_to_check | rids_ub_to_check
         # Reactions at time zero
         for rid in combined_set:
-            new_rid = rid + "_" + self.m_times[0]
-            reaction = self.m_model.getReaction(new_rid)
-            mid = self.m_model.identify_model_from_reaction(rid)
+            new_rid = rid + "_" + self.times[0]
+            reaction = self.model.getReaction(new_rid)
+            mid = self.model.identify_model_from_reaction(rid)
 
             if rid in rids_lb_to_check:
-                udc = self.m_model.createUserDefinedConstraint(
+                udc = self.model.createUserDefinedConstraint(
                     f"{new_rid}_lb",
                     0.0,
                     numpy.Inf,
@@ -162,10 +177,10 @@ class EndPointFBA(DynamicModelBase):
                         ),
                     ],
                 )
-                self.m_model.addUserDefinedConstraint(udc)
+                self.model.addUserDefinedConstraint(udc)
                 reaction.setLowerBound(cbmpy.NINF)
             if rid in rids_ub_to_check:
-                udc = self.m_model.createUserDefinedConstraint(
+                udc = self.model.createUserDefinedConstraint(
                     f"{new_rid}_ub",
                     numpy.NINF,
                     0.0,
@@ -179,24 +194,24 @@ class EndPointFBA(DynamicModelBase):
                     ],
                 )
 
-                self.m_model.addUserDefinedConstraint(udc)
+                self.model.addUserDefinedConstraint(udc)
                 reaction.setUpperBound(cbmpy.INF)
 
         for rid in combined_set:
             reaction: Reaction = initial_model.getReaction(rid)
             lb = reaction.getLowerBound()
             ub = reaction.getUpperBound()
-            mid = self.m_model.identify_model_from_reaction(rid)
+            mid = self.model.identify_model_from_reaction(rid)
 
             for i in range(1, n):
-                new_rid = rid + "_" + self.m_times[i]
-                reactionN: Reaction = self.m_model.getReaction(new_rid)
+                new_rid = rid + "_" + self.times[i]
+                reactionN: Reaction = self.model.getReaction(new_rid)
 
                 # Amount of biomass at time n
-                r_x_t = f"BM_{mid}_{self.m_times[i-1]}_{self.m_times[i]}"
+                r_x_t = f"BM_{mid}_{self.times[i-1]}_{self.times[i]}"
 
                 if rid in rids_lb_to_check:
-                    udc = self.m_model.createUserDefinedConstraint(
+                    udc = self.model.createUserDefinedConstraint(
                         f"{new_rid}_lb",
                         0.0,
                         numpy.Inf,
@@ -205,10 +220,10 @@ class EndPointFBA(DynamicModelBase):
                             (-1 * dt * lb, r_x_t, "linear"),
                         ],
                     )
-                    self.m_model.addUserDefinedConstraint(udc)
+                    self.model.addUserDefinedConstraint(udc)
                     reactionN.setLowerBound(cbmpy.NINF)
                 if rid in rids_ub_to_check:
-                    udc = self.m_model.createUserDefinedConstraint(
+                    udc = self.model.createUserDefinedConstraint(
                         f"{new_rid}_ub",
                         numpy.NINF,
                         0.0,
@@ -218,7 +233,7 @@ class EndPointFBA(DynamicModelBase):
                         ],
                     )
 
-                    self.m_model.addUserDefinedConstraint(udc)
+                    self.model.addUserDefinedConstraint(udc)
                     reactionN.setUpperBound(cbmpy.INF)
 
     # For cbmpy < 0.9.0
@@ -302,8 +317,6 @@ class EndPointFBA(DynamicModelBase):
 
     def set_initial_concentrations(
         self,
-        initial_biomasses: dict[str, float],
-        initial_concentrations: dict[str, float],
     ):
         """
         Sets the exchange reactions to the initial concentrations of the
@@ -319,27 +332,25 @@ class EndPointFBA(DynamicModelBase):
                 dictionaries keys is not in the model raise an exception
 
         """
-        for key, value in initial_concentrations.items():
-            sid = key + "_" + self.m_times[0]
-            if sid not in self.m_model.getSpeciesIds():
+        for key, value in self.metabolites.items():
+            sid = key + "_" + self.times[0]
+            if sid not in self.model.getSpeciesIds():
                 raise SpeciesNotFound(
                     "The species id defined as  \
                                       initial concentrations was not found in the model"
                 )
 
             # get species and it's corresponding exchange reaction
-            species: Species = self.m_model.getSpecies(sid)
+            species: Species = self.model.getSpecies(sid)
             rids = species.isReagentOf()
             for rid in rids:
-                reaction: Reaction = self.m_model.getReaction(rid)
+                reaction: Reaction = self.model.getReaction(rid)
                 if reaction.is_exchange:
                     reaction.setLowerBound(-value)
                     reaction.setUpperBound(-value)
 
-        for key, value in initial_biomasses.items():
-            self.m_model.setReactionBounds(
-                f"BM_{key}_exchange", -value, -value
-            )
+        for key, value in self.metabolites.items():
+            self.model.setReactionBounds(f"BM_{key}_exchange", -value, -value)
 
     # FIX THIS TO NEW CBMPY
     def constrain_rates(self, epsilon=0.1):
@@ -353,10 +364,10 @@ class EndPointFBA(DynamicModelBase):
                 successive time points. Defaults to 0.1.
         """
         old_rids = set(
-            [id.split("_time")[0] for id in self.m_model.getReactionIds()]
+            [id.split("_time")[0] for id in self.model.getReactionIds()]
         )
         for rid in old_rids:
-            reaction: Reaction = self.m_model.getReaction(
+            reaction: Reaction = self.model.getReaction(
                 rid + "_" + self.m_times[0]
             )
 
@@ -364,14 +375,14 @@ class EndPointFBA(DynamicModelBase):
                 for i, time in enumerate(self.m_times[:-1]):
                     id_t0 = f"{rid}_{time}"
                     id_t1 = f"{rid}_{self.m_times[i+1]}"
-                    self.m_model.addUserConstraint(
+                    self.model.addUserConstraint(
                         "R_constraint_pos" + id_t0,
                         [[1, id_t0], [-1, id_t1]],
                         "<=",
                         epsilon,
                     )
 
-                    self.m_model.addUserConstraint(
+                    self.model.addUserConstraint(
                         "R_constraint_neg" + id_t0,
                         [[1, id_t0], [-1, id_t1]],
                         ">=",
@@ -410,14 +421,14 @@ class EndPointFBA(DynamicModelBase):
                 low_line = vmax / km
                 high_line = (vmax / 2) / km
 
-                for i in range(0, len(self.m_times) - 1):
+                for i in range(0, len(self.times) - 1):
                     # Linking reaction is the concentration of S for the
                     # timepoint
                     linking_reaction_id = (
-                        f"{sid}_{self.m_times[i]}_{self.m_times[i+1]}"
+                        f"{sid}_{self.times[i]}_{self.times[i+1]}"
                     )
-                    t_rid = rid + "_" + self.m_times[i + 1]
-                    self.m_model.addUserConstraint(
+                    t_rid = rid + "_" + self.times[i + 1]
+                    self.model.addUserConstraint(
                         f"mm_low_{linking_reaction_id}",
                         [
                             [1, t_rid],
@@ -427,7 +438,7 @@ class EndPointFBA(DynamicModelBase):
                         0.0,
                     )
 
-                    self.m_model.addUserConstraint(
+                    self.model.addUserConstraint(
                         f"mm_high_{linking_reaction_id}",
                         [
                             [1, t_rid],
@@ -438,22 +449,20 @@ class EndPointFBA(DynamicModelBase):
                     )
 
     def balanced_growth(self, Xin, Xm):
-        self.m_model.setReactionBounds("X_comm", Xm, Xm)
+        self.model.setReactionBounds("X_comm", Xm, Xm)
         additional_components = []
         # At least some of each microbe needs to get into the system
-        for mid, _ in self.m_model.get_model_biomass_ids().items():
-            self.m_model.setReactionBounds(
-                f"BM_{mid}_exchange", cbmpy.NINF, 0.0
-            )
+        for mid, _ in self.model.get_model_biomass_ids().items():
+            self.model.setReactionBounds(f"BM_{mid}_exchange", cbmpy.NINF, 0.0)
 
-        for mid, _ in self.m_model.get_model_biomass_ids().items():
-            self.m_model.createReaction(
+        for mid, _ in self.model.get_model_biomass_ids().items():
+            self.model.createReaction(
                 f"Phi_{mid}",
                 f"Phi, fraction of {mid}",
                 create_default_bounds=False,
             )
             additional_components.append((1.0, f"Phi_{mid}", "linear"))
-            udc = self.m_model.createUserDefinedConstraint(
+            udc = self.model.createUserDefinedConstraint(
                 f"biomass_fraction_{mid}_{self.m_times[0]}",
                 0.0,
                 0.0,
@@ -463,9 +472,9 @@ class EndPointFBA(DynamicModelBase):
                 ],
             )
 
-            self.m_model.addUserDefinedConstraint(udc)
+            self.model.addUserDefinedConstraint(udc)
 
-            udc = self.m_model.createUserDefinedConstraint(
+            udc = self.model.createUserDefinedConstraint(
                 f"biomass_fraction_{mid}_{self.m_times[-1]}",
                 0.0,
                 0.0,
@@ -475,13 +484,13 @@ class EndPointFBA(DynamicModelBase):
                 ],
             )
 
-            self.m_model.addUserDefinedConstraint(udc)
+            self.model.addUserDefinedConstraint(udc)
 
-        udc = self.m_model.createUserDefinedConstraint(
+        udc = self.model.createUserDefinedConstraint(
             "Phi_add_to_one", 1.0, 1.0, components=additional_components
         )
 
-        self.m_model.addUserDefinedConstraint(udc)
+        self.model.addUserDefinedConstraint(udc)
 
     # TODO In construction
     def remove_balanced_growth_constraints(self, initial_biomasses={}):
@@ -493,28 +502,28 @@ class EndPointFBA(DynamicModelBase):
         """
         if initial_biomasses:
             for mid, value in initial_biomasses.items():
-                self.m_model.setReactionBounds(
+                self.model.setReactionBounds(
                     f"BM_{mid}_exchange", -value, -value
                 )
-        for mid, _ in self.m_model.get_model_biomass_ids().items():
-            self.m_model.deleteReactionAndBounds(f"Phi_{mid}")
-            self.m_model.__popGlobalId__(
+        for mid, _ in self.model.get_model_biomass_ids().items():
+            self.model.deleteReactionAndBounds(f"Phi_{mid}")
+            self.model.__popGlobalId__(
                 f"biomass_fraction_{mid}_{self.m_times[0]}"
             )
-            self.m_model.__popGlobalId__(
+            self.model.__popGlobalId__(
                 f"biomass_fraction_{mid}_{self.m_times[-1]}"
             )
 
     def set_qp(self, solution: float, epsilon=0.01) -> None:
-        obj = self.m_model.getActiveObjective()
+        obj = self.model.getActiveObjective()
         obj.setOperation("minimize")
         obj.deleteAllFluxObjectives()
         QP = []
 
         for i, tid in enumerate(self.m_times[:-1]):
-            rids = self.m_model.getReactionIds(tid)
+            rids = self.model.getReactionIds(tid)
             for rid in rids:
-                reaction = self.m_model.getReaction(rid)
+                reaction = self.model.getReaction(rid)
 
                 # R_ are all the original reqactions
                 # We dont want the exchange reactions
@@ -534,19 +543,19 @@ class EndPointFBA(DynamicModelBase):
 
         obj.createQuadraticFluxObjectives(QP)
 
-        self.m_model.getReaction("X_comm").setLowerBound(solution - epsilon)
-        self.m_model.getReaction("X_comm").setUpperBound(solution + epsilon)
+        self.model.getReaction("X_comm").setLowerBound(solution - epsilon)
+        self.model.getReaction("X_comm").setUpperBound(solution + epsilon)
 
     def set_subset_qp(
         self, solution: float, reactions: list[str], epsilon=0.01
     ) -> None:
-        obj = self.m_model.getActiveObjective()
+        obj = self.model.getActiveObjective()
         obj.setOperation("minimize")
         obj.deleteAllFluxObjectives()
         QP = []
         all_reactions = [
             f"{r}_{mid}"
-            for mid in self.m_model.get_model_ids()
+            for mid in self.model.get_model_ids()
             for r in reactions
         ]
 
@@ -566,5 +575,5 @@ class EndPointFBA(DynamicModelBase):
 
         obj.createQuadraticFluxObjectives(QP)
 
-        self.m_model.getReaction("X_comm").setLowerBound(solution - epsilon)
-        self.m_model.getReaction("X_comm").setUpperBound(solution + epsilon)
+        self.model.getReaction("X_comm").setLowerBound(solution - epsilon)
+        self.model.getReaction("X_comm").setUpperBound(solution + epsilon)

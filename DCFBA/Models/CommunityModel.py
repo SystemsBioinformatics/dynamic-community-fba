@@ -100,7 +100,6 @@ class CommunityModel(Model):
             f"{[id for id in self.m_single_model_ids]}"
         )
 
-    @property
     def get_model_ids(self):
         return self.m_identifiers
 

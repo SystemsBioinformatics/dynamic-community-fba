@@ -25,17 +25,6 @@ m_b.getReaction("R_1").setLowerBound(0)
 m_b.getReaction("R_3").setLowerBound(0)
 m_b.getReaction("R_5").setLowerBound(0)
 
-kin = KineticsStruct(
-    {
-        "R_1_modelA": ["S_e", 10, 10],
-        "R_4_modelA": ["B_e", 5, 3],
-        "R_6_modelA": ["B_e", 3, 1],
-        # B
-        "R_1_modelB": ["S_e", 10, 10],
-        "R_3_modelB": ["A_e", 2, 1],
-    }
-)
-
 
 community_model = CommunityModel(
     [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
@@ -45,15 +34,17 @@ community_model = CommunityModel(
 dj = DynamicJointFBA(
     community_model,
     [1, 1],
-    {"S_e": 100, "A_e": 0.01, "B_e": 0.01},
-    kinetics=kin,
+    {"S_e": 100, "A_e": 0, "B_e": 0},
 )
-T, metabolites, biomasses, fluxes = dj.simulate(0.1)
-index = 0
 
-# Obtain fluxes over time
-rv1 = list(map(lambda d: d["R_1_modelA"], fluxes))
-rv2 = list(map(lambda d: d["R_2_modelA"], fluxes))
+# dj.metabolites = {}
+
+dj.simulate(0.1)
+fluxes = dj.get_fluxes()
+metabolites = dj.get_metabolites()
+biomasses = dj.biomasses
+T = dj.times
+comm = dj.get_community_growth_rate()
 
 
 plt.plot(T, metabolites["S_e"], color="blue", label="Metabolite s")

@@ -46,7 +46,7 @@ class DynamicModelBase:
     def get_time_points(self):
         return self.times
 
-    def get_flux_values(self, rid: str):
+    def get_flux_values(self) -> list[float]:
         """Get the flux values for each time point
             given a reaction ID
 
@@ -55,18 +55,16 @@ class DynamicModelBase:
         """
         pass
 
-    def get_fluxes_values(self, rids: str) -> dict[str, float]:
+    def get_fluxes_values(self) -> dict[str, float]:
         """Get the flux values for each time point
             given a reaction ID
 
         Args:
             rid (str): _description_
         """
-        values = {}
-        for rid in rids:
-            values[rid] = self.get_flux_values(rid)
+        pass
 
-    def get_specific_flux_values(self, rid: str):
+    def get_specific_flux_values(self) -> list[float]:
         pass
 
     def get_community_growth_rate(self):

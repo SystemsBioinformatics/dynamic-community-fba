@@ -42,16 +42,6 @@ class DynamicJointFBA(DynamicFBABase):
         self.set_community_biomass_reaction()
         self._metabolites["X_c"] = [sum(biomasses)]
 
-    def get_joint_model(self) -> CommunityModel:
-        """
-        Retrieve the community model, which includes the Community Biomass function.
-
-        Returns:
-            CommunityModel: The underlying community model used for simulation.
-        """
-
-        return self.m_model
-
     def set_community_biomass_reaction(self) -> None:
         """
         Set up the community biomass reaction.
@@ -78,3 +68,29 @@ class DynamicJointFBA(DynamicFBABase):
         self.model.createObjectiveFunction("X_comm")
 
         self.model.setActiveObjective("X_comm_objective")
+
+    def get_community_growth_rate(self) -> list[float]:
+        ls = list(map(lambda d: d["X_comm"], self.fluxes))
+        mids = self.model.m_identifiers
+        weights = [0] * len(self.times)
+
+        for t in range(0, len(self.times)):
+            for mid in mids:
+                weights[t] += self.biomasses[mid][t]
+
+        return [v / weights[i] for i, v in enumerate(ls)]
+
+    def get_relative_abundance(self) -> dict[str, list[float]]:
+        mids = self.model.m_identifiers
+        total = list(self.biomasses[mids[0]])
+        ans = {}
+        for mid in mids[1:]:
+            for i in range(0, len(total)):
+                total[i] += self.biomasses[mid][i]
+
+        for mid in mids:
+            ans[mid] = [
+                v / total[i] for i, v in enumerate(self.biomasses[mid])
+            ]
+
+        return ans

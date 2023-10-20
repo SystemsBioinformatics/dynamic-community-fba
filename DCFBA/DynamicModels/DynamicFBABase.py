@@ -55,40 +55,19 @@ class DynamicFBABase(StaticOptimizationModelBase):
     def get_flux_values(self, rid: str) -> list[float]:
         return list(map(lambda d: d[rid], self.fluxes))
 
+    def get_fluxes_values(self, rids):
+        fluxes = {}
+        for rid in rids:
+            fluxes[rid] = self.get_flux_values(rid)
+        return fluxes
+
     def get_specific_flux_values(self, rid: str) -> list[float]:
         if rid in self.model.getExchangeReactionIds():
-            print("Exchange has no specific fluc")
+            print("Exchange has no specific flux")
             return []
         ls = self.get_flux_values(rid)
         mid = self.model.identify_model_from_reaction(rid)
         return [ls[t] / v for t, v in enumerate(self.biomasses[mid][:-1])]
-
-    def get_community_growth_rate(self) -> list[float]:
-        ls = list(map(lambda d: d["X_comm"], self.fluxes))
-        mids = self.model.m_identifiers
-        weights = [0] * len(self.times)
-
-        for t in range(0, len(self.times)):
-            for mid in mids:
-                weights[t] += self.biomasses[mid][t]
-
-        return [v / weights[i] for i, v in enumerate(ls)]
-
-    def get_relative_abundance(self) -> dict[str, list[float]]:
-        mids = self.model.m_identifiers
-        total = self.biomasses[mids[0]]
-        ans = {}
-        for mid in mids[1:]:
-            for i in range(0, len(total)):
-                total[i] += self.biomasses[mid][i]
-        print(total)
-        print(self.biomasses["modelA"])
-        for mid in mids:
-            ans[mid] = [
-                v / total[i] for i, v in enumerate(self.biomasses[mid])
-            ]
-
-        return ans
 
     def simulate(
         self,

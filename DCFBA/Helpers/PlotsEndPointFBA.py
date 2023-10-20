@@ -3,11 +3,11 @@ from ..DynamicModels import EndPointFBA
 
 
 def plot_biomasses(ep: EndPointFBA, ls: list[str] = []):
-    FBAsol = ep.m_model.getSolutionVector(names=True)
+    FBAsol = ep.model.getSolutionVector(names=True)
     FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
     # Set model ids and initial biomasses
-    modelIds = ep.m_model.get_model_ids()
+    modelIds = ep.model.get_model_ids()
     if len(ls) == 0:
         ls = modelIds
 
@@ -19,7 +19,7 @@ def plot_biomasses(ep: EndPointFBA, ls: list[str] = []):
                 ls.append(value)
         ls.append(FBAsol[f"BM_{mid}_exchange_final"])
         plt.plot(
-            list(range(0, len(ep.m_times) + 1)),
+            list(range(0, len(ep.times) + 1)),
             ls,
             color=f"C{i}",
             label=f"{mid}",
@@ -34,7 +34,7 @@ def plot_biomasses(ep: EndPointFBA, ls: list[str] = []):
 def plot_metabolites(
     ep: EndPointFBA, speciesIdsConcentration: dict[str, float]
 ):
-    FBAsol = ep.m_model.getSolutionVector(names=True)
+    FBAsol = ep.model.getSolutionVector(names=True)
     FBAsol = dict(zip(FBAsol[1], FBAsol[0]))
 
     for i, sid in enumerate(speciesIdsConcentration.keys()):
@@ -46,7 +46,7 @@ def plot_metabolites(
 
         ls.append(FBAsol[f"{sid}_exchange_final"])
         plt.plot(
-            list(range(0, len(ep.m_times) + 1)),
+            list(range(0, len(ep.times) + 1)),
             ls,
             color=f"C{i}",
             label=f"{sid}",
