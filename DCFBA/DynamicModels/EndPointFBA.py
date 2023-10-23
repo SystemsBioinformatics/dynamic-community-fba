@@ -57,10 +57,9 @@ class EndPointFBA(DynamicModelBase):
 
         self.set_constraints(community_model, n, dt)
 
-        self._metabolites = initial_concentrations
-        self._biomasses = initial_biomasses
-
-        self.set_initial_concentrations()
+        self.set_initial_concentrations(
+            initial_biomasses, initial_concentrations
+        )
 
     @property
     def model(self) -> CommunityModel:
@@ -70,38 +69,121 @@ class EndPointFBA(DynamicModelBase):
     def dt(self) -> CommunityModel:
         return self._dt
 
-    def _set_biomasses(self):
-        pass
+    def _set_fluxes(self) -> None:
+        solution_vector = self.model.getSolutionVector(names=True)
+        self._fluxes = dict(zip(solution_vector[1], solution_vector[0]))
 
-    def _set_metabolites(self):
-        pass
+    def _set_biomasses(self) -> None:
+        """Set the concentrations of Biomasses  over time"""
+        mids = self.model.get_model_ids()
+        temp_biomasses: dict[str, list[float]] = {}
+        for mid in mids:
+            temp_biomasses[mid] = [-1 * self.fluxes[f"BM_{mid}_exchange"]]
 
-    def _set_fluxes(self):
-        pass
+        for mid in self.model.get_model_ids():
+            for i in range(len(self.times[:-1])):
+                temp_biomasses[mid].append(
+                    self.fluxes[f"BM_{mid}_{self.times[i]}_{self.times[i+1]}"]
+                )
+            temp_biomasses[mid].append(self.fluxes[f"BM_{mid}_exchange_final"])
 
-    def get_flux_values(self) -> list[float]:
-        pass
+        self._biomasses = dict(temp_biomasses)
+        del temp_biomasses
 
-    def get_fluxes_values(self) -> dict[str, float]:
-        pass
+    def _set_metabolites(self) -> None:
+        """Set the metabolite concentration dict
+        To save space remove all metabolites which are all zero
+        """
+        pattern = rf"^(.*?)_{self.times[0]}"
+        regex = re.compile(pattern)
+        temp_metabolites: dict[str, list[float]] = {}
 
-    def get_specific_flux_values(self) -> list[float]:
-        pass
+        # Iterate through exchange reaction IDs
+        for eid in self.model.getExchangeReactionIds():
+            # Get the species ID for the reaction
+            species_id: str = self.model.getReaction(eid).getSpeciesIds()[0]
+
+            # Search for the pattern in the species ID
+            match = regex.search(species_id)
+            if match is None:
+                continue
+
+            # Extract the old species ID from the match
+            old_species_id = match.group(1)
+
+            # Check if the old species ID has the desired prefix and update the metabolites dictionary if not
+            if not old_species_id.startswith("BM_c"):
+                temp_metabolites[old_species_id] = [-1 * self.fluxes[eid]]
+
+        for sid in temp_metabolites.keys():
+            for i in range(len(self.times[:-1])):
+                temp_metabolites[sid].append(
+                    self.fluxes[f"{sid}_{self.times[i]}_{self.times[i+1]}"]
+                )
+            temp_metabolites[sid].append(self.fluxes[f"{sid}_exchange_final"])
+
+        keys_to_delete = [
+            k for k, v in temp_metabolites.items() if sum(v) == 0
+        ]
+
+        for key in keys_to_delete:
+            del temp_metabolites[key]
+
+        self._metabolites = dict(temp_metabolites)
+
+        del temp_metabolites
+
+    def get_flux_values(self, rid) -> list[float]:
+        fluxes: list[float] = []
+        for tid in self.times:
+            full_id = f"{rid}_{tid}"
+            fluxes.append(self.fluxes[full_id])
+        return fluxes
+
+    def get_fluxes_values(self, rids: list[str]) -> dict[str, list[float]]:
+        fluxes: dict[str, list[float]] = {}
+        for rid in rids:
+            fluxes[rid] = self.get_flux_values(rid)
+        return fluxes
+
+    def get_specific_flux_values(self, rid: str) -> list[float]:
+        values = self.get_flux_values(rid)
+        mid = self.model.identify_model_from_reaction(rid)
+
+        return [
+            v / (self.dt * self.biomasses[mid][i])
+            for i, v in enumerate(values)
+        ]
 
     def get_community_growth_rate(self):
-        pass
+        total_flux = [0] * len(self.times)
+        total_mass = [0] * len(self.times)
 
-    def get_relative_abundance(self):
-        pass
+        for mid, bid in self.model.get_model_biomass_ids().items():
+            total_flux = numpy.add(total_flux, self.get_flux_values(bid))
+            total_mass = numpy.add(total_mass, self.biomasses[mid][:-1])
+
+        # Multiply by dt
+        numerator = total_mass * self.dt
+        return numpy.divide(total_flux, numerator).tolist()
+
+    def get_relative_abundance(self) -> dict[str, list[float]]:
+        mids = self.model.get_model_ids()
+        total = [0] * (len(self.times) + 1)
+
+        for mid in mids:
+            total = numpy.add(total, self.biomasses[mid])
+
+        return {mid: numpy.divide(self.biomasses[mid], total) for mid in mids}
 
     def simulate(
         self,
     ):
         solution = cbmpy.doFBA(self.model, quiet=False)
 
-        self._biomasses = None
-        self._metabolites = None
-        self._fluxes = None
+        self._set_fluxes()
+        self._set_biomasses()
+        self._set_metabolites()
 
         return solution
 
@@ -317,6 +399,8 @@ class EndPointFBA(DynamicModelBase):
 
     def set_initial_concentrations(
         self,
+        initial_biomasses: dict[str, float],
+        initial_concentrations: dict[str, float],
     ):
         """
         Sets the exchange reactions to the initial concentrations of the
@@ -332,7 +416,7 @@ class EndPointFBA(DynamicModelBase):
                 dictionaries keys is not in the model raise an exception
 
         """
-        for key, value in self.metabolites.items():
+        for key, value in initial_concentrations.items():
             sid = key + "_" + self.times[0]
             if sid not in self.model.getSpeciesIds():
                 raise SpeciesNotFound(
@@ -349,7 +433,7 @@ class EndPointFBA(DynamicModelBase):
                     reaction.setLowerBound(-value)
                     reaction.setUpperBound(-value)
 
-        for key, value in self.metabolites.items():
+        for key, value in initial_biomasses.items():
             self.model.setReactionBounds(f"BM_{key}_exchange", -value, -value)
 
     # FIX THIS TO NEW CBMPY

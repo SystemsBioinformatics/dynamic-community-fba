@@ -1,4 +1,5 @@
 import cbmpy
+import numpy
 from .DynamicFBABase import DynamicFBABase
 from cbmpy.CBModel import Reaction
 from ..Models import KineticsStruct, CommunityModel
@@ -72,25 +73,18 @@ class DynamicJointFBA(DynamicFBABase):
     def get_community_growth_rate(self) -> list[float]:
         ls = list(map(lambda d: d["X_comm"], self.fluxes))
         mids = self.model.m_identifiers
-        weights = [0] * len(self.times)
+        total_mass = [0] * len(self.times)
 
         for t in range(0, len(self.times)):
             for mid in mids:
-                weights[t] += self.biomasses[mid][t]
+                total_mass[t] += self.biomasses[mid][t]
 
-        return [v / weights[i] for i, v in enumerate(ls)]
+        return numpy.divide(ls, total_mass).tolist()
 
     def get_relative_abundance(self) -> dict[str, list[float]]:
         mids = self.model.m_identifiers
         total = list(self.biomasses[mids[0]])
-        ans = {}
         for mid in mids[1:]:
-            for i in range(0, len(total)):
-                total[i] += self.biomasses[mid][i]
+            total = numpy.add(total, self.biomasses[mid])
 
-        for mid in mids:
-            ans[mid] = [
-                v / total[i] for i, v in enumerate(self.biomasses[mid])
-            ]
-
-        return ans
+        return {mid: numpy.divide(self.biomasses[mid], total) for mid in mids}

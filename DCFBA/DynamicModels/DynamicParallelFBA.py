@@ -1,3 +1,4 @@
+import numpy
 from cbmpy.CBModel import Model, Reaction
 from .StaticOptimizationModel import StaticOptimizationModelBase
 from ..Models.Kinetics import KineticsStruct
@@ -74,8 +75,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 return None
 
         ls = self.get_flux_values(mid, rid)
-
-        return [ls[t] / v for t, v in enumerate(self.biomasses[mid][:-1])]
+        return numpy.divide(ls / self.biomasses[mid][:-1]).tolist()
 
     def get_community_growth_rate(self):
         community_flux = [0] * (len(self.times) - 1)
@@ -86,22 +86,18 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             for i, value in enumerate(values):
                 community_flux[i] += value
                 total_mass[i] += self.biomasses[mid][i]
-
-        return [flux / total_mass[i] for i, flux in enumerate(community_flux)]
+        return numpy.divide(community_flux / total_mass).tolist()
 
     def get_relative_abundance(self) -> dict[str, list[float]]:
-        ans = {}
         total_mass = [0] * (len(self.times))
         for mid in self.models.keys():
             for i in range(0, len(self.times)):
                 total_mass[i] += self.biomasses[mid][i]
 
-        for mid in self.models.keys():
-            ans[mid] = [
-                v / total_mass[i] for i, v in enumerate(self.biomasses[mid])
-            ]
-
-        return total_mass
+        return {
+            mid: numpy.divide(self.biomasses[mid], total_mass)
+            for mid in self.models.keys()
+        }
 
     def simulate(
         self,

@@ -77,4 +77,4 @@ dj = EndPointFBA(
 solution = dj.simulate()
 
 plot_biomasses(dj)
-plot_metabolites(dj, {"S_e": 100, "A_e": 0.0, "B_e": 0.0})
+plot_metabolites(dj, {"A_e": 0.0, "B_e": 0.0})

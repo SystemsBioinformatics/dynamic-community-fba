@@ -1,3 +1,5 @@
+# TODO delete this, is fixed within the class now!!
+
 import matplotlib.pyplot as plt
 from ..DynamicModels import EndPointFBA
 
