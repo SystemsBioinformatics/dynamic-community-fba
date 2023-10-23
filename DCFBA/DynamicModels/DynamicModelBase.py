@@ -27,7 +27,7 @@ class DynamicModelBase:
         return self._biomasses
 
     @property
-    def kinetics(self):
+    def kinetics(self) -> KineticsStruct:
         return self._kinetics
 
     @property

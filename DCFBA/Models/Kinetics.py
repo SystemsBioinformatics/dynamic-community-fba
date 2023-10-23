@@ -33,6 +33,14 @@ class KineticsStruct:
         del self.kinetics[rid]
 
     def exists(self, rid: str) -> bool:
+        """Checks if kinetic data is available for reaction
+
+        Args:
+            rid (str): _description_
+
+        Returns:
+            bool: _description_
+        """
         if rid in self.kinetics.keys():
             return True
 

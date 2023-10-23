@@ -1,6 +1,7 @@
 import cbmpy
 import numpy
 import re
+import warnings
 from cbmpy.CBModel import Reaction, Species
 
 from ..Exceptions import SpeciesNotFound
@@ -223,6 +224,7 @@ class EndPointFBA(DynamicModelBase):
                 to initial biomass concentrations.
             dt (float): Time step size.
         """
+        # TODO can be removed once cbmpy version 0.9.0 is online
         self.model.__FBC_VERSION__ = 3
 
         # Lookup time of set is on average O(1)
@@ -241,6 +243,9 @@ class EndPointFBA(DynamicModelBase):
         combined_set = rids_lb_to_check | rids_ub_to_check
         # Reactions at time zero
         for rid in combined_set:
+            if self.kinetics and self.kinetics.exists(reaction.getId()):
+                self.mm_approximation(reaction.getId())
+                continue
             new_rid = rid + "_" + self.times[0]
             reaction = self.model.getReaction(new_rid)
             mid = self.model.identify_model_from_reaction(rid)
@@ -281,6 +286,10 @@ class EndPointFBA(DynamicModelBase):
 
         for rid in combined_set:
             reaction: Reaction = initial_model.getReaction(rid)
+            if self.kinetics and self.kinetics.exists(reaction.getId()):
+                self.mm_approximation(reaction.getId())
+                continue
+
             lb = reaction.getLowerBound()
             ub = reaction.getUpperBound()
             mid = self.model.identify_model_from_reaction(rid)
@@ -473,64 +482,63 @@ class EndPointFBA(DynamicModelBase):
                         -epsilon,
                     )
 
-    def set_kinetics(self, kin: KineticsStruct):
-        """
-        Set the kinetics information for the model.
+    def mm_approximation(self, rid):
+        """If the EndPointFBA model is initialized with a KineticsStruct object
+        instead of setting an upper and lower bound are set by approximating
+        the Michaelis-Menten curve with two linear lines.
 
-        Args:
-            kin (KineticsStruct): Object containing detailed kinetics
-                information for reactions in the model.
-        """
-        self.m_kinetics = kin
-
-    # TODO fix this one
-    def mm_approximation(self):
-        """Using the KineticsStruct you can set constraints on the reaction
-        rates with an approximation of the Michaelis-Menten curve.
-
-        See documentation for further clarification
+        See documentation for an elaborate explanation
 
         Raises:
             Exception: Raised when no limiting substrate is defined in the
                 kinetics object for a specific reaction.
         """
-        if self.m_kinetics is not None:
-            for rid, _ in self.m_kinetics.get_kinetics().items():
-                sid, km, vmax = self.m_kinetics.get_reactions_kinetics(rid)
-                if sid == "":
-                    raise Exception(
-                        "No limiting substrate was set in the kinetics object for: "
-                        + rid
-                    )
-                low_line = vmax / km
-                high_line = (vmax / 2) / km
+        sid, km, vmax = self.kinetics.get_reactions_kinetics(rid)
+        if sid == "":
+            raise Exception(
+                "No limiting substrate was set in the kinetics object for: "
+                + rid
+            )
+        low_line = vmax / km
+        high_line = (vmax / 2) / km
 
-                for i in range(0, len(self.times) - 1):
-                    # Linking reaction is the concentration of S for the
-                    # timepoint
-                    linking_reaction_id = (
-                        f"{sid}_{self.times[i]}_{self.times[i+1]}"
-                    )
-                    t_rid = rid + "_" + self.times[i + 1]
-                    self.model.addUserConstraint(
-                        f"mm_low_{linking_reaction_id}",
-                        [
-                            [1, t_rid],
-                            [-low_line * self.m_dt, linking_reaction_id],
-                        ],
-                        ">=",
-                        0.0,
-                    )
+        for i in range(0, len(self.times) - 1):
+            # Linking reaction is the concentration of Substrate for the
+            # timepoint
+            linking_reaction_id = f"{sid}_{self.times[i]}_{self.times[i+1]}"
+            t_rid = rid + "_" + self.times[i + 1]
 
-                    self.model.addUserConstraint(
-                        f"mm_high_{linking_reaction_id}",
-                        [
-                            [1, t_rid],
-                            [-high_line * self.m_dt, linking_reaction_id],
-                        ],
-                        "<=",
-                        0.0,
-                    )
+            udc = self.model.createUserDefinedConstraint(
+                f"mm_low_{t_rid}",
+                0.0,
+                numpy.Inf,
+                components=[
+                    (1, t_rid, "linear"),
+                    (
+                        -low_line * self.dt,
+                        linking_reaction_id,
+                        "linear",
+                    ),
+                ],
+            )
+
+            self.model.addUserDefinedConstraint(udc)
+
+            udc = self.model.createUserDefinedConstraint(
+                f"mm_high_{t_rid}",
+                numpy.NINF,
+                0.0,
+                components=[
+                    (1, t_rid, "linear"),
+                    (
+                        -high_line * self.dt,
+                        linking_reaction_id,
+                        "linear",
+                    ),
+                ],
+            )
+
+            self.model.addUserDefinedConstraint(udc)
 
     def balanced_growth(self, Xin, Xm):
         self.model.setReactionBounds("X_comm", Xm, Xm)

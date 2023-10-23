@@ -40,11 +40,11 @@ m_b.getReaction("R_5").setLowerBound(0)
 
 kin = KineticsStruct(
     {
-        "R_1_modelA": ["", 10, 10],
+        "R_1_modelA": ["S_e", 10, 10],
         "R_4_modelA": ["B_e", 5, 3],
         "R_6_modelA": ["B_e", 3, 1],
         # B
-        "R_1_modelB": ["", 10, 10],
+        "R_1_modelB": ["S_e", 10, 10],
         "R_3_modelB": ["A_e", 2, 1],
     }
 )
@@ -65,16 +65,69 @@ community_model.deleteReactionAndBounds("BM_e_B_exchange")
 # community_model.getReaction("S_exchange").setLowerBound(-100)
 
 n = 21
-dj = EndPointFBA(
+ep = EndPointFBA(
     community_model,
     n,
     {"modelA": 1.0, "modelB": 2.0},
     {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
     0.1,
+    kinetics=kin,
 )
 
 
-solution = dj.simulate()
+solution = ep.simulate()
 
-plot_biomasses(dj)
-plot_metabolites(dj, {"A_e": 0.0, "B_e": 0.0})
+
+biomasses = ep.get_biomasses()
+metabolites = ep.get_metabolites()
+fluxes = ep.get_fluxes()
+time = ep.get_time_points()
+
+plt.plot(
+    range(len(time) + 1),
+    metabolites["S_e"],
+    color="blue",
+    label="Metabolite s",
+)
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
+plt.show()
+
+
+plt.plot(
+    range(len(time) + 1),
+    metabolites["A_e"],
+    color="blue",
+    label="Metabolite a",
+)
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
+plt.show()
+
+
+# Adding labels and title
+
+plt.plot(
+    range(len(time) + 1),
+    metabolites["B_e"],
+    color="blue",
+    label="Metabolite B",
+)
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+# Adding legend
+plt.legend()
+plt.show()
+
+plt.plot(
+    range(len(time) + 1), biomasses["modelA"], color="blue", label="modelA"
+)
+plt.plot(
+    range(len(time) + 1), biomasses["modelB"], color="orange", label="modelB"
+)
+plt.xlabel("Time")
+plt.ylabel("Concentration")
+plt.legend()
+plt.show()
