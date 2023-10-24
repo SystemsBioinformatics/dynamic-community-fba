@@ -445,7 +445,6 @@ class EndPointFBA(DynamicModelBase):
         for key, value in initial_biomasses.items():
             self.model.setReactionBounds(f"BM_{key}_exchange", -value, -value)
 
-    # FIX THIS TO NEW CBMPY
     def constrain_rates(self, epsilon=0.1):
         """
         Constrains the difference in reaction rates between t_n-1 and t_n.
@@ -461,26 +460,37 @@ class EndPointFBA(DynamicModelBase):
         )
         for rid in old_rids:
             reaction: Reaction = self.model.getReaction(
-                rid + "_" + self.m_times[0]
+                rid + "_" + self.times[0]
             )
 
             if reaction is not None and (not reaction.is_exchange):
-                for i, time in enumerate(self.m_times[:-1]):
+                for i, time in enumerate(self.times[:-1]):
                     id_t0 = f"{rid}_{time}"
-                    id_t1 = f"{rid}_{self.m_times[i+1]}"
-                    self.model.addUserConstraint(
+                    id_t1 = f"{rid}_{self.times[i+1]}"
+
+                    udc = self.model.createUserDefinedConstraint(
                         "R_constraint_pos" + id_t0,
-                        [[1, id_t0], [-1, id_t1]],
-                        "<=",
+                        numpy.NINF,
                         epsilon,
+                        components=[
+                            (1, id_t0, "linear"),
+                            (-1, id_t1, "linear"),
+                        ],
                     )
 
-                    self.model.addUserConstraint(
+                    self.model.addUserDefinedConstraint(udc)
+
+                    udc = self.model.createUserDefinedConstraint(
                         "R_constraint_neg" + id_t0,
-                        [[1, id_t0], [-1, id_t1]],
-                        ">=",
                         -epsilon,
+                        numpy.Inf,
+                        components=[
+                            (1, id_t0, "linear"),
+                            (-1, id_t1, "linear"),
+                        ],
                     )
+
+                    self.model.addUserDefinedConstraint(udc)
 
     def mm_approximation(self, rid):
         """If the EndPointFBA model is initialized with a KineticsStruct object
@@ -555,7 +565,7 @@ class EndPointFBA(DynamicModelBase):
             )
             additional_components.append((1.0, f"Phi_{mid}", "linear"))
             udc = self.model.createUserDefinedConstraint(
-                f"biomass_fraction_{mid}_{self.m_times[0]}",
+                f"biomass_fraction_{mid}_{self.times[0]}",
                 0.0,
                 0.0,
                 components=[
@@ -567,7 +577,7 @@ class EndPointFBA(DynamicModelBase):
             self.model.addUserDefinedConstraint(udc)
 
             udc = self.model.createUserDefinedConstraint(
-                f"biomass_fraction_{mid}_{self.m_times[-1]}",
+                f"biomass_fraction_{mid}_{self.times[-1]}",
                 0.0,
                 0.0,
                 components=[
@@ -600,10 +610,10 @@ class EndPointFBA(DynamicModelBase):
         for mid, _ in self.model.get_model_biomass_ids().items():
             self.model.deleteReactionAndBounds(f"Phi_{mid}")
             self.model.__popGlobalId__(
-                f"biomass_fraction_{mid}_{self.m_times[0]}"
+                f"biomass_fraction_{mid}_{self.times[0]}"
             )
             self.model.__popGlobalId__(
-                f"biomass_fraction_{mid}_{self.m_times[-1]}"
+                f"biomass_fraction_{mid}_{self.times[-1]}"
             )
 
     def set_qp(self, solution: float, epsilon=0.01) -> None:
@@ -612,7 +622,7 @@ class EndPointFBA(DynamicModelBase):
         obj.deleteAllFluxObjectives()
         QP = []
 
-        for i, tid in enumerate(self.m_times[:-1]):
+        for i, tid in enumerate(self.times[:-1]):
             rids = self.model.getReactionIds(tid)
             for rid in rids:
                 reaction = self.model.getReaction(rid)
@@ -621,14 +631,14 @@ class EndPointFBA(DynamicModelBase):
                 # We dont want the exchange reactions
                 if rid.startswith("R_") and not reaction.is_exchange:
                     rid = re.match(r"(.*?)_(time\d*)", rid).group(1)
-                    rid_t_t1 = f"{rid}_{self.m_times[i+1]}"
-                    rid_t_t0 = f"{rid}_{self.m_times[i]}"
+                    rid_t_t1 = f"{rid}_{self.times[i+1]}"
+                    rid_t_t0 = f"{rid}_{self.times[i]}"
 
                     if i == 0:
                         QP.append([1.0 * 2, rid_t_t0, rid_t_t0, str(i)])
                     else:
                         QP.append([2.0 * 2, rid_t_t0, rid_t_t0, str(i)])
-                    if i == len(self.m_times[:-1]) - 1:
+                    if i == len(self.times[:-1]) - 1:
                         QP.append([1.0 * 2, rid_t_t1, rid_t_t1, str(i)])
 
                     QP.append([-2.0, rid_t_t0, rid_t_t1, str(i)])
@@ -651,16 +661,16 @@ class EndPointFBA(DynamicModelBase):
             for r in reactions
         ]
 
-        for i, _ in enumerate(self.m_times[:-1]):
+        for i, _ in enumerate(self.times[:-1]):
             for rid in all_reactions:
-                rid_t_t1 = f"{rid}_{self.m_times[i+1]}"
-                rid_t_t0 = f"{rid}_{self.m_times[i]}"
+                rid_t_t1 = f"{rid}_{self.times[i+1]}"
+                rid_t_t0 = f"{rid}_{self.times[i]}"
 
                 if i == 0:
                     QP.append([1.0 * 2, rid_t_t0, rid_t_t0, str(i)])
                 else:
                     QP.append([2.0 * 2, rid_t_t0, rid_t_t0, str(i)])
-                if i == len(self.m_times[:-1]) - 1:
+                if i == len(self.times[:-1]) - 1:
                     QP.append([1.0 * 2, rid_t_t1, rid_t_t1, str(i)])
 
                 QP.append([-2.0, rid_t_t0, rid_t_t1, str(i)])

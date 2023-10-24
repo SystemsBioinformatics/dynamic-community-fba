@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.setuptools.packages.find]
-where = [""]
+where = ["dcFBA"]
 
 
 [project]
@@ -25,7 +25,7 @@ classifiers = [
 ]
 keywords = ["Microbial Community", "Systems Biology", "Dynamic FBA", "Genome Scale Models"]
 dependencies = [
-  "cbmpy",
+  "cbmpy >= 0.9.0",
   "cplex",
 ]
 
