@@ -1,4 +1,5 @@
 import numpy
+import cbmpy
 from cbmpy.CBModel import Model, Reaction
 from .StaticOptimizationModel import StaticOptimizationModelBase
 from ..Models.Kinetics import KineticsStruct

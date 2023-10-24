@@ -18,7 +18,7 @@ authors = [
 license = { file = "LICENSE" }
 description = "Python package for Dynamic Community FBA"
 readme = "README.md"
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8,<3.11" #necesassry for cplex as there are only cplex versions for python 3.8, 3.9 and 3.10
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
