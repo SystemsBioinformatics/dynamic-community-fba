@@ -24,13 +24,17 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
         Args:
             models (list[Model]): Metabolic models to simulate.
-            biomasses (list[float]): Initial biomass concentrations for each model.
-            initial_concentrations (dict[str, float], optional): Mapping of metabolite
-                IDs to their initial concentrations. Defaults to an empty dictionary.
-                If empty, exchange reaction lower bounds will be used as initial concentrations
-            kinetics (dict[str, KineticsStruct], optional): Dictionary pairing model
-                IDs with their respective kinetics structures. Defaults to an empty dictionary.
+            biomasses (list[float]): Initial biomass concentrations for each
+                model.
+            initial_concentrations (dict[str, float], optional): Mapping of
+                metabolite IDs to their initial concentrations. Defaults to an
+                empty dictionary. If empty, exchange reaction lower bounds
+                will be used as initial concentrations
+            kinetics (dict[str, KineticsStruct], optional): Dictionary pairing
+                model IDs with their respective kinetics structures. Defaults
+                to an empty dictionary.
         """
+
         super().__init__()
 
         self._models = {m.getId(): m.clone() for m in models}
@@ -76,7 +80,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 return None
 
         ls = self.get_flux_values(mid, rid)
-        return numpy.divide(ls / self.biomasses[mid][:-1]).tolist()
+        return numpy.divide(ls, self.biomasses[mid][:-1]).tolist()
 
     def get_community_growth_rate(self):
         community_flux = [0] * (len(self.times) - 1)
@@ -84,10 +88,11 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         for mid, model in self.models.items():
             rid = model.getActiveObjectiveReactionIds()[0]
             values = self.get_flux_values(mid, rid)
+
             for i, value in enumerate(values):
                 community_flux[i] += value
                 total_mass[i] += self.biomasses[mid][i]
-        return numpy.divide(community_flux / total_mass).tolist()
+        return numpy.divide(community_flux, total_mass).tolist()
 
     def get_relative_abundance(self) -> dict[str, list[float]]:
         total_mass = [0] * (len(self.times))
@@ -135,10 +140,10 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             for mid, model in self.models.items():
                 solution = cbmpy.doFBA(model, quiet=True)
 
-                if math.isnan(solution):
+                if numpy.isnan(solution):
                     print(f"model: {mid} had an infeasible solution")
                     self._times = used_times
-                    self.fluxes = final_fluxes
+                    self._fluxes = final_fluxes
                     return
 
                 if solution <= epsilon:
@@ -151,7 +156,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             if step == len(self.models.keys()):
                 print("All models had solution value of 0")
                 self._times = used_times
-                self.fluxes = final_fluxes
+                self._fluxes = final_fluxes
                 return
 
             self.update_concentrations(temp_fluxes, dt)
@@ -182,8 +187,8 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         """Update the reaction bounds for all models.
 
         Args:
-            kinetics_func (function): Custom function to modify reaction bounds based on
-                kinetic data.
+            kinetics_func (function): Custom function to modify reaction
+               bounds based on kinetic data.
 
         """
 
@@ -215,10 +220,11 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
     def update_exchanges(self, dt):
         """
-        Adjust exchange reactions based on the present metabolite concentrations
+        Adjust exchange reactions based on the present metabolite
+        concentrations
 
-        Sets the lower bounds for exchange reactions to prevent metabolite import beyond
-        the current concentration.
+        Sets the lower bounds for exchange reactions to prevent metabolite
+        import beyond the current concentration.
         """
 
         for model in self.models.values():
@@ -257,7 +263,8 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         Modify biomass concentrations after completing an FBA step.
 
         Args:
-            model (Model): Model for which the biomass concentrations are updated.
+            model (Model): Model for which the biomass concentrations are
+                updated.
             dt (float): Time step interval for the simulation.
             FBAsol (dict): Solution vector resulting from the FBA.
             step (int): Current simulation step.
@@ -282,7 +289,8 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         Recompute a smaller time step if the obtained result was infeasible.
 
         Args:
-            species_id (str): ID of the species for which the time step is recalculated.
+            species_id (str): ID of the species for which the time step is
+                recalculated.
             FBAsol (dict): Solution vector from the FBA.
 
         Returns:
