@@ -4,7 +4,7 @@
 Prerequisites
 -------------
 The dynamic-community-fba package relies on the `CBMPy` library [#ref_cbmpy]_ for handling constraint-based metabolic models. Like 
-`COBRApy` [#ref_cobra]_, `CBMPy` is a Python package that simplifies the creation, loading, and manipulation of constraint-based models, allowing interaction with LP-solvers like `CPLEX` [#ref_cplex]_.
+`COBRApy` [#ref_cobra]_, `CBMPy` is a Python package that simplifies the loading, creation, and manipulation of constraint-based models, allowing interaction with LP-solvers like `CPLEX` [#ref_cplex]_.
 
 To install `CBMPy`, you can use the following command:
 
@@ -22,11 +22,11 @@ For more information and detailed documentation on using `CBMPy`, please refer t
 Dynamic Community FBA
 ---------------------
 
-After the installation of `CBMPY` you can install dynamic community FBA using the following command
+After the installation of `CBMPy` you can install dynamic community FBA using the following command
 
 .. code-block:: bash
 
-   pip install NAME
+   pip install dcFBA
 
 
 .. Escher

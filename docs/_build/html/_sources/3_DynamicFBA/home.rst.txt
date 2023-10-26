@@ -6,46 +6,61 @@ enabling the simulation and analysis of time-evolving metabolic processes within
 by *Mahadevan et. al (2002)* [#ref_dfba]_. 
 
 Simply put, dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.  
-With each iteration, external metabolites and biomasses are adjusted, followed by another FBA run. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
+With each iteration, external metabolites and biomasses concentrations are updated, followed by another FBA, with the new values. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
 or the final time point is reached. This modeling approach enables the exploration of metabolic network adjustments to evolving environmental factors, substrate availability, and cellular demands.
 
 Making it dynamic!
 ------------------
 
-To perform dFBA run the following: 
+We begin by loading the model and then limit the glucose uptake, ensuring that not all of the glucose can be consumed immediately.
 
 .. code-block:: python
    
     import cbmpy
-    from DCFBA.DynamicModels import DynamicSingleFBA
-    from DCFBA.Models import KineticsStruct
+    from dcFBA.DynamicModels import DynamicSingleFBA
     import matplotlib.pyplot as plt
 
-    model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml") #load the model 
+    model: Model = cbmpy.readSBML3FBC("cbmpy_test_ecoli")  # load the model
 
-    initial_biomass = 0.1 #Set the initial biomass
-    initial_concentrations = {"M_glc__D_e": 10} #We start with 10 mM of glucose
+    # Set bounds on the glucose import
+    model.getReaction("R_GLCpts").setUpperBound(10)
+    model.getReaction("R_GLCt2").setUpperBound(10)
+    model.getReaction("R_GLCDe").setUpperBound(10)
 
+
+Next we define the initial biomass and glucose concentrations and initialize the DYnamicSingleFBA object:
+
+.. code-block:: python
+
+    initial_biomass = 0.1  # Set the initial biomass
+    initial_concentrations = {"M_glc__D_e": 10}  # We start with 10 mM of glucose
     ds = DynamicSingleFBA(
         model,
-        "R_BIOMASS_Ecoli_core_w_GAM", 
+        "R_BIOMASS_Ecoli",
         initial_biomass,
         initial_concentrations,
-    ) # Define a DynamicSingleFBA object given the model and the id of the biomass reaction 
+    )  # Define a DynamicSingleFBA object given the model and the id of the biomass reaction
 
-    T, metabolites, biomasses, fluxes = ds.simulate(dt=0.1) 
+Now that the model is inflame we can run the the simulation and plot the results
 
+.. code-block:: python
 
-    #Plot the results
+    ds.simulate(dt=0.1)
+
+    #retrieve the results of the simulation
+    biomasses = ds.get_biomass()
+    metabolites = ds.get_metabolites()
+    time_points = ds.get_time_points()
+
+    # Plot the results
     ax = plt.subplot(111)
-    ax.plot(T, biomasses[""])
+    ax.plot(time_points, biomasses)
     ax2 = plt.twinx(ax)
-    ax2.plot(T, metabolites["M_glc__D_e"], color="r")
+    ax2.plot(time_points, metabolites["M_glc__D_e"], color="r")
 
     ax.set_ylabel("Biomass", color="b")
     ax2.set_ylabel("Glucose", color="r")
     plt.show()
-
 
 .. image:: ../_static/images/dFBA.png
     :width: 500px

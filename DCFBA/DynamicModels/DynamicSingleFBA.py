@@ -34,8 +34,16 @@ class DynamicSingleFBA(DynamicFBABase):
         """
         cm = CommunityModel([model], [biomass_id], [""], model.getId())
 
+        if biomass_id not in cm.getReactionIds():
+            raise Exception(f"Biomass id: {biomass_id} not a reaction")
         cm.createObjectiveFunction(biomass_id)
+
+        cm.setActiveObjective(f"{biomass_id}_objective")
 
         super().__init__(
             cm, [initial_biomass], initial_concentrations, kinetics
         )
+
+    def get_biomass(self):
+        biomasses = super().get_biomasses()
+        return biomasses[""]

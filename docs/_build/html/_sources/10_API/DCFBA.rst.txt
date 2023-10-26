@@ -5,14 +5,14 @@
 CommunityModel
 ---------------------------------
 
-.. automodule:: DCFBA.Models.CommunityModel
+.. automodule:: dcFBA.Models.CommunityModel
    :members:
    :show-inheritance:
 
 DynamicModelBase
 -------------------------------
 
-.. automodule:: DCFBA.DynamicModels.DynamicModelBase
+.. automodule:: dcFBA.DynamicModels.DynamicModelBase
    :members:
    :show-inheritance:
 
@@ -20,35 +20,35 @@ DynamicModelBase
 EndPointFBA
 -------------------------------
 
-.. automodule:: DCFBA.DynamicModels.EndPointFBA
+.. automodule:: dcFBA.DynamicModels.EndPointFBA
    :members:
    :show-inheritance:
 
 StaticOptimizationModel
 -------------------------------
 
-.. automodule:: DCFBA.DynamicModels.StaticOptimizationModel
+.. automodule:: dcFBA.DynamicModels.StaticOptimizationModel
    :members:
    :show-inheritance:
 
 DynamicFBABase
 -------------------------------
 
-.. automodule:: DCFBA.DynamicModels.DynamicFBABase
+.. automodule:: dcFBA.DynamicModels.DynamicFBABase
    :members:
    :show-inheritance:
 
 DynamicSingleFBA
 -------------------------------
 
-.. automodule:: DCFBA.DynamicModels.DynamicSingleFBA
+.. automodule:: dcFBA.DynamicModels.DynamicSingleFBA
    :members:
    :show-inheritance:
 
 DynamicJointFba
 -------------------------------
 
-.. automodule:: DCFBA.DynamicModels.DynamicJointFBA
+.. automodule:: dcFBA.DynamicModels.DynamicJointFBA
    :members:
    :show-inheritance:
 
@@ -56,14 +56,14 @@ DynamicJointFba
 KineticStruct
 -------------------------------
 
-.. automodule:: DCFBA.Models.Kinetics
+.. automodule:: dcFBA.Models.Kinetics
    :members:
    :show-inheritance:
 
 Transporters
 -------------------------------
 
-.. automodule:: DCFBA.Models.Transporters
+.. automodule:: dcFBA.Models.Transporters
    :members:
    :show-inheritance:
 

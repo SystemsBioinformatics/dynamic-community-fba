@@ -109,7 +109,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         self,
         dt: float,
         n: int = 10000,
-        epsilon: float = 0.01,
+        epsilon: float = 1e-6,
         kinetics_func=None,
         deviate=None,
     ) -> None:

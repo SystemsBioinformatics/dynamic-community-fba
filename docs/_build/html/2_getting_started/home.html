@@ -95,22 +95,22 @@
 <h1>2. CBMPy Quick Start Guide<a class="headerlink" href="#cbmpy-quick-start-guide" title="Permalink to this heading"></a></h1>
 <p>Before delving into the modeling of microbial communities, let’s establish a solid foundation by exploring the core principles of the <cite>CBMPy</cite> package.
 We will guide you through a series of instructive examples that illuminate key operations for GSMM’s. These examples will demonstrate the foundational techniques
-for loading and manipulating models. For these examples we will use the <em>E. coli core metabolism</em> which comes with the <cite>CBMPy</cite> package.
+for loading and manipulating models. For these examples we will use the <em>E. coli core iJR904</em> which comes with the <cite>CBMPy</cite> package.
 Through these hands-on demonstrations, you’ll swiftly grasp the fundamental operations that underpin effective model manipulation.
 For a more comprehensive understanding and explanation of all the functionalities available in  <cite>CBMPy</cite>, we recommend you to read the extensive <a class="reference external" href="https://pythonhosted.org/cbmpy/modules_doc.html">documentation</a>.</p>
-<p>For those who have prior experience with CPBRApy, the transition to CBMPy will feel remarkably intuitive, as the two share notable similarities in their approach and methodology.</p>
+<p>For those who have prior experience with <cite>CPBRApy</cite>, the transition to <cite>CBMPy</cite> will feel remarkably intuitive, as the two share notable similarities in their approach and methodology.</p>
 <section id="loading-a-model-using-cbmpy">
 <h2>2.1. Loading a model using CBMPy<a class="headerlink" href="#loading-a-model-using-cbmpy" title="Permalink to this heading"></a></h2>
 <p>To load a model and perform a simple FBA analysis on it type:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cbmpy</span>
 <span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
 
-<span class="n">model</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span> <span class="c1">#Load the model</span>
-<span class="n">solution</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1">#Perform FBA, returns the objective value</span>
-<span class="n">FBAsol</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getSolutionVector</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#Get all reaction ids with there flux value</span>
+<span class="n">iJR904</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">readSBML3FBC</span><span class="p">(</span><span class="s2">&quot;cbmpy_test_ecoli&quot;</span><span class="p">)</span> <span class="c1">#Load the model</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">iJR904</span><span class="p">)</span> <span class="c1">#Perform FBA, returns the objective value</span>
+<span class="n">FBAsol</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getSolutionVector</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#Get all reaction ids with there flux value</span>
 </pre></div>
 </div>
-<p>Here the model refers to a <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> which represents the GSMM of the loaded organism .</p>
+<p>Here model <em>iJR904</em> refers to a <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> which represents the GSMM of the loaded organism .</p>
 </section>
 <section id="sbml-and-cobra-models">
 <h2>2.2. SBML and COBRA models<a class="headerlink" href="#sbml-and-cobra-models" title="Permalink to this heading"></a></h2>
@@ -127,10 +127,14 @@ a <cite>COBRA</cite> model into <cite>CBMPy</cite> therefore always check if the
 <section id="saving-a-model">
 <h2>2.3. Saving a model<a class="headerlink" href="#saving-a-model" title="Permalink to this heading"></a></h2>
 <p>There are two ways to save a cbmpy model. The easiest way is to save your altered model to the latest version of SBML:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">reaction</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_EX_glc__D_e&quot;</span><span class="p">)</span> <span class="c1">#Get a reaction from the model</span>
-<span class="n">reaction</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#Alter the reaction in the model</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Reaction</span>
 
-<span class="n">cbmpy</span><span class="o">.</span><span class="n">saveModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;adjusted_model.xml&quot;</span><span class="p">)</span> <span class="c1">#Save the new model to a XML file</span>
+<span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_EX_glc__D_e&quot;</span><span class="p">)</span> <span class="c1">#Get a reaction from the model</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">getLowerBound</span><span class="p">())</span> <span class="c1">#-10.0</span>
+<span class="n">reaction</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#Alter the reaction in the model</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">getLowerBound</span><span class="p">())</span> <span class="c1">#0.0</span>
+
+<span class="n">cbmpy</span><span class="o">.</span><span class="n">saveModel</span><span class="p">(</span><span class="n">iJR904</span><span class="p">,</span> <span class="s2">&quot;adjusted_model.xml&quot;</span><span class="p">)</span> <span class="c1">#Save the new model to a XML file</span>
 </pre></div>
 </div>
 <p>You can save the modified model in a file format of your choice using any of the following methods:</p>
@@ -145,21 +149,21 @@ a <cite>COBRA</cite> model into <cite>CBMPy</cite> therefore always check if the
 <h2>2.4. Reactions, Reagents and Species<a class="headerlink" href="#reactions-reagents-and-species" title="Permalink to this heading"></a></h2>
 <p>In <cite>CBMPy</cite>, the <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object stores the model and all it’s attributes. When working with the model,
 most modifications will involve manipulating this object. In the previous section,
-we demonstrated how to load the <em>E. coli core metabolism</em> model and perform a FBA on it. Now, let’s explore some basic alterations that can be made
+we demonstrated how to load the <em>E. coli core iJR904</em> model and perform a FBA on it. Now, let’s explore some basic alterations that can be made
 to the model.</p>
 <section id="reactions">
 <h3>Reactions<a class="headerlink" href="#reactions" title="Permalink to this heading"></a></h3>
 <p>To list all the reactions in the model, or list the reaction containing a certain string you can call the following functions:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">modelRxns</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getReactionIds</span><span class="p">()</span> <span class="c1">#All the reactions, as a list[str]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">modelRxns</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getReactionIds</span><span class="p">()</span> <span class="c1">#All the reactions, as a list[str]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">modelRxns</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">getReactionIds</span><span class="p">(</span><span class="s1">&#39;PG&#39;</span><span class="p">))</span>  <span class="c1">#Outputs only reactions with &quot;PG&quot; in their ID</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">iJR904</span><span class="o">.</span><span class="n">getReactionIds</span><span class="p">(</span><span class="s1">&#39;PG&#39;</span><span class="p">))</span>  <span class="c1">#Outputs only reactions with &quot;PG&quot; in their ID</span>
 </pre></div>
 </div>
 <p>Once you have identified your reaction of interest, you can easily access its key details, including the reagents, upper and lower bounds, and equation, as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Reagent</span><span class="p">,</span> <span class="n">Species</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Reagent</span><span class="p">,</span> <span class="n">Species</span>
 
-<span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_PGK&quot;</span><span class="p">)</span>
+<span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_PGK&quot;</span><span class="p">)</span>
 
 <span class="n">reagents</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Reagent</span><span class="p">]</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">getReagentObjIds</span><span class="p">()</span>  <span class="c1"># Get all reagent ids of the reaction</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">reagents</span><span class="p">)</span>
@@ -177,16 +181,16 @@ to the model.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">reversible</span><span class="p">)</span> <span class="c1">#True if the reaction is reversible</span>
 </pre></div>
 </div>
-<p>You can easily add your own defined reactions to the model using <code class="docutils literal notranslate"><span class="pre">model.createReaction()</span></code>, if we for example want to add the
+<p>You can easily add your own defined reactions to the model using the <code class="docutils literal notranslate"><span class="pre">createReaction()</span></code> method, if we for example want to add the
 irreversible reaction: <code class="docutils literal notranslate"><span class="pre">ATP</span> <span class="pre">+</span> <span class="pre">H2O</span> <span class="pre">-&gt;</span> <span class="pre">ADP</span> <span class="pre">+</span> <span class="pre">Pi</span></code> we can do this with the following code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">createReaction</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">reversible</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="c1"># Create a new empty irreversible reaction</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">iJR904</span><span class="o">.</span><span class="n">createReaction</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">reversible</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="c1"># Create a new empty irreversible reaction</span>
 
 <span class="c1"># Add the reagents to the reaction, All metabolites already existed in the model so we did not</span>
 <span class="c1"># Need to create them</span>
-<span class="n">model</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span> <span class="s2">&quot;M_atp_c&quot;</span> <span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span> <span class="s2">&quot;M_adp_c&quot;</span><span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span>  <span class="s2">&quot;M_h2o_c&quot;</span><span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span> <span class="s2">&quot;M_pi_c&quot;</span> <span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">iJR904</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span> <span class="s2">&quot;M_atp_c&quot;</span> <span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">iJR904</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span> <span class="s2">&quot;M_adp_c&quot;</span><span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">iJR904</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span>  <span class="s2">&quot;M_h2o_c&quot;</span><span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">iJR904</span><span class="o">.</span><span class="n">createReactionReagent</span><span class="p">(</span><span class="s1">&#39;ATPsink&#39;</span><span class="p">,</span> <span class="n">metabolite</span> <span class="o">=</span> <span class="s2">&quot;M_pi_c&quot;</span> <span class="p">,</span> <span class="n">coefficient</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -211,8 +215,8 @@ we can access information about a reagent as follows:</p>
 <section id="species">
 <h3>Species<a class="headerlink" href="#species" title="Permalink to this heading"></a></h3>
 <p>Species represent the metabolites in the system using the <code class="docutils literal notranslate"><span class="pre">Species</span></code> object you can easily retrieve details such as the molecular formula, charge, and the compartment of the species.
-Furthermore you can list the reactions in which a species is consumed or created</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">:</span> <span class="n">Species</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getSpecies</span><span class="p">(</span><span class="s2">&quot;M_pi_c&quot;</span><span class="p">)</span>
+Furthermore you can list the reactions in which a species is consumed or synthesized</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">:</span> <span class="n">Species</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getSpecies</span><span class="p">(</span><span class="s2">&quot;M_pi_c&quot;</span><span class="p">)</span>
 
 <span class="n">species</span><span class="o">.</span><span class="n">getChemFormula</span><span class="p">()</span>
 <span class="n">species</span><span class="o">.</span><span class="n">getCharge</span><span class="p">()</span>
@@ -226,20 +230,22 @@ Furthermore you can list the reactions in which a species is consumed or created
 <p>To perform FBA on the model you need to set an objective function. The output of FBA
 will be a flux distribution which minimizes/maximizes this objective function.</p>
 <p>To check what the active objective function of the model is you can write:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">objective_ids</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getActiveObjectiveReactionIds</span><span class="p">()</span> <span class="c1">#Returns the IDs of the reactions which have been set as objective reaction</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">objective_ids</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getActiveObjectiveReactionIds</span><span class="p">()</span> <span class="c1">#Returns the IDs of the reactions which have been set as objective reaction</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">objective_ids</span><span class="p">)</span>
-<span class="c1">#[&#39;R_BIOMASS_Ecoli_core_w_GAM&#39;]</span>
+<span class="c1">#[&#39;R_BIOMASS_Ecoli&#39;]</span>
 
-<span class="n">objective</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">getActiveObjective</span><span class="p">()</span>
+<span class="n">objective</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getActiveObjective</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">objective</span><span class="o">.</span><span class="n">getOperation</span><span class="p">())</span>
 <span class="c1">#Maximize</span>
 
-<span class="n">solution</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span> <span class="o">=</span> <span class="n">iJR904</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_EX_glc__D_e&quot;</span><span class="p">)</span>
+<span class="n">reaction</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">)</span> <span class="c1">#Reset lower bound</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">doFBA</span><span class="p">(</span><span class="n">iJR904</span><span class="p">)</span> <span class="c1">#0.922</span>
 </pre></div>
 </div>
-<p>Calling <code class="docutils literal notranslate"><span class="pre">cbmpy.doFBA(model)</span></code>  will calculate the fluxes such that the flux through the
-reaction with id <cite>R_BIOMASS_Ecoli_core_w_GAM</cite> is maximized.</p>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">cbmpy.doFBA(iJR904)</span></code>  will calculate the fluxes such that the flux through the
+reaction with id <cite>R_BIOMASS_Ecoli</cite> is maximized.</p>
 <p>Next, we’ll delve into dynamic modeling of CBMPy models. Once we lay this foundation, we’ll journey into the fascinating realm of modeling microbial communities.</p>
 </section>
 </section>
