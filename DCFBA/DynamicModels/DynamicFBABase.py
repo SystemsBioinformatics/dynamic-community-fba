@@ -39,7 +39,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
         self._biomasses = dict(zip(model_biomasses.keys(), initial_biomasses))
 
         self._kinetics = kinetics
-        self.set_initial_concentrations(self.model, initial_concentrations)
+        self._set_initial_concentrations(self.model, initial_concentrations)
 
         for rid in self.model.getReactionIds():
             reaction: Reaction = self.model.getReaction(rid)

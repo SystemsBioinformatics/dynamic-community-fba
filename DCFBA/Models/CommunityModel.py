@@ -17,7 +17,6 @@ class CommunityModel(Model):
             reaction IDs of the individual models.
     """
 
-    # TODO rewrite this using property, underscores etc...
     m_identifiers: list[str]
     m_single_model_ids: list[str]
     m_single_model_biomass_reaction_ids: list[str] = []
@@ -188,7 +187,7 @@ class CommunityModel(Model):
 
         del self.m_single_model_biomass_reaction_ids[index]
 
-    def get_model_specific_reactions(self, mid: str) -> list[Reaction]:
+    def get_model_specific_reactions(self, mid: str) -> list[str]:
         """
         Returns a list of reaction IDs specific to the given model.
 
@@ -214,7 +213,7 @@ class CommunityModel(Model):
                 ans.append(rid)
         return ans
 
-    def get_model_specific_species(self, mid: str) -> list[Species]:
+    def get_model_specific_species(self, mid: str) -> list[str]:
         """
         Returns a list of species IDs specific to the given model.
 

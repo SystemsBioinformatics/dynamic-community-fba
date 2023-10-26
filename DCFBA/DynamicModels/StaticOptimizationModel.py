@@ -15,7 +15,7 @@ class StaticOptimizationModelBase(DynamicModelBase):
         super().__init__()
         self._initial_bounds = {}
 
-    def set_initial_concentrations(
+    def _set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]
     ) -> None:
         """Sets initial concentrations of metabolites based on provided values

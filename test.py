@@ -1,18 +1,12 @@
 import cbmpy
 from cbmpy.CBModel import Model, Reaction
-from dcFBA.Models import CommunityModel
 from dcFBA.DynamicModels import EndPointFBA
-import time
-from dcFBA.Models import KineticsStruct
-import matplotlib.pyplot as plt
-import pickle
-
-iAF1260: Model = cbmpy.loadModel("models/bigg_models/iAF1260.xml")
-
-iAF1260.getReaction("R_EX_lys__L_e").setLowerBound(0)
-iAF1260.getReaction("R_EX_leu__L_e").setLowerBound(0)
+from dcFBA.Models import CommunityModel
 
 
+iAF1260: Model = cbmpy.loadModel("./models/bigg_models/iAF1260.xml")
+
+# Set exchange reactions
 reaction: Reaction
 for reaction in iAF1260.reactions:
     if reaction.getSBOterm() == "SBO:0000627":
@@ -24,33 +18,55 @@ for reaction in iAF1260.reactions:
     if reaction.getUpperBound() == 999999.0:
         reaction.setUpperBound(cbmpy.INF)
 
-leucine_knock_out = iAF1260.clone()
-lysine_knock_out = iAF1260.clone()
+iAF1260.getReaction("R_EX_lys__L_e").setLowerBound(0)
+iAF1260.getReaction("R_EX_leu__L_e").setLowerBound(0)
 
-leucine_knock_out.getReaction("R_IPPS").setUpperBound(0)
-lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
+
+def get_leucine_knock_out_model():
+    # Negative leucine (L)
+    iAF1260_N_L: Model = iAF1260.clone()
+    leucine = "M_leu__L_c"
+    knock_out_gene_leucine = "G_b0074"
+    leucine_gene_knock_out_associated_reaction = "R_IPPS"
+    leucine_creating_reaction = "R_LEUTAi"
+
+    # Knock out gene
+    iAF1260_N_L.getGene(knock_out_gene_leucine).setInactive()
+
+    return iAF1260_N_L
+
+
+def get_lysine_knock_out_model():
+    # Negative Lysine (K)
+    iAF1260_N_K = iAF1260.clone()
+    lysine = "M_lys__L_c"
+
+    knock_out_gene_lysine = "G_b2838"
+    associated_reaction = "R_DAPDC"
+
+    # Make sure no lysine enters the system
+    iAF1260_N_K.getGene(knock_out_gene_lysine).setInactive()
+
+    return iAF1260_N_K
+
+
+leucine_knock_out = get_leucine_knock_out_model()
+lysine_knock_out = get_lysine_knock_out_model()
 
 # Set creation of the metabolites to zero
 leucine_knock_out.getReaction("R_IPPS").setUpperBound(0)
 lysine_knock_out.getReaction("R_DAPDC").setUpperBound(0)
 
 
-# uptake simulation from paper:
-# leucine_knock_out.getReaction("R_LEUtex").setLowerBound(-1)
-# leucine_knock_out.getReaction("R_LEUtex").setUpperBound(1)
-
 leucine_knock_out.getReaction("R_LYStex").setLowerBound(-1000)
 leucine_knock_out.getReaction("R_LYStex").setUpperBound(1000)
 
-
-# lysine_knock_out.getReaction("R_LYStex").setLowerBound(-1)
-# lysine_knock_out.getReaction("R_LYStex").setUpperBound(1)
 
 lysine_knock_out.getReaction("R_LEUtex").setLowerBound(-1000)
 lysine_knock_out.getReaction("R_LEUtex").setUpperBound(1000)
 
 
-# Restrict the uptake of glucose
+# Restrict the release of glucose
 leucine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
 leucine_knock_out.getReaction("R_GLCtex_copy2").setUpperBound(0)
 lysine_knock_out.getReaction("R_GLCtex_copy1").setUpperBound(10)
@@ -68,10 +84,6 @@ community_model: CommunityModel = CommunityModel(
     ["dleu", "dlys"],
 )
 
-# R_O2tex oxygen
-# community_model.getReaction("R_O2tex_dleu").setLowerBound(-15)
-# community_model.getReaction("R_O2tex_dlys").setLowerBound(-15)
-
 community_model.getReaction("R_EX_o2_e").setLowerBound(
     -30
 )  # Vou;d also be set to 2* 18.5
@@ -80,58 +92,14 @@ community_model.getReaction("R_EX_cbl1_e").setLowerBound(
 )  # 2 * initial value of 0.01
 
 
-# First try if accumulation of the metabolites is enough to stop
-# the corss feeding
-community_model.getReaction("R_EX_leu__L_e").setLowerBound(0)
-community_model.getReaction("R_EX_lys__L_e").setLowerBound(0)
-
-community_model.getReaction("R_EX_leu__L_e").setUpperBound(0)
-community_model.getReaction("R_EX_lys__L_e").setUpperBound(0)
-
-medium_co_culture = {
-    "M_glc__D_e": 11.96,
-    "M_leu__L_e": 0,
-    "M_lys__L_e": 0,
-}  # Glucose from the experiment paper Zhang, Reed
-
-start_time = time.time()
-# Some test kinetics
-kinetics = KineticsStruct(
-    {
-        "R_GLCtex_copy1_dleu": ["M_glc__D_e", 0.015, 10],
-        "R_GLCtex_copy1_dlys": ["M_glc__D_e", 0.015, 10],
-        "R_VALtex_copy1_dleu": ["M_val__L_e", 0.0008, 0.0508],
-        "R_VALtex_copy1_dlys": ["M_val__L_e", 0.0008, 0.0508],
-    }
-)
-
 ep = EndPointFBA(
     community_model,
-    n=8,
-    initial_biomasses={"dleu": 0.0027, "dlys": 0.0027},
-    initial_concentrations=medium_co_culture,
-    dt=0.5625,
+    8,
+    {"dleu": 0.0027, "dlys": 0.0027},
+    {"M_glc__D_e": 11.96, "M_leu__L_e": 0, "M_lys__L_e": 0},
+    0.8,
 )
 
-ep.simulate()
 
-with open("data.pkl", "wb") as file:
-    pickle.dump(ep, file)
-
-
-# biomasses = ep.get_biomasses()
-# print(biomasses)
-# plt.plot(
-#     list(range(len(ep.times) + 1)),
-#     biomasses["dleu"],
-#     color="blue",
-#     label="dleu",
-# )
-# plt.plot(
-#     list(range(len(ep.times) + 1)),
-#     biomasses["dlys"],
-#     color="orange",
-#     label="dleu",
-# )
-
-# plt.show()
+Xin = 0.0027 * 2
+ep.balanced_growth(Xin, 0.083 - Xin)

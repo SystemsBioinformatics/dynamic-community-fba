@@ -42,7 +42,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
 
         for i, model in enumerate(self._models.values()):
             mid = model.getId()
-            self.set_initial_concentrations(model, initial_concentrations)
+            self._set_initial_concentrations(model, initial_concentrations)
             self._biomasses[mid] = [biomasses[i]]
 
             for rid in model.getReactionIds():

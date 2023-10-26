@@ -54,11 +54,11 @@ class EndPointFBA(DynamicModelBase):
 
         self._kinetics = kinetics
 
-        self.set_objective()
+        self._set_objective()
 
-        self.set_constraints(community_model, n, dt)
+        self._set_constraints(community_model, n, dt)
 
-        self.set_initial_concentrations(
+        self._set_initial_concentrations(
             initial_biomasses, initial_concentrations
         )
 
@@ -188,7 +188,7 @@ class EndPointFBA(DynamicModelBase):
 
         return solution
 
-    def set_objective(self):
+    def _set_objective(self):
         """Creates the community biomass reaction and sets it
         to be the objective of the model"""
 
@@ -207,7 +207,7 @@ class EndPointFBA(DynamicModelBase):
         self.model.buildStoichMatrix()
         return cbmpy.doFVA(self.model, selected_reactions=selected_reactions)
 
-    def set_constraints(
+    def _set_constraints(
         self,
         initial_model: CommunityModel,
         n: int,
@@ -406,7 +406,7 @@ class EndPointFBA(DynamicModelBase):
     #                 )
     #                 reactionN.setUpperBound(cbmpy.INF)
 
-    def set_initial_concentrations(
+    def _set_initial_concentrations(
         self,
         initial_biomasses: dict[str, float],
         initial_concentrations: dict[str, float],
