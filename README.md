@@ -40,6 +40,6 @@ To install dcFBA, follow these simple steps:
 
 ## Usage
 
-For basic usage examples and detailed documentation on both [cbmpy](https://pythonhosted.org/cbmpy/modules_doc.html) and [dcFBA](https://dynamic-community-fba.readthedocs.io/en/latest/2_getting_started/home.html), please refer to their respective documentation pages.
+For basic usage examples and detailed documentation on both [cbmpy](https://pythonhosted.org/cbmpy/modules_doc.html) and [dcFBA](https://dynamic-community-fba.readthedocs.io/en/latest), please refer to their respective documentation pages.
 
 [^1]: [Cite paper.]
