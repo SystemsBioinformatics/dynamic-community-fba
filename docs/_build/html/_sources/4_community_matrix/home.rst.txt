@@ -9,19 +9,13 @@ Strictly put, the community model represents the combined stoichiometry matrices
 and thus can again be used to perform FBA.
 
 To streamline the handling of multiple models, we have developed the ``CommunityModel`` class. The class offers a structured representation of combined metabolic networks, integrating stoichiometric 
-information from individual GSMMs/SBML models. By merging the information of each model, we can examine intricate microbial communities, their dynamics, and metabolic potentials.
+information from individual GSMMs/SBML models. By merging the information of each model, we can examine the intricate world microbial communities, their dynamics, and phenotypic potentials.
 
-Building upon the foundational ``cbmpy.CBModel`` class, 
-the ``CommunityModel`` inherits all its capabilities, 
-ensuring compatibility and ease of use. All functionalities 
-available in the ``cbmpy.CBModel`` class are retained in the 
-``CommunityModel``. Additionally, the latter can seamlessly 
-be exported to an SBML file, supporting its analysis 
-through various tools.
+The ``CommunityModel`` class is a direct subclass of the ``cbmpy.CBModel`` class. By building upon the foundational ``cbmpy.CBModel``, the ``CommunityModel`` inherits all of its capabilities, ensuring compatibility and ease of use. 
+All functionalities available in the ``cbmpy.CBModel`` class are retained in the ``CommunityModel``. Additionally, the latter can be effortlessly exported to an SBML file, enabling its analysis in various tools.
 
-In this chapter, we elaborate on the principles and guidelines 
-essential for constructing an accurate community model. By doing so, we aim to maximize its utility and prevent inadvertent errors. 
-To elucidate the ``CommunityModel`` class's adaptability further, we also offer hands-on examples.
+In this chapter, we elaborate on the principles and guidelines essential for constructing an accurate community model. By doing so, we aim to maximize its utility and prevent inadvertent errors. 
+To further illustrate the adaptability of the "CommunityModel" class, we provide practical, hands-on examples.
 
 
 4.2. Creating and modifying the community model
@@ -31,14 +25,18 @@ To set up a ``CommunityModel``, you must provide a list of N GSMMs along with th
 
 .. code-block:: python
 
-    import cbmpy
-    from DCFBA.Models import CommunityModel
+    from dcFBA.Models import CommunityModel
+    from dcFBA.DefaultModels import read_default_model
+    from cbmpy.CBModel import Model
 
-    model1 = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")
-    model2 = cbmpy.loadModel("models/bigg_models/strep_therm.xml")
+    model1:Model = read_default_model("e_coli_core")
+    model2:Model = read_default_model("strep_therm")
 
-    biomass_reaction_model_1 = "R_BIOMASS_Ecoli_core_w_GAM" #Biomass reaction id of ecoli
-    biomass_reaction_model_2 = "R_biomass_STR" #Biomass reaction id of strep.
+    biomass_reaction_model_1 = (
+        "R_BIOMASS_Ecoli_core_w_GAM"  # Biomass reaction id of ecoli
+    )
+
+    biomass_reaction_model_2 = "R_biomass_STR"  # Biomass reaction id of strep.
     community_model: CommunityModel = CommunityModel(
         [model1, model2],
         [
@@ -46,6 +44,7 @@ To set up a ``CommunityModel``, you must provide a list of N GSMMs along with th
             biomass_reaction_model_2,
         ],
     )
+
 
 If you don't know the biomass reaction ID of the model, there are a couple of ways to find it. 
 First of all, you can look it up in the SBML model. 
@@ -68,7 +67,7 @@ If no alternative IDs are provided, the community matrix will default to using t
 ----------
 
 During the initialization of the community model a new ``cbmpy.CBModel`` object is created. In the new object all compartments,
-reactions, reagents and species are copied from the provided models. To build a functional community model, we made the following considerations for each section of the old models:
+genes, reactions, reagents and species are copied from the provided models. To build a functional community model, we made the following considerations for each section of the old models:
 
 Compartments:
 *************

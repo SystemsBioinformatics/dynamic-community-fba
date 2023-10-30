@@ -98,29 +98,27 @@
 Strictly put, the community model represents the combined stoichiometry matrices of N Genome-Scale Metabolic Models (GSMMs)
 and thus can again be used to perform FBA.</p>
 <p>To streamline the handling of multiple models, we have developed the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class. The class offers a structured representation of combined metabolic networks, integrating stoichiometric
-information from individual GSMMs/SBML models. By merging the information of each model, we can examine intricate microbial communities, their dynamics, and metabolic potentials.</p>
-<p>Building upon the foundational <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> class,
-the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> inherits all its capabilities,
-ensuring compatibility and ease of use. All functionalities
-available in the <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> class are retained in the
-<code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>. Additionally, the latter can seamlessly
-be exported to an SBML file, supporting its analysis
-through various tools.</p>
-<p>In this chapter, we elaborate on the principles and guidelines
-essential for constructing an accurate community model. By doing so, we aim to maximize its utility and prevent inadvertent errors.
-To elucidate the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class’s adaptability further, we also offer hands-on examples.</p>
+information from individual GSMMs/SBML models. By merging the information of each model, we can examine the intricate world microbial communities, their dynamics, and phenotypic potentials.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> class is a direct subclass of the <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> class. By building upon the foundational <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code>, the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> inherits all of its capabilities, ensuring compatibility and ease of use.
+All functionalities available in the <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> class are retained in the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>. Additionally, the latter can be effortlessly exported to an SBML file, enabling its analysis in various tools.</p>
+<p>In this chapter, we elaborate on the principles and guidelines essential for constructing an accurate community model. By doing so, we aim to maximize its utility and prevent inadvertent errors.
+To further illustrate the adaptability of the “CommunityModel” class, we provide practical, hands-on examples.</p>
 </section>
 <section id="creating-and-modifying-the-community-model">
 <h2>4.2. Creating and modifying the community model<a class="headerlink" href="#creating-and-modifying-the-community-model" title="Permalink to this heading"></a></h2>
 <p>To set up a <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>, you must provide a list of N GSMMs along with their corresponding biomass reaction IDs:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cbmpy</span>
-<span class="kn">from</span> <span class="nn">DCFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dcFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DefaultModels</span> <span class="kn">import</span> <span class="n">read_default_model</span>
+<span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
 
-<span class="n">model1</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span>
-<span class="n">model2</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/strep_therm.xml&quot;</span><span class="p">)</span>
+<span class="n">model1</span><span class="p">:</span><span class="n">Model</span> <span class="o">=</span> <span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;e_coli_core&quot;</span><span class="p">)</span>
+<span class="n">model2</span><span class="p">:</span><span class="n">Model</span> <span class="o">=</span> <span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;strep_therm&quot;</span><span class="p">)</span>
 
-<span class="n">biomass_reaction_model_1</span> <span class="o">=</span> <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span> <span class="c1">#Biomass reaction id of ecoli</span>
-<span class="n">biomass_reaction_model_2</span> <span class="o">=</span> <span class="s2">&quot;R_biomass_STR&quot;</span> <span class="c1">#Biomass reaction id of strep.</span>
+<span class="n">biomass_reaction_model_1</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span>  <span class="c1"># Biomass reaction id of ecoli</span>
+<span class="p">)</span>
+
+<span class="n">biomass_reaction_model_2</span> <span class="o">=</span> <span class="s2">&quot;R_biomass_STR&quot;</span>  <span class="c1"># Biomass reaction id of strep.</span>
 <span class="n">community_model</span><span class="p">:</span> <span class="n">CommunityModel</span> <span class="o">=</span> <span class="n">CommunityModel</span><span class="p">(</span>
     <span class="p">[</span><span class="n">model1</span><span class="p">,</span> <span class="n">model2</span><span class="p">],</span>
     <span class="p">[</span>
@@ -149,7 +147,7 @@ As a result, the code would be unable to distinguish between the two models, lea
 <section id="rules">
 <h2>4.3. Rules<a class="headerlink" href="#rules" title="Permalink to this heading"></a></h2>
 <p>During the initialization of the community model a new <code class="docutils literal notranslate"><span class="pre">cbmpy.CBModel</span></code> object is created. In the new object all compartments,
-reactions, reagents and species are copied from the provided models. To build a functional community model, we made the following considerations for each section of the old models:</p>
+genes, reactions, reagents and species are copied from the provided models. To build a functional community model, we made the following considerations for each section of the old models:</p>
 <section id="compartments">
 <h3>Compartments:<a class="headerlink" href="#compartments" title="Permalink to this heading"></a></h3>
 <p>In our community model, we utilize a compartmentalized design to accurately simulate the natural structure and behavior of microbial communities.

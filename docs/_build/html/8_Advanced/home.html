@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>7. Advanced Topics &mdash; dynamic-community-fba  documentation</title>
+  <title>8. Advanced Topics &mdash; dynamic-community-fba  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,10 +16,11 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="8. FAQ" href="../9_faq/home.html" />
+    <link rel="next" title="9. FAQ" href="../9_faq/home.html" />
     <link rel="prev" title="7. EndPointFBA" href="../7_endpoint_fba/home.html" /> 
 </head>
 
@@ -50,14 +51,19 @@
 <li class="toctree-l1"><a class="reference internal" href="../5_djoint/home.html">5. Dynamic Joint FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../6_parallel_dfba/home.html">6. Dynamic Parallel FBA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../7_endpoint_fba/home.html">7. EndPointFBA</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">7. Advanced Topics</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">8. Advanced Topics</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#manipulating-the-simulation">Manipulating the simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-kinetics-object-for-michaelis-menten">The Kinetics Object for Michaelis Menten</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-kinetics-function">The Kinetics function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unused-reactions">Unused reactions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scan-unused-reactions-and-species">1. Scan unused reactions and species</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sparse-matrix">2. Sparse Matrix</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">8. FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">9. API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../9_faq/home.html">9. FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../10_API/DCFBA.html">10. API</a></li>
 </ul>
 
         </div>
@@ -74,7 +80,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">7. Advanced Topics</li>
+      <li class="breadcrumb-item active">8. Advanced Topics</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/8_Advanced/home.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -85,9 +91,9 @@
            <div itemprop="articleBody">
              
   <section id="advanced-topics">
-<h1>7. Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permalink to this heading"></a></h1>
+<h1>8. Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permalink to this heading"></a></h1>
 <p>This is the Advanced Topics section of our Python documentation. Here, we explore how you can manipulate the simulation during it’s run and we explore the
-“Kinetics Object” which can be used for Michaelis Menten kinetics. Next we discuss the “Kinetics function.”
+<code class="docutils literal notranslate"><span class="pre">KineticStruct</span></code> which can be used for Michaelis Menten kinetics. Next we discuss the <code class="docutils literal notranslate"><span class="pre">Kinetics</span> <span class="pre">function`</span></code>
 These tools enable you to add more biological information in the modelling.</p>
 <p>Let’s dive in!</p>
 <section id="manipulating-the-simulation">
@@ -96,18 +102,18 @@ These tools enable you to add more biological information in the modelling.</p>
 By manipulating you can think of adding or removing external metabolites from the system. But following some simple rules nearly everything can be changed during simulation.</p>
 <p>Here we will give an example where we grow two strains of <em>E coli.</em> on Pyruvate and add L-Glutamate when the concentration of Pyruvate is half it’s initial concentration.</p>
 <p>First we build a <code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code> model:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cbmpy</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">DCFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
-<span class="kn">from</span> <span class="nn">DCFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicJointFBA</span>
+<span class="kn">from</span> <span class="nn">dcFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicJointFBA</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DefaultModels</span> <span class="kn">import</span> <span class="n">read_default_model</span>
 
 <span class="c1"># Build the model and set all bounds</span>
-<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;data/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span>
+<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;e_coli_core&quot;</span><span class="p">)</span>
 <span class="n">model1</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLUt2r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
 <span class="n">model1</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_PYRt2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
-<span class="n">model_2</span> <span class="o">=</span> <span class="n">model1</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
 
+<span class="n">model_2</span> <span class="o">=</span> <span class="n">model1</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
 <span class="n">model_2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_PYRt2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">model_2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLUt2r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
 
@@ -119,7 +125,7 @@ By manipulating you can think of adding or removing external metabolites from th
 
 <span class="n">combined_model</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_EX_pyr_e&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
 
-<span class="c1">#Set initial concentrations</span>
+<span class="c1"># Set initial concentrations</span>
 <span class="n">dynamic_fba</span> <span class="o">=</span> <span class="n">DynamicJointFBA</span><span class="p">(</span>
     <span class="n">combined_model</span><span class="p">,</span>
     <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
@@ -128,34 +134,31 @@ By manipulating you can think of adding or removing external metabolites from th
 </pre></div>
 </div>
 <p>Next we will define our deviation function. Remember that the function, no matter if you use it or not, needs to accept the <code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code> model, the <code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">steps</span></code> of the simulation
-and a <code class="docutils literal notranslate"><span class="pre">condition</span></code> which we will explain in a minute.</p>
+and a <code class="docutils literal notranslate"><span class="pre">condition</span></code> which we will explain in a minute. Furthermore, you always need to return an <code class="docutils literal notranslate"><span class="pre">int</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">deviate_func</span><span class="p">(</span><span class="n">DFBA</span><span class="p">:</span> <span class="n">DynamicJointFBA</span><span class="p">,</span> <span class="n">used_time</span><span class="p">,</span> <span class="n">condition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="k">if</span> <span class="p">(</span>
-    <span class="n">DFBA</span><span class="o">.</span><span class="n">m_metabolite_concentrations</span><span class="p">[</span><span class="s2">&quot;M_pyr_e&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">5.0</span>
-    <span class="ow">and</span> <span class="n">condition</span> <span class="o">&lt;</span> <span class="mi">1</span>
-<span class="p">):</span>
+<span class="k">if</span> <span class="n">DFBA</span><span class="o">.</span><span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_pyr_e&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">5.0</span> <span class="ow">and</span> <span class="n">condition</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
     <span class="n">combined_model</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_EX_glu__L_e&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
 
-    <span class="n">DFBA</span><span class="o">.</span><span class="n">m_metabolite_concentrations</span><span class="p">[</span><span class="s2">&quot;M_glu__L_e&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">DFBA</span><span class="o">.</span><span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glu__L_e&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">30</span>
 
     <span class="k">return</span> <span class="mi">1</span>
 
 <span class="k">return</span> <span class="n">condition</span>
 </pre></div>
 </div>
-<p>Here we define the <code class="docutils literal notranslate"><span class="pre">deviate_func</span></code> as follows, run the function when the concentration of the dynamic FBA object runs under 5.0 and run it only once. If the concentration is
-not below oir equal to 5.0 return the condition. The <code class="docutils literal notranslate"><span class="pre">condition</span></code> parameter is by default set to 0 at the start of the simulation and is always passed to the deviate function.
+<p>Here we define the <code class="docutils literal notranslate"><span class="pre">deviate_func</span></code> as follows: run the function when the concentration of <cite>M_pyr_e</cite> runs under 5.0, run it only once. If the concentration is
+not below or equal to 5.0 return the condition. The <code class="docutils literal notranslate"><span class="pre">condition</span></code> parameter is by default set to 0 at the start of the simulation and is always passed to the deviate function.
 This is done such that for example you can rerun the function for consecutive time steps. The value returned by the function will always be added to the global condition variable.
-By doing so we can for example add Glucose to the system for N consecutive runs by modifying the conditional statement.
-You can also skip on using the condition and define your own conditions when the function should run.</p>
+By doing so we can for example add Glucose to the system for N consecutive runs by modifying the conditional statement.</p>
 <p>We can now pass the function to the simulation method and plot the results:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
-    <span class="mf">0.1</span><span class="p">,</span> <span class="n">deviate</span><span class="o">=</span><span class="n">deviate_func</span>
-<span class="p">)</span>
+<span class="n">dynamic_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">deviate</span><span class="o">=</span><span class="n">deviate_func</span><span class="p">)</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">get_time_points</span><span class="p">()</span>
+<span class="n">metabolites</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">get_metabolites</span><span class="p">()</span>
+<span class="n">biomasses</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">get_biomasses</span><span class="p">()</span>
 
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -182,10 +185,76 @@ You can also skip on using the condition and define your own conditions when the
 </section>
 <section id="the-kinetics-object-for-michaelis-menten">
 <h2>The Kinetics Object for Michaelis Menten<a class="headerlink" href="#the-kinetics-object-for-michaelis-menten" title="Permalink to this heading"></a></h2>
-<p>UNDER CONSTRUCTION NOT PRODUCTION READY</p>
+<p>All methods permit the passing of a <code class="docutils literal notranslate"><span class="pre">KineticStruct</span></code> object during initialization. By doing so, the upper bounds of the reactions defined in this object
+are not statically set, but are calculated using the Michaelis-Menten equation.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">KineticStruct</span></code> van be defined using the reaction id followed by the limiting substrate and the <cite>Km</cite> and <cite>Vmax</cite></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicSingleFBA</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DefaultModels</span> <span class="kn">import</span> <span class="n">read_default_model</span>
+<span class="kn">from</span> <span class="nn">dcFBA.Models</span> <span class="kn">import</span> <span class="n">KineticsStruct</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">model</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;e_coli_core&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set bounds on the glucose import</span>
+<span class="n">model</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">initial_biomass</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">initial_concentrations</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}</span>
+<span class="c1">#Define kinietcStruct</span>
+<span class="n">kin</span> <span class="o">=</span> <span class="n">KineticsStruct</span><span class="p">({</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)})</span>
+
+<span class="n">ds</span> <span class="o">=</span> <span class="n">DynamicSingleFBA</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span><span class="p">,</span>
+    <span class="n">initial_biomass</span><span class="p">,</span>
+    <span class="n">initial_concentrations</span><span class="p">,</span>
+    <span class="n">kinetics</span><span class="o">=</span><span class="n">kin</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ds</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.15</span><span class="p">)</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_time_points</span><span class="p">()</span>
+<span class="n">metabolites</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_metabolites</span><span class="p">()</span>
+<span class="n">biomass</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_biomass</span><span class="p">()</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomass</span><span class="p">)</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">twinx</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Biomass&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Glucose&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/kinetics_example.png"><img alt="Biomass concentrations" class="align-center" src="../_images/kinetics_example.png" style="width: 500px;" /></a>
+<p>There is one exception, un the case of <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> this is done by a MM approximation, that is using the <cite>Km</cite> and <cite>Vmax</cite> of a reaction we derive two linear lines and add these as extra constraints
+to the linear model. To set these extra constraints we first need to create a <code class="docutils literal notranslate"><span class="pre">KineticStruct</span></code> holding all the kinetic information for the reactions
+for which we know the Kinetics.</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\text{lower_bound} = \frac{V_{\text{max}}}{Km}\\\text{upper_bound} = \frac{\frac{V_{\text{max}}}{2}}{Km}\end{aligned}\end{align} \]</div>
 </section>
 <section id="the-kinetics-function">
 <h2>The Kinetics function<a class="headerlink" href="#the-kinetics-function" title="Permalink to this heading"></a></h2>
+<div class="warning admonition">
+<p class="admonition-title">Under Construction</p>
+<p>This section is currently under construction. Check back later for updates.</p>
+</div>
+</section>
+<section id="unused-reactions">
+<h2>Unused reactions<a class="headerlink" href="#unused-reactions" title="Permalink to this heading"></a></h2>
+<p>The bottleneck for <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> is the amount of RAM required to store the joint stoichiometric matrix. We introduce two methods here to lower the total amount of RAM needed.</p>
+<section id="scan-unused-reactions-and-species">
+<h3>1. Scan unused reactions and species<a class="headerlink" href="#scan-unused-reactions-and-species" title="Permalink to this heading"></a></h3>
+<p>By initializing the <code class="docutils literal notranslate"><span class="pre">EndPointFBA</span></code> model, we define the medium. Based on the specified medium and its associated metabolites, certain reactions might never be activated, and some external metabolites may never be produced. To identify these inactive reactions, invoke the <code class="docutils literal notranslate"><span class="pre">dcFBA.Helpers.ScanUnusedReactions</span></code> method.
+This function runs consecutive FBA’s , each time  setting the a reaction as an objective. Reactions that remain inactive get omitted from the initial <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code>.
+Additionally, species and reagents that are never involved are also pruned. This ensures that these reactions aren’t duplicated at each time point, effectively minimizing the total number of reactions and species.</p>
+</section>
+<section id="sparse-matrix">
+<h3>2. Sparse Matrix<a class="headerlink" href="#sparse-matrix" title="Permalink to this heading"></a></h3>
+<p>When invoking the <code class="docutils literal notranslate"><span class="pre">EndPointFBA.simulate()</span></code> method, the stoichiometric matrix is constructed. Setting the <cite>sparse</cite> option to <cite>True</cite> during this call will result in the creation of a <code class="docutils literal notranslate"><span class="pre">scipy.sparse.csr_matrix</span></code>. This structure is employed to depict a sparse matrix in the compressed sparse row (CSR) format, thereby conserving a significant amount of system RAM.</p>
+</section>
 </section>
 </section>
 
@@ -194,7 +263,7 @@ You can also skip on using the condition and define your own conditions when the
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../7_endpoint_fba/home.html" class="btn btn-neutral float-left" title="7. EndPointFBA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../9_faq/home.html" class="btn btn-neutral float-right" title="8. FAQ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../9_faq/home.html" class="btn btn-neutral float-right" title="9. FAQ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

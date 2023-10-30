@@ -1,9 +1,13 @@
-import cbmpy
+from cbmpy.CBModel import Model
 from dcFBA.DynamicModels import DynamicSingleFBA
+from dcFBA.DefaultModels import read_default_model
 from dcFBA.Models import KineticsStruct
 import matplotlib.pyplot as plt
 
-model = cbmpy.loadModel("models/bigg_models/e_coli_core.xml")
+model: Model = read_default_model("e_coli_core")
+
+# Set bounds on the glucose import
+model.getReaction("R_GLCpts").setUpperBound(10)
 
 initial_biomass = 0.1
 initial_concentrations = {"M_glc__D_e": 10}
@@ -17,11 +21,14 @@ ds = DynamicSingleFBA(
     kinetics=kin,
 )
 
-T, metabolites, biomassess, _ = ds.simulate(0.15)
+ds.simulate(0.15)
 
+T = ds.get_time_points()
+metabolites = ds.get_metabolites()
+biomass = ds.get_biomass()
 
 ax = plt.subplot(111)
-ax.plot(T, biomassess[""])
+ax.plot(T, biomass)
 ax2 = plt.twinx(ax)
 ax2.plot(T, metabolites["M_glc__D_e"], color="r")
 

@@ -40,11 +40,11 @@ m_b.getReaction("R_5").setLowerBound(0)
 
 kin = KineticsStruct(
     {
-        "R_1_modelA": ["", 10, 10],
+        "R_1_modelA": ["S_e", 10, 10],
         "R_4_modelA": ["B_e", 5, 3],
         "R_6_modelA": ["B_e", 3, 1],
         # B
-        "R_1_modelB": ["", 10, 10],
+        "R_1_modelB": ["S_e", 10, 10],
         "R_3_modelB": ["A_e", 2, 1],
     }
 )

@@ -24,9 +24,11 @@ def time_search(
         initial_biomasses (dict[str, float]): _description_
         initial_concentrations (dict[str, float], optional): _description_. Defaults to {}.
         dt (float, optional): _description_. Defaults to 0.1.
-        set_values (tuple[float, float], optional): If you already know the
-            max value, or you want to search for when a value is reached you
-            set the objective value and initial guess of n in the tuple. Defaults to None.
+        set_values (tuple[float, float], optional): Set to identify when a
+            specific value is attained. [value, N]. Where value is the value
+            you want to reach and N the initial guess of N.
+            Defaults to None
+
 
     Returns:
         ist[float, float]: number of time points and the reached objective
@@ -59,17 +61,16 @@ def time_search(
             visited[n] = value
 
         if round(value, 5) >= obj:
-            if set_values:
-                break
             high = n
-            obj = value
+            if not set_values:
+                obj = value
         elif round(value, 5) < obj:
             low = n + 1
 
-    if set_values and value > set_values[0]:
-        print("IMPORTANTL: Set objective not reached")
+    if set_values and value < set_values[0]:
+        print("WARNING: Set objective can not be reached")
 
-    return [high, obj]
+    return [high, visited[high]]
 
 
 # TODO when there is a remove UserDefinedConstraint fix this

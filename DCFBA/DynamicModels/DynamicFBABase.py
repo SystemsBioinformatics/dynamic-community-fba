@@ -179,7 +179,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
                 bounds based on kinetics. Uses standard bounds if None.
         """
         for rid in self.model.getReactionIds():
-            # TODO discuss this
+            # TODO fix this
             if kinetics_func is not None:
                 kinetics_func(
                     rid,

@@ -53,5 +53,7 @@ def scan_unused_reactions(
 
         if inplace:
             model.deleteReactionAndBounds(rid)
+            model.deleteNonReactingSpecies()
+
         unused_reactions.append(rid)
     return unused_reactions

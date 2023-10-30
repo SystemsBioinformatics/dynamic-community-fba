@@ -42,6 +42,7 @@ To run a simulation with Dynamic Parallel FBA, you first need to define your ``P
 The ``DynamicParallelFBA`` class accepts a list of N models. In this example, we use two models as described before.
 
 Next, we specify the initial concentrations of both models and the initial concentrations of the external species.
+
 .. code-block:: python
         
     parallel_fba = DynamicParallelFBA(
@@ -53,7 +54,7 @@ Next, we specify the initial concentrations of both models and the initial conce
             "M_glu__L_e": 0.0,
             "M_gln__L_e": 0.0,
             "M_lcts_e": 100,
-        },
+        }
     ) #Build DynamicParallelFBA model
 
 

@@ -85,22 +85,20 @@
   <section id="dynamic-parallel-fba">
 <h1>6. Dynamic Parallel FBA<a class="headerlink" href="#dynamic-parallel-fba" title="Permalink to this heading"></a></h1>
 <p>The second method to model microbial interactions available through this package is Dynamic Parallel FBA (dpFBA).
-The key idea is to perform FBA on individual models while keeping track of a <em>pool</em> of external metabolites from which all models grow.
+The key idea is to perform FBA on individual models while keeping track of the <em>pool</em> or <em>medium</em> of external metabolites from which all models can take up nutrients.
 Again we keep track of the overall concentrations of biomass and external metabolites and update this using the set time interval.</p>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
 <p>To run a simulation with Dynamic Parallel FBA, you first need to define your <code class="docutils literal notranslate"><span class="pre">ParallelDynamicFBA</span></code> model.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">cbmpy</span>
 <span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">DCFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
-<span class="kn">from</span> <span class="nn">DCFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicParallelFBA</span>
+<span class="kn">from</span> <span class="nn">dcFBA</span> <span class="kn">import</span> <span class="n">DefaultModels</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicParallelFBA</span>
 
+<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">DefaultModels</span><span class="o">.</span><span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;e_coli_core&quot;</span><span class="p">)</span>
+<span class="n">model2</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">DefaultModels</span><span class="o">.</span><span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;strep_therm&quot;</span><span class="p">)</span>
 
-<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span> <span class="c1">#load ecoli model</span>
-<span class="n">model2</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/strep_therm.xml&quot;</span><span class="p">)</span> <span class="c1">#load streptococcus model</span>
-
-<span class="c1">#Exchange reaction are not set correctly, here we fix this</span>
+<span class="c1"># Exchange reaction are not set correctly, here we fix this</span>
 <span class="k">for</span> <span class="n">rid</span> <span class="ow">in</span> <span class="n">model1</span><span class="o">.</span><span class="n">getReactionIds</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">rid</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;R_EX&quot;</span><span class="p">):</span>
         <span class="n">reaction</span> <span class="o">=</span> <span class="n">model1</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="n">rid</span><span class="p">)</span>
@@ -111,29 +109,44 @@ Again we keep track of the overall concentrations of biomass and external metabo
         <span class="n">reaction</span> <span class="o">=</span> <span class="n">model2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="n">rid</span><span class="p">)</span>
         <span class="n">reaction</span><span class="o">.</span><span class="n">is_exchange</span> <span class="o">=</span> <span class="kc">True</span>
 
-<span class="c1">#Give the two models different glucose uptake rates</span>
+<span class="c1"># Give the two models different glucose uptake rates</span>
 <span class="n">model1</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">model2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
 
-<span class="n">parallel_fba</span> <span class="o">=</span> <span class="n">DynamicParallelFBA</span><span class="p">(</span>
+<span class="c1"># Restrict Lactose uptake</span>
+<span class="n">model2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_LCTSGALex&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLowerBound</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">model2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_LCTSt6&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA</span></code> class accepts a list of N models. In this example, we use two models as described before.</p>
+<p>Next, we specify the initial concentrations of both models and the initial concentrations of the external species.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parallel_fba</span> <span class="o">=</span> <span class="n">DynamicParallelFBA</span><span class="p">(</span>
     <span class="p">[</span><span class="n">model1</span><span class="p">,</span> <span class="n">model2</span><span class="p">],</span>
     <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
-    <span class="p">{</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;M_gal_e&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;M_lcts_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
-<span class="p">)</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;M_succ_e&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;M_glu__L_e&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;M_gln__L_e&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;M_lcts_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span> <span class="c1">#Build DynamicParallelFBA model</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA</span></code> class accepts a list of N models. In this example, we use two toy models described in the <cite>toy model section</cite>.
-Next, we specify the initial concentrations of both models and the initial concentrations of the external species.</p>
 <p>To run the simulation, use the following code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">,</span> <span class="n">biomasses</span> <span class="o">=</span> <span class="n">parallelModel</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">parallel_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">simulate</span></code> method returns a tuple with three elements. First, it provides a list of time points for the simulation.
-Next, it returns a <code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the species_ids and their corresponding concentrations at each time point. Lastly, we get a
-<code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the biomasses of the models, accessed through their IDs.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">simulate</span></code> runs the dynamic analysis until no organism can grow or one of the solutions is infeasible. Again we store
+the intermediate results for biomasses, metabolites and fluxes in the model and can retrieve them once the simulation is done:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">biomasses</span> <span class="o">=</span> <span class="n">parallel_fba</span><span class="o">.</span><span class="n">get_biomasses</span><span class="p">()</span>
+<span class="n">metabolites</span> <span class="o">=</span> <span class="n">parallel_fba</span><span class="o">.</span><span class="n">get_metabolites</span><span class="p">()</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">parallel_fba</span><span class="o">.</span><span class="n">get_time_points</span><span class="p">()</span>
+<span class="n">fluxes</span> <span class="o">=</span> <span class="n">parallel_fba</span><span class="o">.</span><span class="n">fluxes</span>
+</pre></div>
+</div>
 <p>Using simple plotting functions from <code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot</span></code>, you can visualize the results easily:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#plot external metabolites</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Glucose]&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Glucose]&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_lcts_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Lactose]&quot;</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>

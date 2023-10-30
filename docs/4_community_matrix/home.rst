@@ -43,7 +43,7 @@ To set up a ``CommunityModel``, you must provide a list of N GSMMs along with th
             biomass_reaction_model_1,
             biomass_reaction_model_2,
         ],
-)
+    )
 
 
 If you don't know the biomass reaction ID of the model, there are a couple of ways to find it. 

@@ -15,17 +15,16 @@ Making it dynamic!
 We begin by loading the model and then limit the glucose uptake, ensuring that not all of the glucose can be consumed immediately.
 
 .. code-block:: python
-   
-    import cbmpy
+
+    from cbmpy.CBModel import Model
     from dcFBA.DynamicModels import DynamicSingleFBA
+    from dcFBA.DefaultModels import read_default_model
     import matplotlib.pyplot as plt
 
-    model: Model = cbmpy.readSBML3FBC("cbmpy_test_ecoli")  # load the model
+    model: Model = read_default_model("e_coli_core")
 
     # Set bounds on the glucose import
     model.getReaction("R_GLCpts").setUpperBound(10)
-    model.getReaction("R_GLCt2").setUpperBound(10)
-    model.getReaction("R_GLCDe").setUpperBound(10)
 
 
 Next we define the initial biomass and glucose concentrations and initialize the DYnamicSingleFBA object:
@@ -36,27 +35,27 @@ Next we define the initial biomass and glucose concentrations and initialize the
     initial_concentrations = {"M_glc__D_e": 10}  # We start with 10 mM of glucose
     ds = DynamicSingleFBA(
         model,
-        "R_BIOMASS_Ecoli",
+        "R_BIOMASS_Ecoli_core_w_GAM",
         initial_biomass,
         initial_concentrations,
     )  # Define a DynamicSingleFBA object given the model and the id of the biomass reaction
+   
 
 Now that the model is inflame we can run the the simulation and plot the results
 
 .. code-block:: python
 
-    ds.simulate(dt=0.1)
+    
+    ds.simulate(0.15)
 
-    #retrieve the results of the simulation
-    biomasses = ds.get_biomass()
+    T = ds.get_time_points()
     metabolites = ds.get_metabolites()
-    time_points = ds.get_time_points()
+    biomass = ds.get_biomass()
 
-    # Plot the results
     ax = plt.subplot(111)
-    ax.plot(time_points, biomasses)
+    ax.plot(T, biomass)
     ax2 = plt.twinx(ax)
-    ax2.plot(time_points, metabolites["M_glc__D_e"], color="r")
+    ax2.plot(T, metabolites["M_glc__D_e"], color="r")
 
     ax.set_ylabel("Biomass", color="b")
     ax2.set_ylabel("Glucose", color="r")

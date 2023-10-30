@@ -94,20 +94,19 @@ this mock species is than set to be the objective function for FBA.</p>
 <p>Here we will give use the example of a combining the  <em>E. coli core metabolism</em> model with the <em>Streptococcus thermophilus</em> (iRZ476) model.
 To perform the Dynamic Joint FBA we first define the <code class="docutils literal notranslate"><span class="pre">CommunityModel</span></code> and use this to initialize a <code class="docutils literal notranslate"><span class="pre">DynamicJointFBA</span></code> object:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">cbmpy</span>
 <span class="kn">from</span> <span class="nn">cbmpy.CBModel</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">DCFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
-<span class="kn">from</span> <span class="nn">DCFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicJointFBA</span>
+<span class="kn">from</span> <span class="nn">dcFBA.Models</span> <span class="kn">import</span> <span class="n">CommunityModel</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DynamicModels</span> <span class="kn">import</span> <span class="n">DynamicJointFBA</span>
+<span class="kn">from</span> <span class="nn">dcFBA.DefaultModels</span> <span class="kn">import</span> <span class="n">read_default_model</span>
 
+<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;e_coli_core&quot;</span><span class="p">)</span>
+<span class="n">model2</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">read_default_model</span><span class="p">(</span><span class="s2">&quot;strep_therm&quot;</span><span class="p">)</span>
 
-<span class="n">model1</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/e_coli_core.xml&quot;</span><span class="p">)</span> <span class="c1">#load e_coli core</span>
-<span class="n">model2</span><span class="p">:</span> <span class="n">Model</span> <span class="o">=</span> <span class="n">cbmpy</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="s2">&quot;models/bigg_models/strep_therm.xml&quot;</span><span class="p">)</span> <span class="c1">#load the Streptococcus model</span>
-
-<span class="c1">#Set the import bounds for glucose in both models</span>
+<span class="c1"># Set the import bounds for glucose in both models</span>
 <span class="n">model1</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">model2</span><span class="o">.</span><span class="n">getReaction</span><span class="p">(</span><span class="s2">&quot;R_GLCpts&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setUpperBound</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
 
-<span class="c1">#The biomass reactions ids</span>
+<span class="c1"># The biomass reactions ids</span>
 <span class="n">biomass_reaction_model_1</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;R_BIOMASS_Ecoli_core_w_GAM&quot;</span>
 <span class="n">biomass_reaction_model_2</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;R_biomass_STR&quot;</span>
 
@@ -115,23 +114,43 @@ To perform the Dynamic Joint FBA we first define the <code class="docutils liter
     <span class="p">[</span><span class="n">model1</span><span class="p">,</span> <span class="n">model2</span><span class="p">],</span>
     <span class="p">[</span><span class="n">biomass_reaction_model_1</span><span class="p">,</span> <span class="n">biomass_reaction_model_2</span><span class="p">],</span>
     <span class="p">[</span><span class="s2">&quot;ecoli&quot;</span><span class="p">,</span> <span class="s2">&quot;strep&quot;</span><span class="p">],</span>
-<span class="p">)</span> <span class="c1">#Define the community model</span>
+<span class="p">)</span>  <span class="c1"># Define the community model</span>
 
-<span class="n">dynamic_fba</span> <span class="o">=</span> <span class="n">DynamicJointFBA</span><span class="p">(</span>
-    <span class="n">cm</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;M_gal_e&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;M_lcts_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">}</span>
-<span class="p">)</span> <span class="c1">#Create a DynamicJointFBA object, set the initial concentrations of glucose and lactose to 100</span>
+<span class="n">dynamic_joint_fba</span> <span class="o">=</span> <span class="n">DynamicJointFBA</span><span class="p">(</span>
+    <span class="n">cm</span><span class="p">,</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;M_succ_e&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;M_glu__L_e&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;M_gln__L_e&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">&quot;M_lcts_e&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>  <span class="c1"># Create a DynamicJointFBA object, set the initial concentrations of glucose and lactose to 100</span>
 </pre></div>
 </div>
 <p>Now that the model is in place we can run the simulation using time steps of 0.1:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">,</span> <span class="n">fluxes</span> <span class="o">=</span> <span class="n">dynamic_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dynamic_joint_fba</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">simulate</span></code> method returns a tuple with four elements. First, it provides a list of time points for the simulation.
-Second, it returns a <code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the species_ids and their corresponding concentrations at each time point. Third, we get a
-<code class="docutils literal notranslate"><span class="pre">Dictionary</span></code> containing the biomasses of the models, accessed through their IDs. Lastly we get the fluxes of all reactions for each time point.</p>
+<p>The simulate method conducts the simulation and stores all values of biomass concentrations, metabolite concentrations, and fluxes at each time point. You can access these values by retrieving the respective objects.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">biomasses</span> <span class="o">=</span> <span class="n">dynamic_joint_fba</span><span class="o">.</span><span class="n">get_biomasses</span><span class="p">()</span>
+<span class="n">metabolites</span> <span class="o">=</span> <span class="n">dynamic_joint_fba</span><span class="o">.</span><span class="n">get_metabolites</span><span class="p">()</span>
+<span class="n">time_points</span> <span class="o">=</span> <span class="n">dynamic_joint_fba</span><span class="o">.</span><span class="n">get_time_points</span><span class="p">()</span>
+<span class="n">fluxes</span> <span class="o">=</span> <span class="n">dynamic_joint_fba</span><span class="o">.</span><span class="n">get_fluxes</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Since the fluxes are stored are the aggregated fluxes (the flux multiplied by the total amount of biomass present at that time), we can also restore the specific flux for a reaction:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">specific_flux_values</span> <span class="o">=</span> <span class="n">dynamic_joint_fba</span><span class="o">.</span><span class="n">get_specific_flux_values</span><span class="p">(</span><span class="s2">&quot;R_GLCpts_ecoli&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>You can now easily plot the species concentration over time:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Glucose]&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_lcts_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Lactose]&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">time_points</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_glc__D_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Glucose]&quot;</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">time_points</span><span class="p">,</span> <span class="n">metabolites</span><span class="p">[</span><span class="s2">&quot;M_lcts_e&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;[Lactose]&quot;</span>
+<span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Concentration&quot;</span><span class="p">)</span>
@@ -141,8 +160,8 @@ Second, it returns a <code class="docutils literal notranslate"><span class="pre
 </div>
 <a class="reference internal image-reference" href="../_images/Metabolites_DJFBA.png"><img alt="Biomass concentrations" class="align-center" src="../_images/Metabolites_DJFBA.png" style="width: 500px;" /></a>
 <p>And the biomasses of both species over time</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;ecoli&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ecoli&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;strep&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;strep&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_points</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;ecoli&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ecoli&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_points</span><span class="p">,</span> <span class="n">biomasses</span><span class="p">[</span><span class="s2">&quot;strep&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;strep&quot;</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Concentration&quot;</span><span class="p">)</span>
