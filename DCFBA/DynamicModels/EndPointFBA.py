@@ -177,10 +177,17 @@ class EndPointFBA(DynamicModelBase):
 
         return {mid: numpy.divide(self.biomasses[mid], total) for mid in mids}
 
-    def simulate(
-        self,
-    ):
-        solution = cbmpy.doFBA(self.model, quiet=False)
+    def simulate(self, sparse=False) -> None:
+        """Performs FBA on the EndPointFBA matrix
+
+        Args:
+            sparse (False): Set to true if you want to use a sparse matrix
+                Sparse matrix decreases the amount of memory required
+        """
+
+        matrix_type = "scipy_csr" if sparse else "numpy"
+        self.model.buildStoichMatrix(matrix_type=matrix_type)
+        solution = cbmpy.doFBA(self.model, quiet=False, build_n=False)
 
         self._set_fluxes()
         self._set_biomasses()

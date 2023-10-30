@@ -40,7 +40,7 @@ dynamic_joint_fba = DynamicJointFBA(
 )  # Create a DynamicJointFBA object, set the initial concentrations of glucose and lactose to 100
 
 dynamic_joint_fba.simulate(0.1)
-
+# NMATRIX_TYPE = 'scipy_csr'
 
 biomasses = dynamic_joint_fba.get_biomasses()
 metabolites = dynamic_joint_fba.get_metabolites()
