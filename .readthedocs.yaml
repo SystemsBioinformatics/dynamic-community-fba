@@ -23,10 +23,9 @@ build:
 python:
   install:
     # Install our python package before building the docs
+    - requirements: requirements.txt
     - method: pip 
       path: .
-    - requirements: docs/requirements.txt
-
 
 sphinx:
   configuration: docs/conf.py
