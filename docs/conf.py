@@ -13,8 +13,13 @@ import os
 sys.path.insert(0, os.path.abspath("."))
 print(sys.path)
 
-import dcFBA
+import pkg_resources
 
+installed_packages = pkg_resources.working_set
+installed_packages_list = sorted(
+    ["%s==%s" % (i.key, i.version) for i in installed_packages]
+)
+print(installed_packages_list)
 project = "dynamic-community-fba"
 copyright = "2023, S.C.M.A. Wijnen, F. Moro"
 authors = ["S.C.M.A. Wijnen", "F. Moro"]
