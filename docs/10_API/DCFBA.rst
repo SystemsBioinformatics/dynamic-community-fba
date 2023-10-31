@@ -12,7 +12,7 @@ CommunityModel
 DynamicModelBase
 -------------------------------
 
-.. automodule:: dcFBA.DynamicModels.DynamicModelBase
+.. automodule:: DynamicModels.DynamicModelBase
    :members:
    :show-inheritance:
 
