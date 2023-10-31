@@ -44,6 +44,11 @@ class DynamicSingleFBA(DynamicFBABase):
             cm, [initial_biomass], initial_concentrations, kinetics
         )
 
-    def get_biomass(self):
+    def get_biomass(self) -> list[float]:
+        """Get the total biomass over time
+
+        Returns:
+            list[float]: Biomass concentration over time
+        """
         biomasses = super().get_biomasses()
         return biomasses[""]

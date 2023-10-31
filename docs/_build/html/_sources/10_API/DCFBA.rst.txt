@@ -52,6 +52,13 @@ DynamicJointFba
    :members:
    :show-inheritance:
 
+DynamicParallelFBA
+-------------------------------
+
+.. automodule:: dcFBA.DynamicModels.DynamicParallelFBA
+   :members:
+   :show-inheritance:
+
 
 KineticStruct
 -------------------------------

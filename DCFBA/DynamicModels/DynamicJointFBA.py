@@ -71,6 +71,11 @@ class DynamicJointFBA(DynamicFBABase):
         self.model.setActiveObjective("X_comm_objective")
 
     def get_community_growth_rate(self) -> list[float]:
+        """Calculates and returns the community growth rate
+
+        Returns:
+            list[float]: community growth rate over time
+        """
         ls = list(map(lambda d: d["X_comm"], self.fluxes))
         mids = self.model.m_identifiers
         total_mass = [0] * len(self.times)
@@ -82,6 +87,12 @@ class DynamicJointFBA(DynamicFBABase):
         return numpy.divide(ls, total_mass).tolist()
 
     def get_relative_abundance(self) -> dict[str, list[float]]:
+        """Calculate the relative abundance for each species
+
+        Returns:
+            dict[str, list[float]]: Model id followed by the relative
+                abundance over time
+        """
         mids = self.model.m_identifiers
         total = list(self.biomasses[mids[0]])
         for mid in mids[1:]:

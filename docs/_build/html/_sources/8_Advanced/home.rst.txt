@@ -205,5 +205,7 @@ Additionally, species and reagents that are never involved are also pruned. This
 2. Sparse Matrix
 """"""""""""""""
 
-When invoking the ``EndPointFBA.simulate()`` method, the stoichiometric matrix is constructed. Setting the `sparse` option to `True` during this call will result in the creation of a ``scipy.sparse.csr_matrix``. This structure is employed to depict a sparse matrix in the compressed sparse row (CSR) format, thereby conserving a significant amount of system RAM.
+When invoking the ``EndPointFBA.simulate()`` method, the stoichiometric matrix is constructed. 
+Setting the `sparse` option to `True` during this call will result in the creation of a ``scipy.sparse.csr_matrix``. 
+This structure is employed to depict a sparse matrix in the compressed sparse row (CSR) format, thereby conserving a significant amount of system RAM.
 

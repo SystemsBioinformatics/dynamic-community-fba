@@ -116,13 +116,14 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.DynamicModels.StaticOptimizationModel">StaticOptimizationModel</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase._initial_bounds"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase._initial_bounds</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.check_solution_feasibility"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.check_solution_feasibility()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.importers_species_concentration"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.importers_species_concentration()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.mm_kinetics"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.mm_kinetics()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.reset_dt"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.reset_dt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.simulate"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.simulate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_biomasses"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.update_biomasses()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_concentrations"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.update_concentrations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_exchanges"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.update_exchanges()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_reaction_bounds"><code class="docutils literal notranslate"><span class="pre">StaticOptimizationModelBase.update_reaction_bounds()</span></code></a></li>
 </ul>
 </li>
@@ -130,6 +131,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.DynamicModels.DynamicFBABase">DynamicFBABase</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_flux_values"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.get_flux_values()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_fluxes_values"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.get_fluxes_values()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_specific_flux_values"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.get_specific_flux_values()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.simulate"><code class="docutils literal notranslate"><span class="pre">DynamicFBABase.simulate()</span></code></a></li>
@@ -141,7 +143,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.DynamicModels.DynamicSingleFBA">DynamicSingleFBA</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA"><code class="docutils literal notranslate"><span class="pre">DynamicSingleFBA</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA"><code class="docutils literal notranslate"><span class="pre">DynamicSingleFBA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA.get_biomass"><code class="docutils literal notranslate"><span class="pre">DynamicSingleFBA.get_biomass()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.DynamicModels.DynamicJointFBA">DynamicJointFba</a><ul>
@@ -151,6 +156,23 @@
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_community_growth_rate"><code class="docutils literal notranslate"><span class="pre">DynamicJointFBA.get_community_growth_rate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_relative_abundance"><code class="docutils literal notranslate"><span class="pre">DynamicJointFBA.get_relative_abundance()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction"><code class="docutils literal notranslate"><span class="pre">DynamicJointFBA.set_community_biomass_reaction()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.DynamicModels.DynamicParallelFBA">DynamicParallelFBA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_community_growth_rate"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.get_community_growth_rate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_flux_values"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.get_flux_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_fluxes_values"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.get_fluxes_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_relative_abundance"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.get_relative_abundance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_specific_flux_values"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.get_specific_flux_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.reset_dt"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.reset_dt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.simulate"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.simulate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_biomasses"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.update_biomasses()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_concentrations"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.update_concentrations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_exchanges"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.update_exchanges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_reaction_bounds"><code class="docutils literal notranslate"><span class="pre">DynamicParallelFBA.update_reaction_bounds()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -855,15 +877,34 @@ Sparse matrix decreases the amount of memory required</p>
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dcFBA.DynamicModels.StaticOptimizationModel.</span></span><span class="sig-name descname"><span class="pre">StaticOptimizationModelBase</span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dcFBA.DynamicModels.DynamicModelBase.DynamicModelBase" title="dcFBA.DynamicModels.DynamicModelBase.DynamicModelBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">DynamicModelBase</span></code></a></p>
-<p>Base class providing a framework for the static optimization approaches (SOA)
-methods; using time steps to track biomass and metabolite concentrations over time.</p>
+<p>Base class providing a framework for the static optimization approaches
+(SOA)
+Base class for methods using time steps to track biomass and metabolite
+concentrations over time.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase._initial_bounds">
+<span class="sig-name descname"><span class="pre">_initial_bounds</span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase._initial_bounds" title="Permalink to this definition"></a></dt>
+<dd><p>Containing the original upper and lower bound
+for all reactions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.check_solution_feasibility">
 <span class="sig-name descname"><span class="pre">check_solution_feasibility</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.check_solution_feasibility" title="Permalink to this definition"></a></dt>
-<dd><p>Checks if the current solution has any metabolite concentration below zero.</p>
+<dd><p>Checks if the current solution has any metabolite concentration
+below zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The metabolite ID with the lowest negative concentration, or an empty string if all concentrations are positive.</p>
+<dd class="field-odd"><p><dl class="simple">
+<dt>The species ID with the lowest negative concentration,</dt><dd><p>or an empty string if all concentrations are positive.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>str</p>
@@ -919,12 +960,6 @@ retrieval.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.reset_dt">
-<span class="sig-name descname"><span class="pre">reset_dt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.reset_dt" title="Permalink to this definition"></a></dt>
-<dd><p>Resets the simulation and calculates dt_hat (smaller time step).</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.simulate">
 <span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deviate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.simulate" title="Permalink to this definition"></a></dt>
 <dd><p>Placeholder for dynamic FBA simulation over specified time intervals.
@@ -943,9 +978,6 @@ calculate kinetics. Defaults to None.</p></li>
 <li><p><strong>deviate</strong> (<em>function</em><em>, </em><em>optional</em>) – A function to apply model changes during the simulation.
 Should accept: the model, biomass concentrations, metabolite concentrations, and dt as parameters.
 Defaults to None.</p></li>
-<li><p><strong>deviation_time</strong> (<em>int</em><em>, </em><em>optional</em>) – The time step when the deviation
-function should be called.
-Defaults to 0.</p></li>
 </ul>
 </dd>
 </dl>
@@ -961,6 +993,19 @@ Defaults to 0.</p></li>
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_concentrations">
 <span class="sig-name descname"><span class="pre">update_concentrations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_concentrations" title="Permalink to this definition"></a></dt>
 <dd><p>Update all metabolite concentrations</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_exchanges">
+<span class="sig-name descname"><span class="pre">update_exchanges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.update_exchanges" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the lower and upper bound of the
+exchange reaction, according to the amount of external metabolite
+present</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> (<em>float</em>) – time step size</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -991,15 +1036,35 @@ the new upper bound for a reaction. It should accept:
 <p>Implements the core code for simulating both models. The distinction
 between the two is the presence of a Community Biomass in Dynamic JointFBA.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_fluxes_values">
-<span class="sig-name descname"><span class="pre">get_fluxes_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rids</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_fluxes_values" title="Permalink to this definition"></a></dt>
-<dd><p>Get the flux values for each time point given a reaction ID.</p>
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_flux_values">
+<span class="sig-name descname"><span class="pre">get_flux_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_flux_values" title="Permalink to this definition"></a></dt>
+<dd><p>Get the flux values for a specific reaction over time.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dictionary of flux values for each time point.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rid</strong> (<em>str</em>) – The reaction ID.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict[str, float]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of flux values for the specified reaction over time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_fluxes_values">
+<span class="sig-name descname"><span class="pre">get_fluxes_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_fluxes_values" title="Permalink to this definition"></a></dt>
+<dd><p>Get the flux values for multiple reactions over time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rids</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of reaction IDs.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping reaction IDs to lists of flux values over time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, list[float]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1007,13 +1072,21 @@ between the two is the presence of a Community Biomass in Dynamic JointFBA.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_specific_flux_values">
 <span class="sig-name descname"><span class="pre">get_specific_flux_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.get_specific_flux_values" title="Permalink to this definition"></a></dt>
-<dd><p>Get specific flux values.</p>
+<dd><p>Get the specific flux values for a given reaction.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Specific flux values.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rid</strong> (<em>str</em>) – The reaction ID.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>list[float]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>List of specific flux values for the specified</dt><dd><p>reaction over time. Returns an empty list if the reaction is
+an exchange reaction.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[float]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1022,23 +1095,6 @@ between the two is the presence of a Community Biomass in Dynamic JointFBA.</p>
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.simulate">
 <span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deviate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.simulate" title="Permalink to this definition"></a></dt>
 <dd><p>Perform a dynamic joint FBA simulation.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>Contains the simulation results in the following order:</dt><dd><ol class="arabic simple">
-<li><p>Used time steps</p></li>
-<li><p>Metabolite concentrations over time</p></li>
-<li><p>Biomass concentrations over time</p></li>
-<li><p>Flux values over time.</p></li>
-</ol>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>list</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1060,6 +1116,11 @@ between the two is the presence of a Community Biomass in Dynamic JointFBA.</p>
 <span class="sig-name descname"><span class="pre">update_exchanges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicFBABase.DynamicFBABase.update_exchanges" title="Permalink to this definition"></a></dt>
 <dd><p>Update exchange reaction lower bounds based on the metabolite
 concentration of the current time step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> (<em>float</em>) – The time step for the simulation.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1089,6 +1150,20 @@ bounds based on kinetics. Uses standard bounds if None.</p>
 on a single model. It inherits from the DynamicFBABase and internally converts
 the single model to a community model representation for consistent handling of
 dynamic simulations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA.get_biomass">
+<span class="sig-name descname"><span class="pre">get_biomass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicSingleFBA.DynamicSingleFBA.get_biomass" title="Permalink to this definition"></a></dt>
+<dd><p>Get the total biomass over time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Biomass concentration over time</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1127,6 +1202,69 @@ Defaults to an empty dictionary.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_community_growth_rate">
 <span class="sig-name descname"><span class="pre">get_community_growth_rate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_community_growth_rate" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates and returns the community growth rate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>community growth rate over time</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_relative_abundance">
+<span class="sig-name descname"><span class="pre">get_relative_abundance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_relative_abundance" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the relative abundance for each species</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Model id followed by the relative</dt><dd><p>abundance over time</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict[str, list[float]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction">
+<span class="sig-name descname"><span class="pre">set_community_biomass_reaction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction" title="Permalink to this definition"></a></dt>
+<dd><p>Set up the community biomass reaction.</p>
+<p>This method establishes the community biomass species ‘X_c’ and associates it with
+each model’s biomass reaction. Additionally, a community biomass exchange reaction (X_comm)
+is created and designated as the model’s objective function.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-dcFBA.DynamicModels.DynamicParallelFBA">
+<span id="dynamicparallelfba"></span><h2>DynamicParallelFBA<a class="headerlink" href="#module-dcFBA.DynamicModels.DynamicParallelFBA" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dcFBA.DynamicModels.DynamicParallelFBA.</span></span><span class="sig-name descname"><span class="pre">DynamicParallelFBA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">cbmpy.CBModel.Model</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biomasses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_concentrations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dcFBA.Models.Kinetics.KineticsStruct" title="dcFBA.Models.Kinetics.KineticsStruct"><span class="pre">dcFBA.Models.Kinetics.KineticsStruct</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase" title="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">StaticOptimizationModelBase</span></code></a></p>
+<p>A class representing a dynamic parallel FBA simulation.</p>
+<p>This class extends the StaticOptimizationModelBase and provides
+functionality for performing dynamic FBA simulations on multiple models in
+parallel.
+.. attribute:: models</p>
+<blockquote>
+<div><p>The models in the parallel system</p>
+<dl class="field-list simple">
+<dt class="field-odd">type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[cbmpy.CBModel.Model]</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_community_growth_rate">
+<span class="sig-name descname"><span class="pre">get_community_growth_rate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_community_growth_rate" title="Permalink to this definition"></a></dt>
 <dd><p>Get the community growth rate over time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1139,8 +1277,53 @@ Defaults to an empty dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_relative_abundance">
-<span class="sig-name descname"><span class="pre">get_relative_abundance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.get_relative_abundance" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_flux_values">
+<span class="sig-name descname"><span class="pre">get_flux_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_flux_values" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the aggregated flux values for each time point given a
+reaction ID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>str</em>) – The model id of the reaction</p></li>
+<li><p><strong>rid</strong> (<em>str</em>) – The reaction id</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the flux value for each time point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_fluxes_values">
+<span class="sig-name descname"><span class="pre">get_fluxes_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_fluxes_values" title="Permalink to this definition"></a></dt>
+<dd><p>Get the aggregated flux values for multiple reactions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>str</em>) – The model id of the reaction</p></li>
+<li><p><strong>rids</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – The reactions of interest</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Dictionary contain a reaction id and flux values</dt><dd><p>for each time point</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_relative_abundance">
+<span class="sig-name descname"><span class="pre">get_relative_abundance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_relative_abundance" title="Permalink to this definition"></a></dt>
 <dd><p>Get the percentage of each species for each time point.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1153,12 +1336,120 @@ Defaults to an empty dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction">
-<span class="sig-name descname"><span class="pre">set_community_biomass_reaction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicJointFBA.DynamicJointFBA.set_community_biomass_reaction" title="Permalink to this definition"></a></dt>
-<dd><p>Set up the community biomass reaction.</p>
-<p>This method establishes the community biomass species ‘X_c’ and associates it with
-each model’s biomass reaction. Additionally, a community biomass exchange reaction (X_comm)
-is created and designated as the model’s objective function.</p>
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_specific_flux_values">
+<span class="sig-name descname"><span class="pre">get_specific_flux_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.get_specific_flux_values" title="Permalink to this definition"></a></dt>
+<dd><p>Calculated and return the specific flux values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mid</strong> (<em>str</em>) – Model id for the reaction</p></li>
+<li><p><strong>rid</strong> (<em>str</em>) – reaciton id</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of specific flux values for each time point</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.reset_dt">
+<span class="sig-name descname"><span class="pre">reset_dt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FBAsol</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.reset_dt" title="Permalink to this definition"></a></dt>
+<dd><p>Recompute a smaller time step if the obtained result was infeasible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>species_id</strong> (<em>str</em>) – ID of the species for which the time step is
+recalculated.</p></li>
+<li><p><strong>FBAsol</strong> (<em>dict</em>) – Solution vector from the FBA.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Adjusted time step.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deviate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.simulate" title="Permalink to this definition"></a></dt>
+<dd><p>Placeholder for dynamic FBA simulation over specified time intervals.
+This method should be overridden in subclasses to implement specific simulation logic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> (<em>float</em>) – The time step for simulation.</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – number of simulation
+Defaults to 10000</p></li>
+<li><p><strong>epsilon</strong> (<em>float</em><em>, </em><em>optional</em>) – The tolerance value. When the solution
+or time step is less than epsilon, the simulation stops.
+Defaults to 0.001.</p></li>
+<li><p><strong>kinetics_func</strong> (<em>function</em><em>, </em><em>optional</em>) – A user-defined function to
+calculate kinetics. Defaults to None.</p></li>
+<li><p><strong>deviate</strong> (<em>function</em><em>, </em><em>optional</em>) – A function to apply model changes during the simulation.
+Should accept: the model, biomass concentrations, metabolite concentrations, and dt as parameters.
+Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_biomasses">
+<span class="sig-name descname"><span class="pre">update_biomasses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fluxes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_biomasses" title="Permalink to this definition"></a></dt>
+<dd><p>Modify biomass concentrations after completing an FBA step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fluxes</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em>) – FBA result</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – time step size</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_concentrations">
+<span class="sig-name descname"><span class="pre">update_concentrations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fluxes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_concentrations" title="Permalink to this definition"></a></dt>
+<dd><p>Update the concentrations according to the calculated fluxes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fluxes</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em>) – FBA solution</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – time step</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_exchanges">
+<span class="sig-name descname"><span class="pre">update_exchanges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_exchanges" title="Permalink to this definition"></a></dt>
+<dd><p>Adjust exchange reactions based on the present metabolite
+concentrations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> (<em>float</em>) – time step size</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_reaction_bounds">
+<span class="sig-name descname"><span class="pre">update_reaction_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kinetics_func</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.DynamicParallelFBA.DynamicParallelFBA.update_reaction_bounds" title="Permalink to this definition"></a></dt>
+<dd><p>Update the reaction bounds for all models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kinetics_func</strong> (<em>function</em>) – Custom function to modify reaction
+bounds based on kinetic data.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

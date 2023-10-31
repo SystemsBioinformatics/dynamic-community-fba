@@ -8,8 +8,11 @@ from ..Models.Kinetics import KineticsStruct
 class DynamicParallelFBA(StaticOptimizationModelBase):
     """A class representing a dynamic parallel FBA simulation.
 
-    This class extends the TimeStepDynamicFBABase and provides functionality
-    for performing dynamic FBA simulations on multiple models in parallel.
+    This class extends the StaticOptimizationModelBase and provides
+    functionality for performing dynamic FBA simulations on multiple models in
+    parallel.
+    Attributes:
+        models (list[cbmpy.CBModel.Model]): The models in the parallel system
     """
 
     def __init__(
@@ -65,19 +68,51 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
         return self._models
 
     def get_flux_values(self, mid: str, rid: str) -> list[float]:
+        """Returns the aggregated flux values for each time point given a
+        reaction ID.
+
+        Args:
+            mid (str): The model id of the reaction
+            rid (str): The reaction id
+
+        Returns:
+            list[float]: the flux value for each time point
+        """
+
         return list(map(lambda d: d[rid], self.fluxes[mid]))
 
-    def get_fluxes_values(self, mid, rids) -> dict[str, float]:
+    def get_fluxes_values(self, mid: str, rids: list[str]) -> dict[str, float]:
+        """Get the aggregated flux values for multiple reactions
+
+        Args:
+            mid (str): The model id of the reaction
+            rids (list[str]): The reactions of interest
+
+        Returns:
+            dict[str, float]: Dictionary contain a reaction id and flux values
+                for each time point
+        """
+
         fluxes = {}
         for rid in rids:
             fluxes[rid] = self.get_flux_values(mid, rid)
         return fluxes
 
     def get_specific_flux_values(self, mid: str, rid: str) -> list[float]:
+        """Calculated and return the specific flux values
+
+        Args:
+            mid (str): Model id for the reaction
+            rid (str): reaciton id
+
+        Returns:
+            list[float]: List of specific flux values for each time point
+        """
+
         for model in self.models.values():
             if rid in model.getExchangeReactionIds():
                 print("Exchange reactions do not have a specific flux")
-                return None
+                return []
 
         ls = self.get_flux_values(mid, rid)
         return numpy.divide(ls, self.biomasses[mid][:-1]).tolist()
@@ -221,10 +256,10 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
     def update_exchanges(self, dt):
         """
         Adjust exchange reactions based on the present metabolite
-        concentrations
+        concentrations.
 
-        Sets the lower bounds for exchange reactions to prevent metabolite
-        import beyond the current concentration.
+        Args:
+            dt (float):time step size
         """
 
         for model in self.models.values():
@@ -236,14 +271,11 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
     def update_concentrations(
         self, fluxes: dict[str, dict[str, float]], dt: float
     ) -> None:
-        """
-        Modify metabolite concentrations following an FBA step.
+        """Update the concentrations according to the calculated fluxes
 
         Args:
-            model (Model): Current metabolic model being processed.
-            FBAsol (dict): Solution vector resulting from the FBA.
-            step (int): Current simulation step.
-            dt (float): Time step interval for the simulation.
+            fluxes (dict[str, dict[str, float]]): FBA solution
+            dt (float): time step
         """
         for key in self.metabolites.keys():
             self.metabolites[key].append(self.metabolites[key][-1])
@@ -258,17 +290,16 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                     ]  # exchanges should only have 1 reactant
                     self.metabolites[sid][-1] += round((fbasol[eid] * dt), 5)
 
-    def update_biomasses(self, fluxes, dt) -> None:
-        """
-        Modify biomass concentrations after completing an FBA step.
+    def update_biomasses(
+        self, fluxes: dict[str, dict[str, float]], dt: float
+    ) -> None:
+        """Modify biomass concentrations after completing an FBA step.
 
         Args:
-            model (Model): Model for which the biomass concentrations are
-                updated.
-            dt (float): Time step interval for the simulation.
-            FBAsol (dict): Solution vector resulting from the FBA.
-            step (int): Current simulation step.
+            fluxes (dict[str, dict[str, float]]): FBA result
+            dt (float): time step size
         """
+
         for mid, fbasol in fluxes.items():
             # Check if dict is empty
             if fbasol:

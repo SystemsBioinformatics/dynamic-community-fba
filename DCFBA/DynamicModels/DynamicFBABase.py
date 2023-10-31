@@ -53,15 +53,46 @@ class DynamicFBABase(StaticOptimizationModelBase):
         return self._model
 
     def get_flux_values(self, rid: str) -> list[float]:
+        """
+        Get the flux values for a specific reaction over time.
+
+        Args:
+            rid (str): The reaction ID.
+
+        Returns:
+            list[float]: List of flux values for the specified reaction over time.
+        """
+
         return list(map(lambda d: d[rid], self.fluxes))
 
-    def get_fluxes_values(self, rids):
+    def get_fluxes_values(self, rids: list[str]) -> dict[str, list[float]]:
+        """
+        Get the flux values for multiple reactions over time.
+
+        Args:
+            rids (list[str]): List of reaction IDs.
+
+        Returns:
+            dict[str, list[float]]: Dictionary mapping reaction IDs to lists of flux values over time.
+        """
         fluxes = {}
         for rid in rids:
             fluxes[rid] = self.get_flux_values(rid)
         return fluxes
 
     def get_specific_flux_values(self, rid: str) -> list[float]:
+        """
+        Get the specific flux values for a given reaction.
+
+        Args:
+            rid (str): The reaction ID.
+
+        Returns:
+            list[float]: List of specific flux values for the specified
+                reaction over time. Returns an empty list if the reaction is
+                an exchange reaction.
+        """
+
         if rid in self.model.getExchangeReactionIds():
             print("Exchange has no specific flux")
             return []
@@ -79,13 +110,6 @@ class DynamicFBABase(StaticOptimizationModelBase):
     ) -> None:
         """
         Perform a dynamic joint FBA simulation.
-
-        Returns:
-            list: Contains the simulation results in the following order:
-                  1. Used time steps
-                  2. Metabolite concentrations over time
-                  3. Biomass concentrations over time
-                  4. Flux values over time.
         """
 
         used_time = [0]
@@ -134,8 +158,13 @@ class DynamicFBABase(StaticOptimizationModelBase):
         self._times = used_time
 
     def update_exchanges(self, dt: float) -> None:
-        """Update exchange reaction lower bounds based on the metabolite
-        concentration of the current time step."""
+        """
+        Update exchange reaction lower bounds based on the metabolite
+        concentration of the current time step.
+
+        Args:
+            dt (float): The time step for the simulation.
+        """
 
         for rid in self.model.getExchangeReactionIds():
             reaction: Reaction = self.model.getReaction(rid)

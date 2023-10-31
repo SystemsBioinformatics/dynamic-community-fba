@@ -7,8 +7,15 @@ from ..Exceptions import NoLimitingSubstrateFound
 
 class StaticOptimizationModelBase(DynamicModelBase):
 
-    """Base class providing a framework for the static optimization approaches (SOA)
-    methods; using time steps to track biomass and metabolite concentrations over time.
+    """Base class providing a framework for the static optimization approaches
+    (SOA)
+    Base class for methods using time steps to track biomass and metabolite
+    concentrations over time.
+
+    Attributes:
+        _initial_bounds (dict): Containing the original upper and lower bound
+            for all reactions
+
     """
 
     def __init__(self) -> None:
@@ -18,9 +25,7 @@ class StaticOptimizationModelBase(DynamicModelBase):
     def _set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]
     ) -> None:
-        """Sets initial concentrations of metabolites based on provided values
-        or reaction bounds.
-        This method sets the initial concentrations using either the provided
+        """Sets the initial concentrations using either the provided
         concentrations or the lower bounds of the model's exchange reactions.
 
         Args:
@@ -90,10 +95,6 @@ class StaticOptimizationModelBase(DynamicModelBase):
             deviate (function, optional): A function to apply model changes during the simulation.
                 Should accept: the model, biomass concentrations, metabolite concentrations, and dt as parameters.
                 Defaults to None.
-            deviation_time (int, optional): The time step when the deviation
-                function should be called.
-                Defaults to 0.
-
         """
         pass
 
@@ -114,31 +115,36 @@ class StaticOptimizationModelBase(DynamicModelBase):
         pass
 
     def update_exchanges(self, dt: float) -> None:
+        """Updates the lower and upper bound of the
+        exchange reaction, according to the amount of external metabolite
+        present
+
+        Args:
+            dt (float): time step size
+        """
         pass
 
     def update_biomasses(self) -> None:
         """Update all biomass concentration"""
         pass
 
-    def reset_dt(self) -> float:
-        """Resets the simulation and calculates dt_hat (smaller time step)."""
-        pass
-
     def check_solution_feasibility(self) -> str:
-        """Checks if the current solution has any metabolite concentration below zero.
+        """Checks if the current solution has any metabolite concentration
+        below zero.
 
         Returns:
-            str: The metabolite ID with the lowest negative concentration, or an empty string if all concentrations are positive.
+            str: The species ID with the lowest negative concentration,
+                or an empty string if all concentrations are positive.
         """
 
         low = 1e10
-        name = ""
+        sid = ""
         for key, value in self.metabolites.items():
             if round(value[-1], 8) < 0 and value[-1] < low:
                 low = value[-1]
-                name = key
+                sid = key
 
-        return name
+        return sid
 
     def importers_species_concentration(
         self, rid: str, transporters: Transporters
