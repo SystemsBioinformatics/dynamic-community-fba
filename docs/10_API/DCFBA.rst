@@ -5,7 +5,7 @@
 CommunityModel
 ---------------------------------
 
-.. automodule:: dcFBA.Models.CommunityModel
+.. automodule:: dcfba.Models.CommunityModel
    :members:
    :show-inheritance:
 
