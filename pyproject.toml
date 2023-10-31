@@ -27,7 +27,7 @@ keywords = ["Microbial Community", "Systems Biology", "Dynamic FBA", "Genome Sca
 dependencies = [
   "cbmpy >= 0.8.4",
   "pyparsing >= 3.0",
-  "cplex"
+  # "cplex"
 ]
 
 [project.urls]
