@@ -20,6 +20,11 @@ installed_packages_list = sorted(
     ["%s==%s" % (i.key, i.version) for i in installed_packages]
 )
 print(installed_packages_list)
+
+import dcFBA
+
+import dcfba
+
 project = "dynamic-community-fba"
 copyright = "2023, S.C.M.A. Wijnen, F. Moro"
 authors = ["S.C.M.A. Wijnen", "F. Moro"]
