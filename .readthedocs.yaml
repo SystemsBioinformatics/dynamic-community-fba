@@ -24,9 +24,7 @@ python:
   install:
     - requirements: docs/requirements.txt
     # Install our python package before building the docs
-    - method: ls -lh
-      path: ./docs../
-    - method: pip
+    - method: pip -e
       path: .
 
 
