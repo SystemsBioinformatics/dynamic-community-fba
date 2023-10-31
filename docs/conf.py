@@ -21,9 +21,7 @@ installed_packages_list = sorted(
 )
 print(installed_packages_list)
 
-from .. import dcFBA
-
-# import dcfba
+print(globals())
 
 project = "dynamic-community-fba"
 copyright = "2023, S.C.M.A. Wijnen, F. Moro"
