@@ -10,8 +10,8 @@ import sys
 import os
 
 
-sys.path.insert(0, os.path.abspath("."))
-print(sys.path)
+# sys.path.insert(0, os.path.abspath("."))
+# print(sys.path)
 
 import pkg_resources
 
