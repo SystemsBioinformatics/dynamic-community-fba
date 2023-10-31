@@ -23,7 +23,7 @@ build:
 python:
   install:
     # Install our python package before building the docs
-    - requirements: requirements.txt
+    - requirements: docs/requirements.txt
     - method: pip 
       path: .
 

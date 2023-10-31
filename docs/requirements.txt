@@ -15,4 +15,4 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.5
 sphinxcontrib-napoleon
 pyparsing==3.1
--e .
+# -e .
