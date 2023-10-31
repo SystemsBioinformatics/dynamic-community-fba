@@ -5,14 +5,14 @@
 CommunityModel
 ---------------------------------
 
-.. automodule:: dcfba.Models.CommunityModel
+.. automodule:: ..dcFBA.Models.CommunityModel
    :members:
    :show-inheritance:
 
 DynamicModelBase
 -------------------------------
 
-.. automodule:: dcfba.DynamicModels.DynamicModelBase
+.. automodule:: .dcFBA.DynamicModels.DynamicModelBase
    :members:
    :show-inheritance:
 
