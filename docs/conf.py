@@ -10,8 +10,8 @@ import sys
 import os
 
 
-sys.path.insert(0, os.path.abspath(".."))
-print(sys.path)
+sys.path.insert(0, os.path.abspath("../.."))
+/# print(sys.path)
 project = "dynamic-community-fba"
 copyright = "2023, S.C.M.A. Wijnen, F. Moro"
 authors = ["S.C.M.A. Wijnen", "F. Moro"]
