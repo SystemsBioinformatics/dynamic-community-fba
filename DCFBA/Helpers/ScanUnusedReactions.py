@@ -14,7 +14,7 @@ def scan_unused_reactions(model: Model, medium: dict[str, float]) -> list[str]:
         medium (dict[str, float]): The medium the model is in
 
     Returns:
-        list[str]: All the unused reactions
+        list[str]: All the unused reactions given the medium
     """
     for eid in model.getExchangeReactionIds():
         reaction: Reaction = model.getReaction(eid)
