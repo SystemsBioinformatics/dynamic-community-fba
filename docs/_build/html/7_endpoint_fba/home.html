@@ -315,7 +315,7 @@ ensuring a time-averaged community ratio.</p>
 <section id="optimal-time-search">
 <h3>7.3.2 Optimal time search<a class="headerlink" href="#optimal-time-search" title="Permalink to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">OptimalSearch.time_search</span></code> module helps determine the optimal number of intervals required to reach the maximum objective method value. By default, the chosen number of intervals might either stretch resources too thinly or not utilize them fully, leading to skewed FBA results.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dcFBA.Helpers.OptimalSearch</span> <span class="kn">import</span> <span class="n">time_search</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dcFBA.OptimalSearch</span> <span class="kn">import</span> <span class="n">time_search</span>
 
 <span class="n">optimal_timepoints</span> <span class="o">=</span> <span class="n">time_search</span><span class="p">(</span>
     <span class="n">community_model</span><span class="p">,</span>
