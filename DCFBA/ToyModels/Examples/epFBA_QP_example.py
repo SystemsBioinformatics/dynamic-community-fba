@@ -66,7 +66,7 @@ ep = EndPointFBA(
 )
 
 ep.simulate()
-ep.set_qp(12.77777, 0.001)
+ep.set_subset_qp(12.77777, ["R_1_modelA", "R_1_modelB"])
 
 solution = ep.simulate()
 print(solution)
