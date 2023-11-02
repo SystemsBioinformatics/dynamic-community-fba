@@ -286,7 +286,7 @@ The ``OptimalSearch.time_search`` module helps determine the optimal number of i
 
 .. code-block:: python
    
-   from dcFBA.Helpers.OptimalSearch import time_search
+   from dcFBA.OptimalSearch import time_search
 
    optimal_timepoints = time_search(
        community_model,
