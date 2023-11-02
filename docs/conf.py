@@ -10,18 +10,7 @@ import sys
 import os
 
 
-sys.path.insert(0, os.path.abspath("../"))
-# print(sys.path)
-
-import pkg_resources
-
-installed_packages = pkg_resources.working_set
-installed_packages_list = sorted(
-    ["%s==%s" % (i.key, i.version) for i in installed_packages]
-)
-print(installed_packages_list)
-
-import dcFBA
+# sys.path.insert(0, os.path.abspath("../src"))
 
 project = "dynamic-community-fba"
 copyright = "2023, S.C.M.A. Wijnen, F. Moro"

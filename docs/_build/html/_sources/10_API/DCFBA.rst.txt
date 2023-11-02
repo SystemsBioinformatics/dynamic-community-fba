@@ -20,7 +20,7 @@ DynamicModelBase
 EndPointFBA
 -------------------------------
 
-.. automodule:: dcFBA.EndPointFBA
+.. automodule:: dcFBA.DynamicModels.EndPointFBA
    :members:
    :show-inheritance:
 
