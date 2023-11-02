@@ -3,7 +3,7 @@ from cbmpy.CBModel import Model, Reaction
 from dcFBA.ToyModels import model_a, model_b
 from dcFBA.Models.CommunityModel import CommunityModel
 from dcFBA.DynamicModels.DynamicJointFBA import DynamicJointFBA
-from dcFBA.Models.Kinetics import KineticsStruct
+from dcFBA.Models.KineticsStruct import KineticsStruct
 
 m_a: Model = model_a.build_toy_model_fba_A()
 m_a.getReaction("R_1").setUpperBound(10)

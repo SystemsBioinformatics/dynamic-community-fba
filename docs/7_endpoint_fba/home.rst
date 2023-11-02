@@ -111,7 +111,7 @@ interval IDs. These ID's are stored in the ``fluxes`` object. To access the flux
     fluxes = ep.get_fluxes()
 
     #Obtain the aggregated flux value of reaction 1 of model A in the fifth time point
-    print(fluxes["R_1_model_A_time05"]) #1.2763
+    print(fluxes["R_1_modelA_time05"]) #1.2763
 
 The concentration of an external metabolite at a specific time point is retained within the linking reaction between this time-point and the previous. 
 This holds true for all external metabolites consumed and synthesized within the system, as they progress through each time step until reaching the final one.
@@ -246,13 +246,13 @@ Putting it all together we can again plot the biomasses, metabolites and fluxes 
 .. image:: ../_static/images/biomasses_epFBA.png
     :width: 500px
     :align: center
-    :alt: Metabolite concentrations
+    :alt: Biomass concentrations
 
 
 .. image:: ../_static/images/Flux_r_1_epFBA.png
     :width: 500px
     :align: center
-    :alt: Metabolite concentrations
+    :alt: fluxes
 
 7.3 Advanced constraints
 ------------------------

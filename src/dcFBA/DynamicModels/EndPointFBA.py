@@ -284,9 +284,9 @@ class EndPointFBA(DynamicModelBase):
                 continue
             lb = reaction.getLowerBound()
             ub = reaction.getUpperBound()
-            if not (lb == 0.0 or lb == cbmpy.INF or lb == cbmpy.NINF):
+            if not (lb == 0.0 or lb == cbmpy.INF or lb == numpy.NINF):
                 rids_lb_to_check.add(reaction.getId())
-            if not (ub == 0.0 or ub == cbmpy.INF or ub == cbmpy.NINF):
+            if not (ub == 0.0 or ub == cbmpy.INF or ub == numpy.NINF):
                 rids_ub_to_check.add(reaction.getId())
 
         combined_set = rids_lb_to_check | rids_ub_to_check
@@ -314,7 +314,7 @@ class EndPointFBA(DynamicModelBase):
                     ],
                 )
                 self.model.addUserDefinedConstraint(udc)
-                reaction.setLowerBound(cbmpy.NINF)
+                reaction.setLowerBound(numpy.NINF)
             if rid in rids_ub_to_check:
                 udc = self.model.createUserDefinedConstraint(
                     f"{new_rid}_ub",
@@ -361,7 +361,7 @@ class EndPointFBA(DynamicModelBase):
                         ],
                     )
                     self.model.addUserDefinedConstraint(udc)
-                    reactionN.setLowerBound(cbmpy.NINF)
+                    reactionN.setLowerBound(numpy.NINF)
                 if rid in rids_ub_to_check:
                     udc = self.model.createUserDefinedConstraint(
                         f"{new_rid}_ub",
@@ -616,7 +616,7 @@ class EndPointFBA(DynamicModelBase):
         additional_components = []
 
         for mid, _ in self.model.get_model_biomass_ids().items():
-            self.model.setReactionBounds(f"BM_{mid}_exchange", cbmpy.NINF, 0.0)
+            self.model.setReactionBounds(f"BM_{mid}_exchange", numpy.NINF, 0.0)
 
         for mid, _ in self.model.get_model_biomass_ids().items():
             self.model.createReaction(

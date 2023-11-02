@@ -1,4 +1,4 @@
-from ..Models.Kinetics import KineticsStruct
+from ..Models.KineticsStruct import KineticsStruct
 
 
 class DynamicModelBase:

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model, Reaction
 from dcFBA.ToyModels import model_a, model_b
 from dcFBA.Models.CommunityModel import CommunityModel
-from dcFBA.Models.Kinetics import KineticsStruct
+from dcFBA.Models.KineticsStruct import KineticsStruct
 from dcFBA.DynamicModels import EndPointFBA
 from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 

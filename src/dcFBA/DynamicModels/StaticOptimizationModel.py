@@ -1,5 +1,5 @@
 from cbmpy.CBModel import Model, Reaction
-from ..Models.Kinetics import KineticsStruct
+from ..Models.KineticsStruct import KineticsStruct
 from ..Models.Transporters import Transporters
 from .DynamicModelBase import DynamicModelBase
 from ..Exceptions import NoLimitingSubstrateFound

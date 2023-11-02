@@ -63,7 +63,7 @@ DynamicParallelFBA
 KineticStruct
 -------------------------------
 
-.. automodule:: dcFBA.Models.Kinetics
+.. automodule:: dcFBA.Models.KineticsStruct
    :members:
    :show-inheritance:
 
