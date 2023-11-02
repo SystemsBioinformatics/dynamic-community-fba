@@ -1,7 +1,7 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: osx-arm64
-cbmpy==0.8.4 #TODO fix this before publishing
+cbmpy>=0.8.8 #TODO fix this before publishing
 cplex==22.1.1.0
 docutils==0.18.1
 sphinx==6.2.1
