@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from cbmpy.CBModel import Model
 from dcFBA.ToyModels import model_a, model_b
 from dcFBA.DynamicModels.DynamicParallelFBA import DynamicParallelFBA
-from dcFBA.Models.Kinetics import KineticsStruct
+from dcFBA.Models.KineticsStruct import KineticsStruct
 
 
 m_a: Model = model_a.build_toy_model_fba_A()
