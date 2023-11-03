@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dcFBA"
-version = "0.0.9"
+version = "0.1.0"
 authors = [
   { name="Steven Wijnen", email="steven.wijnen@icloud.com" },
   { name="Francesco Moro", email="f.moro@vu.nl"}, 
