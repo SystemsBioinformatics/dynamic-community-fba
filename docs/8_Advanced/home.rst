@@ -169,15 +169,15 @@ A ``KineticStruct`` van be defined using the reaction id followed by the limitin
     :alt: Biomass concentrations
 
 
-There is one exception, un the case of ``EndPointFBA`` this is done by a MM approximation, that is using the `Km` and `Vmax` of a reaction we derive two linear lines and add these as extra constraints
-to the linear model. To set these extra constraints we first need to create a ``KineticStruct`` holding all the kinetic information for the reactions 
-for which we know the Kinetics.
+.. There is one exception, un the case of ``EndPointFBA`` this is done by a MM approximation, that is using the `Km` and `Vmax` of a reaction we derive two linear lines and add these as extra constraints
+.. to the linear model. To set these extra constraints we first need to create a ``KineticStruct`` holding all the kinetic information for the reactions 
+.. for which we know the Kinetics.
 
-.. math::
+.. .. math::
 
-   \text{lower_bound} = \frac{V_{\text{max}}}{Km}
+..    \text{lower_bound} = \frac{V_{\text{max}}}{Km}
 
-   \text{upper_bound} = \frac{\frac{V_{\text{max}}}{2}}{Km}
+..    \text{upper_bound} = \frac{\frac{V_{\text{max}}}{2}}{Km}
 
 
 
@@ -189,8 +189,8 @@ The Kinetics function
 
    This section is currently under construction. Check back later for updates.
 
-Unused reactions
-----------------
+Reducing the memory usage of ``EndPointFBA``
+--------------------------------------------
 
 The bottleneck for ``EndPointFBA`` is the amount of RAM required to store the joint stoichiometric matrix. We introduce two methods here to lower the total amount of RAM needed.
 
