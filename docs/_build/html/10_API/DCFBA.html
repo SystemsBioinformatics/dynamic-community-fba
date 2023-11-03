@@ -184,18 +184,14 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.Models.Transporters">Transporters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters"><code class="docutils literal notranslate"><span class="pre">Transporters</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.m_importers"><code class="docutils literal notranslate"><span class="pre">Transporters.m_importers</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.m_exporters"><code class="docutils literal notranslate"><span class="pre">Transporters.m_exporters</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.add_exporter"><code class="docutils literal notranslate"><span class="pre">Transporters.add_exporter()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.add_importer"><code class="docutils literal notranslate"><span class="pre">Transporters.add_importer()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.get_exporters"><code class="docutils literal notranslate"><span class="pre">Transporters.get_exporters()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.get_importers"><code class="docutils literal notranslate"><span class="pre">Transporters.get_importers()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.get_reaction_species"><code class="docutils literal notranslate"><span class="pre">Transporters.get_reaction_species()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters.get_transporters"><code class="docutils literal notranslate"><span class="pre">Transporters.get_transporters()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.Helpers.OptimalSearch">OptimalSearch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dcFBA.Helpers.OptimalSearch.balanced_search_quick"><code class="docutils literal notranslate"><span class="pre">balanced_search_quick()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dcFBA.Helpers.OptimalSearch.time_search"><code class="docutils literal notranslate"><span class="pre">time_search()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#module-dcFBA.Helpers.ReduceModel">ReduceModel</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dcFBA.Helpers.ReduceModel.reduce_model"><code class="docutils literal notranslate"><span class="pre">reduce_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dcFBA.Helpers.ReduceModel.scan_unused_reactions"><code class="docutils literal notranslate"><span class="pre">scan_unused_reactions()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -914,14 +910,14 @@ below zero.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.importers_species_concentration">
-<span class="sig-name descname"><span class="pre">importers_species_concentration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transporters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#dcFBA.Models.Transporters.Transporters" title="dcFBA.Models.Transporters.Transporters"><span class="pre">Transporters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.importers_species_concentration" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">importers_species_concentration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transporters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Transporters</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.DynamicModels.StaticOptimizationModel.StaticOptimizationModelBase.importers_species_concentration" title="Permalink to this definition"></a></dt>
 <dd><p>Given an importer reaction, returns the species concentrations that
 this importer imports.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rid</strong> (<em>str</em>) – The reaction id of the importer.</p></li>
-<li><p><strong>transporters</strong> (<a class="reference internal" href="#dcFBA.Models.Transporters.Transporters" title="dcFBA.Models.Transporters.Transporters"><em>Transporters</em></a>) – A Transporters object.</p></li>
+<li><p><strong>transporters</strong> (<em>Transporters</em>) – A Transporters object.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1435,7 +1431,10 @@ Defaults to None.</p></li>
 concentrations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dt</strong> (<em>float</em>) – time step size</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> (<em>float</em>) – time step size</p></li>
+<li><p><strong>test</strong> (<em>int</em>) – testing</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1497,115 +1496,72 @@ value.</p>
 </dd></dl>
 
 </section>
-<section id="module-dcFBA.Models.Transporters">
-<span id="transporters"></span><h2>Transporters<a class="headerlink" href="#module-dcFBA.Models.Transporters" title="Permalink to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dcFBA.Models.Transporters.</span></span><span class="sig-name descname"><span class="pre">Transporters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Facilitate access and operations on importers, exporters, and transporters of a metabolic model.</p>
-<p>This class is designed to manage and interact with importers (reactions that uptake metabolites from external space)
-and exporters (reactions that excrete metabolites to external space). Both importers and exporters are stored
-as dictionaries where reaction identifiers (rid) are keys and the associated species are values.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.m_importers">
-<span class="sig-name descname"><span class="pre">m_importers</span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.m_importers" title="Permalink to this definition"></a></dt>
-<dd><p>Dictionary storing the import reactions and their corresponding species.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict[str, list[str]]</p>
-</dd>
-</dl>
+<section id="module-dcFBA.Helpers.OptimalSearch">
+<span id="optimalsearch"></span><h2>OptimalSearch<a class="headerlink" href="#module-dcFBA.Helpers.OptimalSearch" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="dcFBA.Helpers.OptimalSearch.balanced_search_quick">
+<span class="sig-prename descclassname"><span class="pre">dcFBA.Helpers.OptimalSearch.</span></span><span class="sig-name descname"><span class="pre">balanced_search_quick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#dcFBA.DynamicModels.EndPointFBA.EndPointFBA" title="dcFBA.DynamicModels.EndPointFBA.EndPointFBA"><span class="pre">EndPointFBA</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_initial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objective</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dcFBA.Helpers.OptimalSearch.balanced_search_quick" title="Permalink to this definition"></a></dt>
+<dd><p>Run this one if you know what you are doing, quick and dirty solution</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.m_exporters">
-<span class="sig-name descname"><span class="pre">m_exporters</span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.m_exporters" title="Permalink to this definition"></a></dt>
-<dd><p>Dictionary storing the export reactions and their corresponding species.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict[str, list[str]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.add_exporter">
-<span class="sig-name descname"><span class="pre">add_exporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.add_exporter" title="Permalink to this definition"></a></dt>
-<dd><p>Add a new exporter reaction along with its associated species.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.add_importer">
-<span class="sig-name descname"><span class="pre">add_importer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.add_importer" title="Permalink to this definition"></a></dt>
-<dd><p>Add a new importer reaction along with its associated species.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.get_exporters">
-<span class="sig-name descname"><span class="pre">get_exporters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.get_exporters" title="Permalink to this definition"></a></dt>
-<dd><p>Retrieve the export reactions and their associated species.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="dcFBA.Helpers.OptimalSearch.time_search">
+<span class="sig-prename descclassname"><span class="pre">dcFBA.Helpers.OptimalSearch.</span></span><span class="sig-name descname"><span class="pre">time_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#dcFBA.Models.CommunityModel" title="dcFBA.Models.CommunityModel.CommunityModel"><span class="pre">CommunityModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_biomasses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_concentrations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.Helpers.OptimalSearch.time_search" title="Permalink to this definition"></a></dt>
+<dd><p>Finds the lowest number of time points given initial values and a dt</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>iterable</strong> (<em>bool</em>) – If True, return as dictionary items. Default is False.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cm</strong> (<a class="reference internal" href="#dcFBA.Models.CommunityModel" title="dcFBA.Models.CommunityModel"><em>CommunityModel</em></a>) – _description_</p></li>
+<li><p><strong>initial_biomasses</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – _description_</p></li>
+<li><p><strong>initial_concentrations</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – _description_. Defaults to {}.</p></li>
+<li><p><strong>dt</strong> (<em>float</em><em>, </em><em>optional</em>) – _description_. Defaults to 0.1.</p></li>
+<li><p><strong>set_values</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Set to identify when a
+specific value is attained. [value, N]. Where value is the value
+you want to reach and N the initial guess of N.
+Defaults to None</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of export reactions and species.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>number of time points and the reached objective</dt><dd><p>value</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict[str, list[str]]</p>
+<dd class="field-odd"><p>ist[float, float]</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.get_importers">
-<span class="sig-name descname"><span class="pre">get_importers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.get_importers" title="Permalink to this definition"></a></dt>
-<dd><p>Retrieve the import reactions and their associated species.</p>
+</section>
+<section id="module-dcFBA.Helpers.ReduceModel">
+<span id="reducemodel"></span><h2>ReduceModel<a class="headerlink" href="#module-dcFBA.Helpers.ReduceModel" title="Permalink to this heading"></a></h2>
+<p>Helper function which loops over all reactions in a Model or CommunityModel. Sets the reaction as the objective function and checks, given a medium if the reaction can take place</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="dcFBA.Helpers.ReduceModel.reduce_model">
+<span class="sig-prename descclassname"><span class="pre">dcFBA.Helpers.ReduceModel.</span></span><span class="sig-name descname"><span class="pre">reduce_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">medium</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.Helpers.ReduceModel.reduce_model" title="Permalink to this definition"></a></dt>
+<dd><p>Remove unused reactions and metabolites from the model</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dcFBA.Helpers.ReduceModel.scan_unused_reactions">
+<span class="sig-prename descclassname"><span class="pre">dcFBA.Helpers.ReduceModel.</span></span><span class="sig-name descname"><span class="pre">scan_unused_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">medium</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.Helpers.ReduceModel.scan_unused_reactions" title="Permalink to this definition"></a></dt>
+<dd><p>Generate list of unused reactions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>iterable</strong> (<em>bool</em>) – If True, return as dictionary items. Default is False.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>Model</em>) – a GSMM</p></li>
+<li><p><strong>medium</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – The medium the model is in</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of import reactions and species.</p>
+<dd class="field-even"><p>All the unused reactions given the medium</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict[str, list[str]]</p>
+<dd class="field-odd"><p>list[str]</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.get_reaction_species">
-<span class="sig-name descname"><span class="pre">get_reaction_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.get_reaction_species" title="Permalink to this definition"></a></dt>
-<dd><p>Given a reaction id return the species belonging to it</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rid</strong> (<em>_type_</em>) – reaction id</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>the species or None if rid was not in the model</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list[str] | None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dcFBA.Models.Transporters.Transporters.get_transporters">
-<span class="sig-name descname"><span class="pre">get_transporters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#dcFBA.Models.Transporters.Transporters.get_transporters" title="Permalink to this definition"></a></dt>
-<dd><p>Retrieve combined dictionary of both importers and exporters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Combined dictionary of importers and exporters.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict[str, list[str]]</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>

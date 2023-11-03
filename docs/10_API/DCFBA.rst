@@ -67,10 +67,18 @@ KineticStruct
    :members:
    :show-inheritance:
 
-Transporters
--------------------------------
+OptimalSearch
+---------------
 
-.. automodule:: dcFBA.Models.Transporters
+.. automodule:: dcFBA.Helpers.OptimalSearch
    :members:
    :show-inheritance:
+
+ReduceModel
+---------------
+
+.. automodule:: dcFBA.Helpers.ReduceModel
+   :members:
+   :show-inheritance:
+
 

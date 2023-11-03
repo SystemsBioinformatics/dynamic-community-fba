@@ -11,6 +11,7 @@ from cbmpy.CBModel import (
     Species,
     FluxBound,
 )
+
 from ..Models.CommunityModel import CommunityModel
 
 import weakref

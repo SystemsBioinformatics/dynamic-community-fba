@@ -1,5 +1,5 @@
 import copy
-from cbmpy.CBModel import Model, Species, Reaction
+from cbmpy.CBModel import Model, Species
 from ..Helpers import BuildCommunityMatrix as cm
 from ..Exceptions import NotInCombinedModel
 

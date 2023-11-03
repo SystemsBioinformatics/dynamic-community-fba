@@ -25,7 +25,7 @@ classifiers = [
 ]
 keywords = ["Microbial Community", "Systems Biology", "Dynamic FBA", "Genome Scale Models"]
 dependencies = [
-  "cbmpy >= 0.8.9",
+  "cbmpy >= 0.8.8",
   "pyparsing >= 3.0",
 ]
 

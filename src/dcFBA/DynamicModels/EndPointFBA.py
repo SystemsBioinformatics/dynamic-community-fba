@@ -292,9 +292,10 @@ class EndPointFBA(DynamicModelBase):
         combined_set = rids_lb_to_check | rids_ub_to_check
         # Reactions at time zero
         for rid in combined_set:
-            if self.kinetics and self.kinetics.exists(reaction.getId()):
-                self.mm_approximation(reaction.getId())
-                continue
+            # TODO under construction
+            # if self.kinetics and self.kinetics.exists(reaction.getId()):
+            #     self.mm_approximation(reaction.getId())
+            #     continue
             new_rid = rid + "_" + self.times[0]
             reaction = self.model.getReaction(new_rid)
             mid = self.model.identify_model_from_reaction(rid)
@@ -335,9 +336,10 @@ class EndPointFBA(DynamicModelBase):
 
         for rid in combined_set:
             reaction: Reaction = initial_model.getReaction(rid)
-            if self.kinetics and self.kinetics.exists(reaction.getId()):
-                self.mm_approximation(reaction.getId())
-                continue
+            # TODO not production ready yet
+            # if self.kinetics and self.kinetics.exists(reaction.getId()):
+            #     # just continue here, all bounds where set on the previous step
+            #     continue
 
             lb = reaction.getLowerBound()
             ub = reaction.getUpperBound()
@@ -558,6 +560,7 @@ class EndPointFBA(DynamicModelBase):
         Raises:
             Exception: If no limiting substrate is defined in the `kinetics` object for the specified reaction.
         """
+        print("WARNING not production ready")
         sid, km, vmax = self.kinetics.get_reactions_kinetics(rid)
         if sid == "":
             raise Exception(

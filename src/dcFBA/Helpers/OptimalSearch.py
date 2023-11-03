@@ -3,7 +3,6 @@
 import numpy as np
 from ..DynamicModels import EndPointFBA
 from ..Models import CommunityModel
-import cbmpy
 
 # Remember which numbers were visited
 visited: dict[int, float] = {}
