@@ -67,7 +67,7 @@ and a ``condition`` which we will explain in a minute. Furthermore, you always n
 
 Here we define the ``deviate_func`` as follows: run the function when the concentration of `M_pyr_e` runs under 5.0, run it only once. If the concentration is 
 not below or equal to 5.0 return the condition. The ``condition`` parameter is by default set to 0 at the start of the simulation and is always passed to the deviate function.
-This is done such that for example you can rerun the function for consecutive time steps. The value returned by the function will always be added to the global condition variable. 
+This is done such that for example you can return the function for consecutive time steps. The value returned by the function will always be added to the global condition variable. 
 By doing so we can for example add Glucose to the system for N consecutive runs by modifying the conditional statement. 
 
 We can now pass the function to the simulation method and plot the results:
