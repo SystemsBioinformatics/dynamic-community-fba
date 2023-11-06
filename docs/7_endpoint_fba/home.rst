@@ -400,6 +400,9 @@ Plotting the same fluxes as we did above we see that we have a much smoother tra
     :alt: Metabolite concentrations
 
 
+.. tip:: 
+    You can also use `EndPointFBA.set_subset_qp()` which takes a list containing reaction ids for which you want to minimize the consecutive fluxes over time. 
+    Thereby reducing the problem size and allowing for shorter modelling time.
 
 
 Happy modelling!

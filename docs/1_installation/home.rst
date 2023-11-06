@@ -1,3 +1,8 @@
+.. meta::
+    :description lang=en:
+         How to install dynamic-community-fba (dcFBA)
+    :Keywords: dynamic-community-fba, Python, PyPi, cbmpy, cobrapy
+
 1. Installation and Requirements
 ================================
 

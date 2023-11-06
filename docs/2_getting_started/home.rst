@@ -11,7 +11,8 @@ For those who have prior experience with `CPBRApy`, the transition to `CBMPy` wi
 
 .. _documentation: https://pythonhosted.org/cbmpy/modules_doc.html
 
-.. _cbmpy-guide:
+.. _cbmpy-guide: 
+
 2.1. Loading a model using CBMPy
 --------------------------------
 

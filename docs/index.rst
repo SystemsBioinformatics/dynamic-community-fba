@@ -2,6 +2,13 @@
    sphinx-quickstart on Mon Jul  3 11:45:14 2023.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
+.. meta::
+    :description lang=en:
+         Documentation for dynamic-community-fba, a Python package that facilitates dynamic flux balance analysis (dFBA) 
+         of microbial communities, modeling metabolic exchanges and interactions. 
+         Perfect for researchers in systems biology, metabolic engineering, and microbial ecology.
+
+    :Keywords: dynamic-community-fba, Python, dynamic flux balance analysis, microbial communities, Genome Scale Metabolic Models (GSMM), Systems biology
 
 Dynamic-community-fba's documentation
 ================================================

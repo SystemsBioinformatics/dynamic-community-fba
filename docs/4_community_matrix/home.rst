@@ -1,3 +1,6 @@
+.. meta::
+    :Keywords: dynamic-community-fba, Python, Community modelling, Community stoichiometric matrix, Community Flux Balance Analysis, FBA
+
 4. The community model 
 =======================
 
