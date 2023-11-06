@@ -1,3 +1,6 @@
+# TODO implement this
+# from abc import ABC, abstractmethod
+
 from ..Models.KineticsStruct import KineticsStruct
 
 
@@ -81,6 +84,7 @@ class DynamicModelBase:
         """
         return self.times
 
+    @abstactmethod
     def get_flux_values(self) -> list[float]:
         pass
 
