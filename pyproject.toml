@@ -13,7 +13,7 @@ authors = [
 license = { file = "LICENSE" }
 description = "Python package for Dynamic Community FBA"
 readme = "README.md"
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8,<3.11" #Currently cplex only holds interfaces for python 3.8, 3.9, 3.10. Can be increased when cplex updates
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",

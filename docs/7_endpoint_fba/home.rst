@@ -114,7 +114,7 @@ interval IDs. These ID's are stored in the ``fluxes`` object. To access the flux
     print(fluxes["R_1_modelA_time05"]) #1.2763
 
 The concentration of an external metabolite at a specific time point is retained within the linking reaction between this time-point and the previous. 
-This holds true for all external metabolites consumed and synthesized within the system, as they progress through each time step until reaching the final one.
+This holds true for all external metabolites consumed and produced within the system, as they progress through each time step until reaching the final one.
 To ascertain the quantity of metabolite X at the commencement of time-step 4, you can access this information using the following linking reaction format: `_ID_time03_time04`, where `_ID` 
 denotes the identifier of the original metabolite. This format encapsulates the amount of metabolite transitioning from time-step 3 to time-step 4.
 
@@ -132,17 +132,15 @@ denotes the identifier of the original metabolite. This format encapsulates the 
 
     print(fluxes['A_e_exchange_final']) #0.0
 
-Given that this approach may not be the most intuitive method for retrieving information from the object, ``EndPointFBA`` 
-follows a similar pattern to other methods by enhancing the core functionality of the ``DynamicModelBase`` class. 
-This inheritance grants it the capability to easily access biomasses, metabolites, and fluxes at each time point. 
-By leveraging these properties, you can obtain the data in a more straightforward manner, with the values neatly organized per time-step.
+
+While all data is available through the fluxes object, it is more convenient to adhere to the established patterns of the ``DynamicModelBase`` class interface To retrieve simulation results.
+This inheritance simplifies data access, allowing for a more intuitive way to obtain biomasses, metabolites, and fluxes for each time point: 
 
 .. code-block:: python 
 
     biomasses = ep.get_biomasses()
     metabolites = ep.get_metabolites()
-    fluxes = ep.get_fluxes()
-    time = ep.get_time_points()
+
 
 Now you can retrieve the metabolite concentration of metabolite `S` and the aggregated flux value of reaction `R_1_modelA` using the following code:
 
@@ -175,7 +173,8 @@ Putting it all together we can again plot the biomasses, metabolites and fluxes 
 .. code-block:: python
 
     import matplotlib.pyplot as plt
-
+    time = ep.get_time_points()
+    
     plt.plot(
         range(len(time) + 1),
         metabolites["S_e"],

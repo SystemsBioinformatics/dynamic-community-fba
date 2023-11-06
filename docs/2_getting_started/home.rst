@@ -64,14 +64,13 @@ You can save the modified model in a file format of your choice using any of the
 .. code-block:: python
     
     cbmpy.writeCOBRASBML(...)
-    cbmpy.writeFVAtoCSV(...)
     cbmpy.writeModelToExcel97(...)    
     cbmpy.writeSBML3FBCV2(...)
 
 2.4. Reactions, Reagents and Species
 ------------------------------------
 
-In `CBMPy`, the ``cbmpy.CBModel`` object stores the model and all it's attributes. When working with the model, 
+In `CBMPy`, the ``cbmpy.CBModel`` object stores the model and all its attributes. When working with the model, 
 most modifications will involve manipulating this object. In the previous section, 
 we demonstrated how to load the *E. coli core iJR904* model and perform a FBA on it. Now, let's explore some basic alterations that can be made 
 to the model.
@@ -115,7 +114,7 @@ Furthermore you can check if a reaction is reversible and if it is an exchange r
 
 
 You can easily add your own defined reactions to the model using the ``createReaction()`` method, if we for example want to add the 
-irreversible reaction: :literal:`ATP + H2O -> ADP + Pi` we can do this with the following code:
+irreversible reaction: :literal:`ATP + H2O -> ADP + Pi + H` we can do this with the following code:
 
 .. code-block:: python 
 
@@ -123,10 +122,12 @@ irreversible reaction: :literal:`ATP + H2O -> ADP + Pi` we can do this with the 
    
     # Add the reagents to the reaction, All metabolites already existed in the model so we did not 
     # Need to create them 
-    iJR904.createReactionReagent('ATPsink', metabolite = "M_atp_c" , coefficient = -1) 
-    iJR904.createReactionReagent('ATPsink', metabolite = "M_adp_c", coefficient =1)
-    iJR904.createReactionReagent('ATPsink', metabolite =  "M_h2o_c", coefficient = -1)
-    iJR904.createReactionReagent('ATPsink', metabolite = "M_pi_c" , coefficient = 1)
+    iJR904.createReactionReagent('ATPsink', metabolite = "M_atp_c" , coefficient = -1.0) 
+    iJR904.createReactionReagent('ATPsink', metabolite =  "M_h2o_c", coefficient = -1.0)
+    iJR904.createReactionReagent('ATPsink', metabolite = "M_adp_c", coefficient = 1.0)
+    iJR904.createReactionReagent('ATPsink', metabolite = "M_pi_c" , coefficient = 1.0)
+    iJR904.createReactionReagent('ATPsink', metabolite =  "M_h_c", coefficient = 1.0)
+
 
 
 Reagents

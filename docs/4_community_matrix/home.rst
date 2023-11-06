@@ -9,7 +9,7 @@ Strictly put, the community model represents the combined stoichiometry matrices
 and thus can again be used to perform FBA.
 
 To streamline the handling of multiple models, we have developed the ``CommunityModel`` class. The class offers a structured representation of combined metabolic networks, integrating stoichiometric 
-information from individual GSMMs/SBML models. By merging the information of each model, we can examine the intricate world microbial communities, their dynamics, and phenotypic potentials.
+information from individual GSMMs/SBML models [1]_ [2]_. By merging the information of each model, we can examine the intricate world microbial communities, their dynamics, and phenotypic potentials.
 
 The ``CommunityModel`` class is a direct subclass of the ``cbmpy.CBModel`` class. By building upon the foundational ``cbmpy.CBModel``, the ``CommunityModel`` inherits all of its capabilities, ensuring compatibility and ease of use. 
 All functionalities available in the ``cbmpy.CBModel`` class are retained in the ``CommunityModel``. Additionally, the latter can be effortlessly exported to an SBML file, enabling its analysis in various tools.
@@ -52,7 +52,7 @@ Alternatively, you can assess if the model's active objective
 function is set to the biomass reaction with :code:`model.getActiveObjectiveReactionIds()`. 
 This returns a list of objective IDs where you can look for the biomass reaction.
 
-In our demonstration, we've incorporated two pre-existing models: *E. coli core metabolism* and *Streptococcus thermophilus*. 
+In our example, we use the GSMMs of: *E. coli core metabolism* and *Streptococcus thermophilus*. 
 If desired, you can provide an optional list of alternative IDs to refer to the single models.
 This can be done by supplying a list of strings as the third argument to the function. 
 If no alternative IDs are provided, the community matrix will default to using the original model identifiers.
@@ -99,7 +99,7 @@ Reactions:
 For the ``Reactions`` we consider the following: 
 
 **Reaction Duplication:** 
-All reactions, similar to compartments, are duplicated within the community model. To maintain traceability, each reaction ID is supplemented with the originating model ID.
+All reactions, are duplicated within the community model. To maintain traceability, each reaction ID is supplemented with the originating model ID.
 
 **Handling Exchange Reactions:** 
 A distinctive approach is employed for exchange reactions. When identical exchange reactions are present in multiple models,
@@ -126,3 +126,7 @@ a species receives a distinguishing suffix only when it's present in more than o
 
     Please ensure that the corresponding IDs for these reactions and species are compatible to guarantee the proper 
     functioning of the community model.
+
+
+.. [1] Khandelwal, R. A., Olivier, B. G., Röling, W. F. M., Teusink, B., and Bruggeman, F. J. (2013). Community flux balance analysis for microbial consortiaat balanced growth. PLoS ONE, 8(5):e64567.
+.. [2] Stolyar, S., Dien, S. V., Hillesland, K. L., Pinel, N., Lie, T. J., Leigh, J. A., and Stahl, D. A. (2007). Metabolic modeling of a mutualistic microbial community. Molecular Systems Biology, 3(1).

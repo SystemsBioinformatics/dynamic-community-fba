@@ -2,7 +2,7 @@
 ==================
 
 This is the Advanced Topics section of our Python documentation. Here, we explore how you can manipulate the simulation during it's run and we explore the
-``KineticStruct`` which can be used for Michaelis Menten kinetics. Next we discuss the ``Kinetics function``` 
+``KineticStruct`` which can be used for Michaelis Menten kinetics. Next we discuss the ``Kinetics function`` 
 These tools enable you to add more biological information in the modelling.
 
 Let's dive in!
@@ -13,7 +13,7 @@ Manipulating the simulation
 Each simulation for objects of the ``TimeStepDynamicFBABase`` base class can be given an extra function enabling the user to manipulate the simulation on the go.
 By manipulating you can think of adding or removing external metabolites from the system. But following some simple rules nearly everything can be changed during simulation.
 
-Here we will give an example where we grow two strains of *E coli.* on Pyruvate and add L-Glutamate when the concentration of Pyruvate is half it's initial concentration.
+Here we will give an example where we grow two strains of *E. coli* on Pyruvate and add L-Glutamate when the concentration of Pyruvate is half it's initial concentration.
 
 First we build a ``DynamicJointFBA`` model:
 

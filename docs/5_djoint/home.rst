@@ -12,7 +12,7 @@ Using this in combination with the static optimization approaches as introduced 
 Example
 --------
 
-Here we will give use the example of a combining the  *E. coli core metabolism* model with the *Streptococcus thermophilus* (iRZ476) model.
+Here we use an example that combines the  *E. coli core metabolism (e_coli_core)* model with the *Streptococcus thermophilus* (iRZ476) model.
 To perform the Dynamic Joint FBA we first define the ``CommunityModel`` and use this to initialize a ``DynamicJointFBA`` object:
 
 .. code-block:: python
@@ -68,7 +68,19 @@ The simulate method conducts the simulation and stores all values of biomass con
     time_points = dynamic_joint_fba.get_time_points()
     fluxes = dynamic_joint_fba.get_fluxes()
 
-Since the fluxes are stored are the aggregated fluxes (the flux multiplied by the total amount of biomass present at that time), we can also restore the specific flux for a reaction:
+Dynamic FBA makes use of aggregated fluxes. Aggregated fluxes are specific fluxes multiplied by the amount of gram-dry-weight
+of a species. Aggregated fluxes are used since bounds and thus rates of reactions increase with the amount of biomass present. 
+To correct for this we thus multiply by the species biomass. 
+To retrieve the species-specific flux over (in :math:`mmol/gDw/h`) time you can use the 
+`DynamicModelBase.get_specific_flux_values()` method.
+
+Dynamic FBA relies on aggregated fluxes, which are specific fluxes multiplied by the 
+accumulated biomass (gDw) of a species. We use aggregated fluxes because reaction bounds 
+and rates need to increase with the amount of biomass present. 
+To account for this, we multiply by the species biomass.
+
+To obtain the species-specific flux, instead of the aggregated flux, you can use the `DynamicModelBase.get_specific_flux_values()` method.
+Which return the species-specific flux (in :math:`mmol/gDw/h`) for each time point.
 
 .. code-block:: python
 

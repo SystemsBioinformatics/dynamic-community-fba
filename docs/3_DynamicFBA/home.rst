@@ -5,7 +5,7 @@ Dynamic Flux Balance Analysis (dFBA) stands as a powerful computational framewor
 enabling the simulation and analysis of time-evolving metabolic processes within biological systems. Here we've implemented the Static Optimization approach as described 
 by *Mahadevan et. al (2002)* [#ref_dfba]_. 
 
-Simply put, dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.  
+Simply put, dynamic FBA performs FBA for each given time point and calculates the fluxes through the system at the beginning of that time point.  
 With each iteration, external metabolites and biomasses concentrations are updated, followed by another FBA, with the new values. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
 or the final time point is reached. This modeling approach enables the exploration of metabolic network adjustments to evolving environmental factors, substrate availability, and cellular demands.
 
@@ -27,12 +27,12 @@ We begin by loading the model and then limit the glucose uptake, ensuring that n
     model.getReaction("R_GLCpts").setUpperBound(10)
 
 
-Next we define the initial biomass and glucose concentrations and initialize the DYnamicSingleFBA object:
+Next we define the initial biomass and glucose concentrations and initialize the `DynamicSingleFBA` object:
 
 .. code-block:: python
 
     initial_biomass = 0.1  # Set the initial biomass
-    initial_concentrations = {"M_glc__D_e": 10}  # We start with 10 mM of glucose
+    initial_concentrations = {"M_glc__D_e": 10}  # We start with 10 mmol of glucose
     ds = DynamicSingleFBA(
         model,
         "R_BIOMASS_Ecoli_core_w_GAM",
@@ -41,7 +41,7 @@ Next we define the initial biomass and glucose concentrations and initialize the
     )  # Define a DynamicSingleFBA object given the model and the id of the biomass reaction
    
 
-Now that the model is inflame we can run the the simulation and plot the results
+Now that the dynamic model is initialized we can run the the simulation and plot the results:
 
 .. code-block:: python
 
