@@ -112,7 +112,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
         Perform a dynamic joint FBA simulation.
         """
 
-        used_time = [0]
+        used_time = [0.0]
         dt_hat = -1
         dt_save = dt
         fluxes = []

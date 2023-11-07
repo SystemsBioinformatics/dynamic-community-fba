@@ -84,7 +84,6 @@ class DynamicModelBase:
         """
         return self.times
 
-    @abstactmethod
     def get_flux_values(self) -> list[float]:
         pass
 
