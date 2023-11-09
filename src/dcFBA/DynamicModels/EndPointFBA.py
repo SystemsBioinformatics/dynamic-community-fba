@@ -543,6 +543,7 @@ class EndPointFBA(DynamicModelBase):
 
                     self.model.addUserDefinedConstraint(udc)
 
+    # TODO fix this
     def mm_approximation(self, rid: str):
         """
         Approximates the Michaelis-Menten curve for a given reaction using two
@@ -567,8 +568,8 @@ class EndPointFBA(DynamicModelBase):
                 "No limiting substrate was set in the kinetics object for: "
                 + rid
             )
-        low_line = vmax / km
-        high_line = (vmax / 2) / km
+        low_line = vmax / km  # option 1
+        high_line = (vmax / 2) / km  # Option 2
 
         for i in range(0, len(self.times) - 1):
             # Linking reaction is the concentration of Substrate for the
@@ -681,6 +682,7 @@ class EndPointFBA(DynamicModelBase):
                 f"biomass_fraction_{mid}_{self.times[-1]}"
             )
 
+    # TODO maybe qp for other objectives than final biomass (last two lines)
     def set_qp(self, solution: float, epsilon=0.01) -> None:
         """Sets the quadratic objective to minimize
         all consecutive fluxes.

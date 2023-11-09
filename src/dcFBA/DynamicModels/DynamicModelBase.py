@@ -21,7 +21,7 @@ class DynamicModelBase:
         self._metabolites = {}
         self._fluxes = {}
         self._times = []
-        self._kinetics: KineticsStruct = None
+        self._kinetics = None
 
     def simulate(self):
         pass
@@ -68,7 +68,7 @@ class DynamicModelBase:
 
         return self.metabolites
 
-    def get_fluxes(self) -> list[float]:
+    def get_fluxes(self):
         """Return the fluxes dictionary.
 
         Returns:
@@ -112,7 +112,7 @@ class DynamicModelBase:
         """
         pass
 
-    def get_relative_abundance(self) -> list[float]:
+    def get_relative_abundance(self):
         """Get the percentage of each species for each time point.
 
         Returns:

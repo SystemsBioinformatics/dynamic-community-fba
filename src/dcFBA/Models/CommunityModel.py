@@ -1,3 +1,7 @@
+# TODO rewrite this to properties
+# TODO copy old user constraints to the community model
+# TODO write the new properties of community model so a sbml file and import the community model
+
 import copy
 from cbmpy.CBModel import Model, Species
 from ..Helpers import BuildCommunityMatrix as cm
@@ -19,7 +23,7 @@ class CommunityModel(Model):
 
     m_identifiers: list[str]
     m_single_model_ids: list[str]
-    m_single_model_biomass_reaction_ids: list[str] = []
+    m_single_model_biomass_reaction_ids: list[str]
 
     def __init__(
         self,
@@ -63,6 +67,7 @@ class CommunityModel(Model):
 
         # Save biomass reaction id of old model, make sure
         # the first reaction is the biomass reaction
+        self.m_single_model_biomass_reaction_ids = []
         for i in range(0, len(biomass_reaction_ids)):
             bm = cm.create_new_id(
                 biomass_reaction_ids[i], self.m_identifiers[i]
@@ -83,9 +88,6 @@ class CommunityModel(Model):
             [m.__check_gene_activity__ for m in models]
         )
 
-        # TODO Old User Constraints arent added to the new community model,
-        # should we implement this?
-
     def __str__(self) -> str:
         """
         Return a string representation of the CommunityModel.
@@ -99,7 +101,7 @@ class CommunityModel(Model):
             f"{[id for id in self.m_single_model_ids]}"
         )
 
-    def get_model_ids(self):
+    def model_ids(self):
         return self.m_identifiers
 
     def clone(self):

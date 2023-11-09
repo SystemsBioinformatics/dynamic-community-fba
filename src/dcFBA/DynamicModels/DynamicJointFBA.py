@@ -76,8 +76,16 @@ class DynamicJointFBA(DynamicFBABase):
         Returns:
             list[float]: community growth rate over time
         """
-        ls = list(map(lambda d: d["X_comm"], self.fluxes))
         mids = self.model.m_identifiers
+
+        ls = list(map(lambda d: d["X_comm"], self.fluxes))
+
+        v0 = 0
+        for mid in mids:
+            v0 += self.biomasses[mid][0]
+
+        ls.insert(0, v0)
+
         total_mass = [0] * len(self.times)
 
         for t in range(0, len(self.times)):

@@ -10,7 +10,7 @@ model: Model = read_default_model("e_coli_core")
 model.getReaction("R_GLCpts").setUpperBound(10)
 
 initial_biomass = 0.1
-initial_concentrations = {"M_glc__D_e": 10}
+initial_concentrations: dict[str, float] = {"M_glc__D_e": 10}
 kin = KineticsStruct({"R_GLCpts": ("M_glc__D_e", 5, 10)})
 
 ds = DynamicSingleFBA(
