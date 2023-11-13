@@ -5,13 +5,8 @@ Dynamic Flux Balance Analysis (dFBA) stands as a powerful computational framewor
 enabling the simulation and analysis of time-evolving metabolic processes within biological systems. Here we've implemented the Static Optimization approach as described 
 by *Mahadevan et. al (2002)* [#ref_dfba]_. 
 
-<<<<<<< HEAD
 Simply put, dynamic FBA performs FBA for each given time point and calculates the fluxes through the system at the beginning of that time point.  
 With each iteration, external metabolites and biomasses concentrations are updated, followed by another FBA, with the new values. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
-=======
-Simply put, dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.  
-With each iteration, external metabolites and biomass concentrations are updated, followed by another FBA, with the new values. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
->>>>>>> develop
 or the final time point is reached. This modeling approach enables the exploration of metabolic network adjustments to evolving environmental factors, substrate availability, and cellular demands.
 
 Making it dynamic!
