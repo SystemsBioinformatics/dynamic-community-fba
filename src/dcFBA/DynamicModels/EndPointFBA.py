@@ -67,7 +67,7 @@ class EndPointFBA(DynamicModelBase):
         return self._model
 
     @property
-    def dt(self) -> CommunityModel:
+    def dt(self) -> float:
         """Returns the size of the time step."""
         return self._dt
 
@@ -79,12 +79,12 @@ class EndPointFBA(DynamicModelBase):
 
     def _set_biomasses(self) -> None:
         """Private method to set the concentrations of Biomasses over time."""
-        mids = self.model.get_model_ids()
+        mids = self.model.custom_model_identifiers
         temp_biomasses: dict[str, list[float]] = {}
         for mid in mids:
             temp_biomasses[mid] = [-1 * self.fluxes[f"BM_{mid}_exchange"]]
 
-        for mid in self.model.get_model_ids():
+        for mid in self.model.custom_model_identifiers:
             for i in range(len(self.times[:-1])):
                 temp_biomasses[mid].append(
                     self.fluxes[f"BM_{mid}_{self.times[i]}_{self.times[i+1]}"]
@@ -192,8 +192,8 @@ class EndPointFBA(DynamicModelBase):
         Returns:
             list[float]: Community growth rate
         """
-        total_flux = [0] * len(self.times)
-        total_mass = [0] * len(self.times)
+        total_flux = numpy.zeros(len(self.times))
+        total_mass = numpy.zeros(len(self.times))
 
         for mid, bid in self.model.get_model_biomass_ids().items():
             total_flux = numpy.add(total_flux, self.get_flux_values(bid))
@@ -201,6 +201,7 @@ class EndPointFBA(DynamicModelBase):
 
         # Multiply by dt
         numerator = total_mass * self.dt
+
         return numpy.divide(total_flux, numerator).tolist()
 
     def get_relative_abundance(self) -> dict[str, list[float]]:
@@ -210,7 +211,7 @@ class EndPointFBA(DynamicModelBase):
         Returns:
             dict[str, list[float]]: model_id : relative abundance over time
         """
-        mids = self.model.get_model_ids()
+        mids = self.model.custom_model_identifiers
         total = [0] * (len(self.times) + 1)
 
         for mid in mids:
@@ -218,7 +219,7 @@ class EndPointFBA(DynamicModelBase):
 
         return {mid: numpy.divide(self.biomasses[mid], total) for mid in mids}
 
-    def simulate(self, sparse=False) -> None:
+    def simulate(self, sparse=False) -> float:
         """Performs FBA (Flux Balance Analysis) on the EndPointFBA matrix.
 
         Args:
@@ -543,6 +544,7 @@ class EndPointFBA(DynamicModelBase):
 
                     self.model.addUserDefinedConstraint(udc)
 
+    # TODO fix this
     def mm_approximation(self, rid: str):
         """
         Approximates the Michaelis-Menten curve for a given reaction using two
@@ -567,8 +569,8 @@ class EndPointFBA(DynamicModelBase):
                 "No limiting substrate was set in the kinetics object for: "
                 + rid
             )
-        low_line = vmax / km
-        high_line = (vmax / 2) / km
+        low_line = vmax / km  # option 1
+        high_line = (vmax / 2) / km  # Option 2
 
         for i in range(0, len(self.times) - 1):
             # Linking reaction is the concentration of Substrate for the
@@ -646,7 +648,7 @@ class EndPointFBA(DynamicModelBase):
                 0.0,
                 components=[
                     (1.0, f"BM_{mid}_exchange_final", "linear"),
-                    (-1.0 * (Xm + Xin), f"Phi_{mid}", "linear"),
+                    (-1.0 * Xm, f"Phi_{mid}", "linear"),
                 ],
             )
 
@@ -681,6 +683,7 @@ class EndPointFBA(DynamicModelBase):
                 f"biomass_fraction_{mid}_{self.times[-1]}"
             )
 
+    # TODO maybe qp for other objectives than final biomass (last two lines)
     def set_qp(self, solution: float, epsilon=0.01) -> None:
         """Sets the quadratic objective to minimize
         all consecutive fluxes.

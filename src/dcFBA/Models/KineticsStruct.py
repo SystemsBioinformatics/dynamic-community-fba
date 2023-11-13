@@ -50,7 +50,7 @@ class KineticsStruct:
     def get_vmax(self, rid) -> float:
         return self.kinetics[rid][2]
 
-    def get_reactions_kinetics(self, rid) -> tuple[float, float]:
+    def get_reactions_kinetics(self, rid) -> tuple[str, float, float]:
         return self.kinetics[rid]
 
     def get_limiting_substrate(self, rid) -> str:

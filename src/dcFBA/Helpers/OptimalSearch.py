@@ -13,7 +13,7 @@ def time_search(
     initial_biomasses: dict[str, float],
     initial_concentrations: dict[str, float] = {},
     dt=0.1,
-    set_values: tuple[float, float] = None,
+    set_values: tuple[float, int] = None,
 ) -> list[float, float]:
     """Finds the lowest number of time points given initial values and a dt
 

@@ -102,12 +102,12 @@ Reactions:
 For the ``Reactions`` we consider the following: 
 
 **Reaction Duplication:** 
-All reactions, are duplicated within the community model. To maintain traceability, each reaction ID is supplemented with the originating model ID.
+All reactions of from the single organism models are duplicated within the community model. Given the example, all reactions, except the exchange reactions,
+are copied to the community model. Furthermore, to maintain traceability, each reaction ID is supplemented with the originating model ID.
 
 **Handling Exchange Reactions:** 
-A distinctive approach is employed for exchange reactions. When identical exchange reactions are present in multiple models,
+A distinctive approach is employed for exchange reactions. When identical exchange reactions (eg two exchange reactions with the same reaction id) are present in multiple models,
 only a single instance is retained in the combined community model.
-
 
 Reagents and Species
 ********************

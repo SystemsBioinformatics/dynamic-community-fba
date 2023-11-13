@@ -28,3 +28,14 @@ dependencies = [
 homepage = "https://github.com/SystemsBioinformatics/dynamic-community-fba"
 bug-tracker = "https://github.com/SystemsBioinformatics/dynamic-community-fba/issues"
 docs = "https://dynamic-community-fba.readthedocs.io/en/latest/index.html"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+    "integration",
+]
+pythonpath = [
+  "src"
+]

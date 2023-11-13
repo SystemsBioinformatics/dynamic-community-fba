@@ -121,15 +121,12 @@ denotes the identifier of the original metabolite. This format encapsulates the 
 .. code-block:: python 
 
     #Get the amount of metabolite S on time 1
-
     print(fluxes["S_e_time00_time01"]) #97.8
 
     #Get the concentration of metabolite B in time step 22
-
     print(fluxes["B_e_time21_time22"]) #6.311
 
     #Get the amount of A at the end of the simulation
-
     print(fluxes['A_e_exchange_final']) #0.0
 
 
@@ -149,7 +146,7 @@ Now you can retrieve the metabolite concentration of metabolite `S` and the aggr
     #Concentration of metabolite S on time point 1
     metabolites["S_e"][1]
 
-    #aggregated flux through reaction R_1_modelA
+    #Get the aggregated flux of reaction R_1_modelA for each time point
     fs = ep.get_flux_values("R_1_modelA")
 
     #print the value of the flux at time point 5
@@ -365,14 +362,14 @@ The following code demonstrates how to implement this approach:
 
 .. code-block:: python
 
-   # Set the objective value of community biomass to 12.77
-   ep.set_qp(12.77)
+    # Set the objective value of community biomass to 12.77
+    ep.set_qp(12.77)
 
-   # Simulate the model with the new quadratic objective
-   ep.simulate()
+    # Simulate the model with the new quadratic objective
+    ep.simulate()
 
     time = ep.get_time_points()
-    
+
     plt.plot(
         range(len(time)),
         ep.get_specific_flux_values("R_1_modelA"),

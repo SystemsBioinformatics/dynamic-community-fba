@@ -7,7 +7,7 @@ for loading and manipulating models. For these examples we will use the *E. coli
 Through these hands-on demonstrations, you'll swiftly grasp the fundamental operations that underpin effective model manipulation.
 For a more comprehensive understanding and explanation of all the functionalities available in  `CBMPy`, we recommend you to read the extensive documentation_.
 
-For those who have prior experience with `CPBRApy`, the transition to `CBMPy` will feel remarkably intuitive, as the two share notable similarities in their approach and methodology. 
+For those who have prior experience with `COBRApy`, the transition to `CBMPy` will feel remarkably intuitive, as the two share notable similarities in their approach and methodology. 
 
 .. _documentation: https://pythonhosted.org/cbmpy/modules_doc.html
 

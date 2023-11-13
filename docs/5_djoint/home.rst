@@ -107,8 +107,6 @@ You can now easily plot the species concentration over time:
     plt.legend()
     plt.show()
   
-
-
 .. image:: ../_static/images/Metabolites_DJFBA.png
     :width: 500px
     :align: center

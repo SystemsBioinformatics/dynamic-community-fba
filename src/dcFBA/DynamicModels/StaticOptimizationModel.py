@@ -20,7 +20,7 @@ class StaticOptimizationModelBase(DynamicModelBase):
 
     def __init__(self) -> None:
         super().__init__()
-        self._initial_bounds = {}
+        self._initial_bounds: dict[str, tuple[float, float]] = {}
 
     def _set_initial_concentrations(
         self, model: Model, initial_concentrations: dict[str, float]

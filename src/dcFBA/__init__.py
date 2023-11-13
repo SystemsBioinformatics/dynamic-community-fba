@@ -1,10 +1,10 @@
-from .DynamicModels import (
+from dcFBA.DynamicModels import (
     DynamicSingleFBA,
     DynamicJointFBA,
     DynamicParallelFBA,
     EndPointFBA,
 )
-from . import Models
-from . import Helpers
+from dcFBA import Models
+from dcFBA import Helpers
 
-from . import DefaultModels
+from dcFBA import DefaultModels

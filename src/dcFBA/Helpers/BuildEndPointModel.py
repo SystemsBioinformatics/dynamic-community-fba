@@ -43,12 +43,15 @@ def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
         "Timed_community_model",
     )
 
-    final_model.m_identifiers = initial_model.m_identifiers
-    final_model.m_single_model_biomass_reaction_ids = (
-        initial_model.m_single_model_biomass_reaction_ids
+    final_model._custom_model_identifiers = list(
+        initial_model.custom_model_identifiers
+    )
+    final_model._single_model_biomass_reaction_ids = list(
+        initial_model.single_model_biomass_reaction_ids
     )
 
-    final_model.m_single_model_ids = initial_model.m_single_model_ids
+    final_model._single_model_ids = list(initial_model.single_model_ids)
+
     add_biomass_species(initial_model)
 
     set_exchanges(initial_model, final_model, times)
@@ -122,7 +125,8 @@ def add_time_compartments(
     Args:
         initial_model (Model): The source CBModel.
         final_model (Model): The target CBModel
-        time_id (str): The time identifier to be appended to the compartment IDs.
+        time_id (str): The time identifier to be appended to the compartment
+            IDs.
 
     Returns:
         None
@@ -267,7 +271,7 @@ def add_time_link(model: CommunityModel, time0, time1):
                     rid, reversible=False, silent=True
                 )
 
-                linking_reaction: Reaction = model.getReaction(rid)
+                linking_reaction = model.getReaction(rid)
                 linking_reaction.createReagent(sid, -1)
                 linking_reaction.createReagent(f"{old_id}_{time1}", 1)
                 linking_reaction.setLowerBound(0)

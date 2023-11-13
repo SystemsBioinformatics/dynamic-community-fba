@@ -228,7 +228,7 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str) -> None:
             is_exchange_reaction
             and reaction_id not in combined_model.getExchangeReactionIds()
         ):
-            copyReaction(
+            copy_reaction(
                 model,
                 combined_model,
                 reaction.id,
@@ -236,7 +236,7 @@ def merge_reactions(model: Model, combined_model: Model, new_id: str) -> None:
         # Otherwise add the reaction and add the identifier, we give all
         # reactions a new identifier for consistency
         elif not is_exchange_reaction:
-            copyReaction(
+            copy_reaction(
                 model,
                 combined_model,
                 reaction.id,
@@ -275,14 +275,13 @@ def merge_species(
         if species.compartment not in extracellular_compartments:
             if species_id in duplicate_species.keys():
                 copy_species_and_reagents(model, species, new_id)
-                model.deleteSpecies(species_id)
             else:
                 species.setCompartmentId(
                     create_new_id(species.compartment, new_id)
                 )
 
 
-def copy_species_and_reagents(model: Model, species: Species, new_id):
+def copy_species_and_reagents(model: Model, species: Species, new_id) -> None:
     """
     Handle duplicate species reagents when merging models.
     If the species exists in one of the base models, add new instance of that
@@ -314,8 +313,10 @@ def copy_species_and_reagents(model: Model, species: Species, new_id):
         reaction.createReagent(new_species_id, reagent.coefficient)
         reaction.deleteReagentWithSpeciesRef(species.id)
 
+    model.deleteSpecies(species.getId())
 
-def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
+
+def copy_reaction(m_src: Model, m_targ: Model, rid, altrid=None):
     """
     Copy a reaction from a source model to a target model, if the required
     species exist in the target then they are mapped as reagents, otherwise
@@ -350,12 +351,6 @@ def copyReaction(m_src: Model, m_targ: Model, rid, altrid=None):
         out = None
 
     elif altrid is not None:
-        # print(
-        #     'INFO: reaction with id "{}" exists in target model trying alternate id'.format(
-        #         rid
-        #     )
-        # )
-
         if m_targ.getReaction(altrid) is not None:
             print(
                 'ERROR: alternative reaction with id "{}" already exists in target model'.format(

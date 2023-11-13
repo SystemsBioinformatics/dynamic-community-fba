@@ -112,7 +112,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
         Perform a dynamic joint FBA simulation.
         """
 
-        used_time = [0]
+        used_time = [0.0]
         dt_hat = -1
         dt_save = dt
         fluxes = []
@@ -193,7 +193,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
             exchange: Reaction = self.model.getReaction(e)
 
             sid = exchange.getSpeciesIds()[0]
-            if sid not in self.model.m_single_model_biomass_reaction_ids:
+            if sid not in self.model.single_model_biomass_reaction_ids:
                 self.metabolites[sid].append(
                     self.metabolites[sid][-1] + FBAsol[e] * dt
                 )
