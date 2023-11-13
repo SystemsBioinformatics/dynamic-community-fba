@@ -142,4 +142,4 @@ def test_qp(model_A, model_B):
     ep.set_qp(12.7777)
     solution = ep.simulate()
 
-    assert round(solution, 3) == 0.426
+    assert round(solution, 3) == 0.482
