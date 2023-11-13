@@ -1,7 +1,6 @@
 import pytest
 import cbmpy
 from dcFBA.Models import CommunityModel
-from dcFBA.ToyModels import model_a, model_b, model_c, combined_model
 from dcFBA import DefaultModels
 
 
@@ -36,8 +35,8 @@ def test_if_ids_are_set(model_ecoli_core):
 
     assert all(
         [
-            model.m_identifiers == ["e_coli_1", "e_coli_2"],
-            model.m_single_model_ids
+            model.custom_model_identifiers == ["e_coli_1", "e_coli_2"],
+            model.single_model_ids
             == [model_ecoli_core.getId(), model_ecoli_core.getId()],
         ]
     )
@@ -64,12 +63,12 @@ def test_if_a_single_model_can_be_added(
         two_correctly_merged_ecoli.getReactionIds()
     )
 
-    model_identifiers_set_correctly = model.m_identifiers == [
+    model_identifiers_set_correctly = model.custom_model_identifiers == [
         "e_coli_1",
         "e_coli_2",
     ]
 
-    old_model_ids_set_correctly = model.m_single_model_ids == [
+    old_model_ids_set_correctly = model.single_model_ids == [
         model_ecoli_core.getId(),
         model_ecoli_core.getId(),
     ]
@@ -119,13 +118,13 @@ def test_community_model_of_three(
         two_correctly_merged_ecoli_and_one_strep_therm.getReactionIds()
     )
 
-    model_identifiers_set_correctly = cm.m_identifiers == [
+    model_identifiers_set_correctly = cm.custom_model_identifiers == [
         "e_coli_1",
         "e_coli_2",
         "strepje",
     ]
 
-    old_model_ids_set_correctly = cm.m_single_model_ids == [
+    old_model_ids_set_correctly = cm.single_model_ids == [
         model_ecoli_core.getId(),
         model_ecoli_core.getId(),
         model_strep_therm.getId(),
@@ -192,16 +191,16 @@ def test_if_single_model_is_deleted_correctly(model_ecoli_core):
     model.remove_model_from_community("e_coli_2")
 
     model_identifiers_set_correctly = (
-        single_model.m_identifiers == model.m_identifiers
+        single_model.custom_model_identifiers == model.custom_model_identifiers
     )
 
     old_model_ids_set_correctly = (
-        model.m_single_model_ids == single_model.m_single_model_ids
+        model.single_model_ids == single_model.single_model_ids
     )
 
     biomasses_are_set_correctly = (
-        model.m_single_model_biomass_reaction_ids
-        == single_model.m_single_model_biomass_reaction_ids
+        model.single_model_biomass_reaction_ids
+        == single_model.single_model_biomass_reaction_ids
     )
 
     reaction_are_deleted_correctly = sorted(model.getReactionIds()) == sorted(

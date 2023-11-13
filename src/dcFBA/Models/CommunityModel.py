@@ -1,4 +1,3 @@
-# TODO rewrite this to properties
 # TODO copy old user constraints to the community model
 # TODO write the new properties of community model so a sbml file and import the community model
 
@@ -21,9 +20,9 @@ class CommunityModel(Model):
             reaction IDs of the individual models.
     """
 
-    m_identifiers: list[str]
-    m_single_model_ids: list[str]
-    m_single_model_biomass_reaction_ids: list[str]
+    # custom_model_identifiers: list[str]
+    # single_model_ids: list[str]
+    # single_model_biomass_reaction_ids: list[str]
 
     def __init__(
         self,
@@ -52,14 +51,14 @@ class CommunityModel(Model):
         """
         super().__init__(combined_model_id)
 
-        self.m_single_model_ids = [model.id for model in models]
+        self._single_model_ids = [model.id for model in models]
 
         if len(ids) == 0:
-            self.m_identifiers = self.m_single_model_ids
+            self._custom_model_identifiers = self._single_model_ids
         else:
-            self.m_identifiers = copy.deepcopy(ids)
+            self._custom_model_identifiers = copy.deepcopy(ids)
 
-        cm.check_ids(self.m_identifiers, models)
+        cm.check_ids(self.custom_model_identifiers, models)
 
         self.createCompartment("e", "extracellular space")
 
@@ -67,17 +66,17 @@ class CommunityModel(Model):
 
         # Save biomass reaction id of old model, make sure
         # the first reaction is the biomass reaction
-        self.m_single_model_biomass_reaction_ids = []
+        self._single_model_biomass_reaction_ids: list[str] = []
         for i in range(0, len(biomass_reaction_ids)):
             bm = cm.create_new_id(
-                biomass_reaction_ids[i], self.m_identifiers[i]
+                biomass_reaction_ids[i], self.custom_model_identifiers[i]
             )
 
-            self.m_single_model_biomass_reaction_ids.append(bm)
+            self.single_model_biomass_reaction_ids.append(bm)
 
         for i in range(0, len(models)):
             model = models[i]
-            new_id = self.m_identifiers[i]
+            new_id = self.custom_model_identifiers[i]
             cm.merge_genes(model, self, new_id)
             cm.merge_compartments(model, self, new_id)
             cm.merge_species(duplicate_species, model, new_id)
@@ -98,11 +97,20 @@ class CommunityModel(Model):
         """
         return (
             f"Model: {self.getId()} was build from "
-            f"{[id for id in self.m_single_model_ids]}"
+            f"{[id for id in self.single_model_ids]}"
         )
 
-    def model_ids(self):
-        return self.m_identifiers
+    @property
+    def custom_model_identifiers(self) -> list[str]:
+        return self._custom_model_identifiers
+
+    @property
+    def single_model_ids(self) -> list[str]:
+        return self._single_model_ids
+
+    @property
+    def single_model_biomass_reaction_ids(self) -> list[str]:
+        return self._single_model_biomass_reaction_ids
 
     def clone(self):
         """
@@ -113,13 +121,13 @@ class CommunityModel(Model):
         """
 
         new_instance = super().clone()
-        new_instance.m_identifiers = copy.deepcopy(self.m_identifiers)
-        new_instance.m_single_model_biomass_reaction_ids = copy.deepcopy(
-            self.m_single_model_biomass_reaction_ids
+        new_instance._custom_model_identifiers = copy.deepcopy(
+            self.custom_model_identifiers
         )
-        new_instance.m_single_model_ids = copy.deepcopy(
-            self.m_single_model_ids
+        new_instance._single_model_biomass_reaction_ids = copy.deepcopy(
+            self.single_model_biomass_reaction_ids
         )
+        new_instance._single_model_ids = copy.deepcopy(self.single_model_ids)
 
         return new_instance
 
@@ -151,9 +159,9 @@ class CommunityModel(Model):
         cm.merge_species(duplicate_species, model, new_id)
         cm.merge_reactions(model, self, new_id)
 
-        self.m_identifiers.append(new_id)
-        self.m_single_model_ids.append(model.id)
-        self.m_single_model_biomass_reaction_ids.append(biomass_reaction)
+        self.custom_model_identifiers.append(new_id)
+        self.single_model_ids.append(model.id)
+        self.single_model_biomass_reaction_ids.append(biomass_reaction)
 
     def remove_model_from_community(self, mid: str) -> None:
         """
@@ -166,14 +174,14 @@ class CommunityModel(Model):
             Exception: If the provided model ID is not in the CommunityModel.
 
         """
-        if mid in self.m_single_model_ids:
-            index = self.m_single_model_ids.index(mid)
-        elif mid in self.m_identifiers:
-            index = self.m_identifiers.index(mid)
+        if mid in self.single_model_ids:
+            index = self.single_model_ids.index(mid)
+        elif mid in self.custom_model_identifiers:
+            index = self.custom_model_identifiers.index(mid)
         else:
             raise Exception("Model not in community")
 
-        mid = self.m_identifiers[index]
+        mid = self.custom_model_identifiers[index]
 
         for rid in self.getReactionIds():
             if mid in rid:
@@ -184,10 +192,10 @@ class CommunityModel(Model):
             if mid in species.getCompartmentId():
                 self.deleteSpecies(sid)
 
-        self.m_identifiers.remove(mid)
-        del self.m_single_model_ids[index]
+        self.custom_model_identifiers.remove(mid)
+        del self.single_model_ids[index]
 
-        del self.m_single_model_biomass_reaction_ids[index]
+        del self.single_model_biomass_reaction_ids[index]
 
     def get_model_specific_reactions(self, mid: str) -> list[str]:
         """
@@ -205,7 +213,7 @@ class CommunityModel(Model):
 
         """
 
-        if mid not in self.m_identifiers:
+        if mid not in self.custom_model_identifiers:
             raise NotInCombinedModel(
                 "The model id provided was not found in the combined model"
             )
@@ -230,7 +238,7 @@ class CommunityModel(Model):
             list[Species]: A list of species IDs specific to the given model.
 
         """
-        if mid not in self.m_identifiers:
+        if mid not in self.custom_model_identifiers:
             raise NotInCombinedModel(
                 "The model id provided was not found in the combined model"
             )
@@ -256,7 +264,7 @@ class CommunityModel(Model):
             list[str]: list containing the BIGG ids
         """
         if mid != "":
-            if mid not in self.m_identifiers:
+            if mid not in self.custom_model_identifiers:
                 raise NotInCombinedModel(
                     "The model id provided was not found in the combined model"
                 )
@@ -264,7 +272,7 @@ class CommunityModel(Model):
             reaction_ids = [rid.replace(f"_{mid}", "") for rid in reaction_ids]
         else:
             reaction_ids = self.m_model.getReactionIds()
-            for appended_id in self.m_identifiers:
+            for appended_id in self.custom_model_identifiers:
                 reaction_ids = [
                     rid.replace(f"_{appended_id}", "") for rid in reaction_ids
                 ]
@@ -287,7 +295,7 @@ class CommunityModel(Model):
             list[str]: list containing the bigg ids
         """
         if mid != "":
-            if mid not in self.m_identifiers:
+            if mid not in self.custom_model_identifiers:
                 raise NotInCombinedModel(
                     "The model id provided was not found in the combined model"
                 )
@@ -295,7 +303,7 @@ class CommunityModel(Model):
             species_ids = [sid.replace(f"_{mid}", "") for sid in species_ids]
         else:
             species_ids = self.m_model.getSpeciesIds()
-            for appended_id in self.m_identifiers:
+            for appended_id in self.custom_model_identifiers:
                 species_ids = [
                     sid.replace(f"_{appended_id}", "") for sid in species_ids
                 ]
@@ -312,7 +320,7 @@ class CommunityModel(Model):
         Returns:
             str: id of the old model
         """
-        for old_id in self.m_identifiers:
+        for old_id in self.custom_model_identifiers:
             if f"_{old_id}" in rid:
                 return old_id
         return ""
@@ -327,11 +335,11 @@ class CommunityModel(Model):
             str: _description_
         """
         if (
-            len(self.m_single_model_biomass_reaction_ids) > 0
-            and mid in self.m_identifiers
+            len(self.single_model_biomass_reaction_ids) > 0
+            and mid in self.custom_model_identifiers
         ):
-            return self.m_single_model_biomass_reaction_ids[
-                self.m_identifiers.index(mid)
+            return self.single_model_biomass_reaction_ids[
+                self.custom_model_identifiers.index(mid)
             ]
 
         return ""
@@ -344,5 +352,8 @@ class CommunityModel(Model):
 
     def get_model_biomass_ids(self) -> dict[str, str]:
         return dict(
-            zip(self.m_identifiers, self.m_single_model_biomass_reaction_ids)
+            zip(
+                self.custom_model_identifiers,
+                self.single_model_biomass_reaction_ids,
+            )
         )

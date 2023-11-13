@@ -19715,11 +19715,11 @@ def read_default_model(mid: str) -> cbmpy.CBModel.Model:
     xoptions["read_model_string"] = True
     xmod = cbmpy.CBXML.sbml_readSBML3FBC(globals()[mid], None, False, xoptions)
 
-    if len(xmod.getGeneIds()) == 0:
-        print(
-            "INFO: no standard gene encoding detected, attempting to load from annotations ..."
-        )
-        xmod.createGeneAssociationsFromAnnotations()
-        print("INFO: No gene associations found in model.")
+    # if len(xmod.getGeneIds()) == 0:
+    #     print(
+    #         "INFO: no standard gene encoding detected, attempting to load from annotations ..."
+    #     )
+    #     xmod.createGeneAssociationsFromAnnotations()
+    #     print("INFO: No gene associations found in model.")
 
     return xmod

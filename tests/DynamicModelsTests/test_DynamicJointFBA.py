@@ -58,7 +58,7 @@ def test_simulation_length(dynamic_joint_fba):
 
 # Not testing intermediate fluxes or metabolite concentrations as I think this
 # might vary if you would switch the linear solver. Just checking they are
-# Not emty
+# Not empty
 def test_dynamic_joint_fba(dynamic_joint_fba):
     metabolites = dynamic_joint_fba.get_metabolites()
     fluxes = dynamic_joint_fba.get_fluxes()

@@ -76,7 +76,7 @@ class DynamicJointFBA(DynamicFBABase):
         Returns:
             list[float]: community growth rate over time
         """
-        mids = self.model.m_identifiers
+        mids = self.model.custom_model_identifiers
 
         ls = list(map(lambda d: d["X_comm"], self.fluxes))
 
@@ -101,7 +101,7 @@ class DynamicJointFBA(DynamicFBABase):
             dict[str, list[float]]: Model id followed by the relative
                 abundance over time
         """
-        mids = self.model.m_identifiers
+        mids = self.model.custom_model_identifiers
         total = list(self.biomasses[mids[0]])
         for mid in mids[1:]:
             total = numpy.add(total, self.biomasses[mid])
