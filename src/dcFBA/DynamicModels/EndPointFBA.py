@@ -648,7 +648,7 @@ class EndPointFBA(DynamicModelBase):
                 0.0,
                 components=[
                     (1.0, f"BM_{mid}_exchange_final", "linear"),
-                    (-1.0 * (Xm + Xin), f"Phi_{mid}", "linear"),
+                    (-1.0 * Xm, f"Phi_{mid}", "linear"),
                 ],
             )
 
