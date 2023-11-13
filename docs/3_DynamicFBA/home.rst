@@ -6,7 +6,7 @@ enabling the simulation and analysis of time-evolving metabolic processes within
 by *Mahadevan et. al (2002)* [#ref_dfba]_. 
 
 Simply put, dynamic FBA performs FBA foreach given time point and calculates the fluxes through the system at the beginning of that time point.  
-With each iteration, external metabolites and biomasses concentrations are updated, followed by another FBA, with the new values. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
+With each iteration, external metabolites and biomass concentrations are updated, followed by another FBA, with the new values. This process continues until the objective function becomes infeasible (e.g. by a lack of nutrients), 
 or the final time point is reached. This modeling approach enables the exploration of metabolic network adjustments to evolving environmental factors, substrate availability, and cellular demands.
 
 Making it dynamic!
@@ -46,9 +46,10 @@ Now that the model is inflame we can run the the simulation and plot the results
 .. code-block:: python
 
     
-    ds.simulate(0.15)
+    ds.simulate(0.15) #Run the simulation with time step (delta t) of 0.15
 
-    T = ds.get_time_points()
+    #Methods to retrieve the simulation results
+    T = ds.get_time_points() 
     metabolites = ds.get_metabolites()
     biomass = ds.get_biomass()
 
