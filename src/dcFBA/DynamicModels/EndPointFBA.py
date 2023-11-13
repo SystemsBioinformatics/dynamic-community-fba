@@ -225,6 +225,13 @@ class EndPointFBA(DynamicModelBase):
         Args:
             sparse (False): Set to true if you want to use a sparse matrix
                 Sparse matrix decreases the amount of memory required
+
+         Returns:
+            float: Final community flux value,
+                NOTE that this is the total created community biomass.
+                Since there is no initial community biomass in the FBA.
+                To find the total community biomass you have to add
+                the initial amount of biomass.
         """
 
         matrix_type = "scipy_csr" if sparse else "numpy"
@@ -617,9 +624,12 @@ class EndPointFBA(DynamicModelBase):
             Xin (float): Total community biomass at the first time point
             Xm (float): Total community biomass at the final time point
         """
-        self.model.setReactionBounds("X_comm", Xm, Xm)
-        additional_components = []
+        # There is no initial X_c, so subtract the initial biomass from the
+        # final biomass
+        community_flux = Xm - Xin
+        self.model.setReactionBounds("X_comm", community_flux, community_flux)
 
+        additional_components = []
         for mid, _ in self.model.get_model_biomass_ids().items():
             self.model.setReactionBounds(f"BM_{mid}_exchange", numpy.NINF, 0.0)
 
@@ -684,12 +694,12 @@ class EndPointFBA(DynamicModelBase):
             )
 
     # TODO maybe qp for other objectives than final biomass (last two lines)
-    def set_qp(self, solution: float, epsilon=0.01) -> None:
+    def set_qp(self, solution: float, epsilon=0.0) -> None:
         """Sets the quadratic objective to minimize
         all consecutive fluxes.
 
         Args:
-           solution (float): Final community biomass
+           solution (float): Solution for the final X_comm flux
 
             epsilon (float, optional): How much the solution can differ from
                 the final amount of biomass. Defaults to 0.01.
@@ -726,12 +736,12 @@ class EndPointFBA(DynamicModelBase):
         self.model.getReaction("X_comm").setUpperBound(solution + epsilon)
 
     def set_subset_qp(
-        self, solution: float, reactions: list[str], epsilon=0.01
+        self, solution: float, reactions: list[str], epsilon=0.0
     ) -> None:
         """QP for specified reaction ids
 
         Args:
-            solution (float): Final community biomass
+            solution (float): Solution for the final X_comm flux
             reactions (list[str]): Reactions for which the consecutive
                 fluxes are minimized
             epsilon (float, optional): How much the solution can differ from
