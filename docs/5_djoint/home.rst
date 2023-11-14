@@ -2,7 +2,7 @@
     :Keywords: dynamic-community-fba, Python, Joint FBA, Community modelling
 
 
-1. Dynamic Joint FBA 
+5. Dynamic Joint FBA 
 ====================
 
 Dynamic Joint Flux Balance Analysis (djFBA) is a method to dynamically model microbial communities. The core principle of djFBA is the formation of 
