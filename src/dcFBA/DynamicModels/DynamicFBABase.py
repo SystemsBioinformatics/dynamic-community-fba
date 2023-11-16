@@ -170,17 +170,12 @@ class DynamicFBABase(StaticOptimizationModelBase):
             reaction: Reaction = self.model.getReaction(rid)
             # Exchanges only have one species:
             sid = reaction.getSpeciesIds()[0]
-            # TODO DISCUSS  (1/dt)
             # How I explain it: We normalize the exchange flux for how much the exchange can take up
             # in 1 unit of time. In all other formulas we multiple by dt, making sure that the flux gets scaled to
             # what it can take up in dt time.
-            reaction.setLowerBound(
-                min(0, -self.metabolites[sid][-1] * (1 / dt))
-            )
+            reaction.setLowerBound(min(0, -self.metabolites[sid][-1] * (1 / dt)))
 
-    def update_concentrations(
-        self, FBAsol: dict[str, float], dt: float
-    ) -> None:
+    def update_concentrations(self, FBAsol: dict[str, float], dt: float) -> None:
         """
         Update metabolite concentrations after an FBA simulation step.
 
@@ -194,9 +189,7 @@ class DynamicFBABase(StaticOptimizationModelBase):
 
             sid = exchange.getSpeciesIds()[0]
             if sid not in self.model.single_model_biomass_reaction_ids:
-                self.metabolites[sid].append(
-                    self.metabolites[sid][-1] + FBAsol[e] * dt
-                )
+                self.metabolites[sid].append(self.metabolites[sid][-1] + FBAsol[e] * dt)
 
     def update_reaction_bounds(self, kinetics_func) -> None:
         """
@@ -211,10 +204,8 @@ class DynamicFBABase(StaticOptimizationModelBase):
             # TODO fix this
             if kinetics_func is not None:
                 kinetics_func(
+                    self,
                     rid,
-                    self.model,
-                    self.metabolites,
-                    self.metabolites,
                 )
                 continue
             reaction: Reaction = self.model.getReaction(rid)

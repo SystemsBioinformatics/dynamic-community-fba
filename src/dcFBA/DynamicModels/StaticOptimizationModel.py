@@ -41,15 +41,12 @@ class StaticOptimizationModelBase(DynamicModelBase):
             species_id: str = reaction.reagents[0].getSpecies()
 
             if species_id in initial_concentrations.keys():
-                self.metabolites[species_id] = [
-                    initial_concentrations[species_id]
-                ]
+                self.metabolites[species_id] = [initial_concentrations[species_id]]
             else:
                 # Max such that positive lower bounds in exchanges are not set
                 # code to make compatible with ParallelFBA if no species concentrairon
                 # is defined in the initial_concentrations than we keep track of the lowest
                 # exchange reaction of all models provided
-                # TODO check this
                 concentration = (
                     0
                     if species_id not in self.metabolites.keys()

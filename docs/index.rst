@@ -11,7 +11,7 @@
     :Keywords: dynamic-community-fba, Python, dynamic flux balance analysis, microbial communities, Genome Scale Metabolic Models (GSMM), Systems biology
 
 Dynamic-community-fba's documentation
-================================================
+======================================
 
 Welcome to the documentation of `dynamic-community-fba`. The documentation provides you with a comprehensive guidance on using the `dynamic-community-fba` Python package. The package was designed
 to conduct dynamic flux balance analysis (dFBA) in microbial communities and to easily analyze the results. DcFBA aims to accurately model and study the collaborative and 

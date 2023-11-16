@@ -1,5 +1,4 @@
 # Binary search on answer
-
 import numpy as np
 from ..DynamicModels import EndPointFBA
 from ..Models import CommunityModel
@@ -16,7 +15,6 @@ def time_search(
     set_values: tuple[float, int] = None,
 ) -> list[float, float]:
     """Finds the lowest number of time points given initial values and a dt
-
 
     Args:
         cm (CommunityModel): _description_
@@ -35,12 +33,8 @@ def time_search(
     """
     low = 1
     if set_values is None:
-        high = find_upper_bound(
-            cm, initial_biomasses, initial_concentrations, dt
-        )
-        ep = EndPointFBA(
-            cm, high, initial_biomasses, initial_concentrations, dt=dt
-        )
+        high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt)
+        ep = EndPointFBA(cm, high, initial_biomasses, initial_concentrations, dt=dt)
         obj = ep.simulate()
 
     else:
@@ -53,9 +47,7 @@ def time_search(
         if n in visited.keys():
             value = visited[n]
         else:
-            ep = EndPointFBA(
-                cm, n, initial_biomasses, initial_concentrations, dt=dt
-            )
+            ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
             value = ep.simulate()
             visited[n] = value
 
@@ -115,9 +107,7 @@ def balanced_search_quick(ep: EndPointFBA, X_initial, objective, epsilon=0.01):
         for mid, _ in ep.m_model.get_model_biomass_ids().items():
             # Should be replaced with remove user defined constraint once this is
             #  implemented
-            old_udc = ep.m_model.getObject(
-                f"biomass_fraction_{mid}_{ep.m_times[-1]}"
-            )
+            old_udc = ep.m_model.getObject(f"biomass_fraction_{mid}_{ep.m_times[-1]}")
 
             # for cid in old_udc.getConstraintComponentIDs():
             #     ep.m_model.unRegisterObjectInGlobalStore(cid)
@@ -126,9 +116,7 @@ def balanced_search_quick(ep: EndPointFBA, X_initial, objective, epsilon=0.01):
             ep.m_model.unRegisterObjectInGlobalStore(old_udc.getId())
 
             value = objective * mid_point
-            ep.m_model.setReactionBounds(
-                "X_comm", value - 0.001, value + 0.001
-            )
+            ep.m_model.setReactionBounds("X_comm", value - 0.001, value + 0.001)
             udc = ep.m_model.createUserDefinedConstraint(
                 f"biomass_fraction_{mid}_{ep.m_times[-1]}",
                 0.0,
@@ -164,9 +152,7 @@ def find_upper_bound(
     prev_value = 0
     while True:
         n *= 2  # Double the value of n
-        ep = EndPointFBA(
-            cm, n, initial_biomasses, initial_concentrations, dt=dt
-        )
+        ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
         current_value = ep.simulate()
         # Check if current value is NaN or if it doesn't increase from the previous value
         if np.isnan(current_value) or current_value <= prev_value:

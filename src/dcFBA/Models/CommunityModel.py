@@ -1,4 +1,4 @@
-# TODO copy old user constraints to the community model
+# TODO copy old user constraints to the community model (with cbmpy > 0.9?)
 # TODO write the new properties of community model so a sbml file and import the community model
 
 import copy
@@ -19,10 +19,6 @@ class CommunityModel(Model):
         m_single_model_biomass_reaction_ids (list[str]): List of biomass
             reaction IDs of the individual models.
     """
-
-    # custom_model_identifiers: list[str]
-    # single_model_ids: list[str]
-    # single_model_biomass_reaction_ids: list[str]
 
     def __init__(
         self,
@@ -83,9 +79,7 @@ class CommunityModel(Model):
             cm.merge_reactions(model, self, new_id)
             cm.setGeneProteinAssociations(model, self, new_id)
 
-        self.__check_gene_activity__ = any(
-            [m.__check_gene_activity__ for m in models]
-        )
+        self.__check_gene_activity__ = any([m.__check_gene_activity__ for m in models])
 
     def __str__(self) -> str:
         """
@@ -130,9 +124,6 @@ class CommunityModel(Model):
         new_instance._single_model_ids = copy.deepcopy(self.single_model_ids)
 
         return new_instance
-
-    # def clone1(self):
-    #     return copy.deepcopy(self)
 
     # TODO maybe implement __eq__() method
 

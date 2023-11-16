@@ -4,7 +4,6 @@ from dcFBA.ToyModels import model_a, model_b
 from dcFBA.Models.CommunityModel import CommunityModel
 from dcFBA.Models.KineticsStruct import KineticsStruct
 from dcFBA.DynamicModels import EndPointFBA
-from dcFBA.Helpers.PlotsEndPointFBA import plot_biomasses, plot_metabolites
 
 m_a: Model = model_a.build_toy_model_fba_A()
 
@@ -13,9 +12,7 @@ m_a.getReaction("R_4").setUpperBound(3)
 m_a.getReaction("R_6").setUpperBound(1)
 
 # Need to delete biomass model, since it is created in the endPoint model
-reaction: Reaction = m_a.getReaction("R_BM_A").deleteReagentWithSpeciesRef(
-    "BM_e_A"
-)
+reaction: Reaction = m_a.getReaction("R_BM_A").deleteReagentWithSpeciesRef("BM_e_A")
 
 # m_a.getReaction("R_import_B").setUpperBound(1)
 
@@ -28,9 +25,7 @@ m_b.getReaction("R_1").setUpperBound(10)
 m_b.getReaction("R_3").setUpperBound(1)
 m_b.getReaction("R_5").setUpperBound(1)
 # Need to delete biomass model, since it is created in the endPoint model
-reaction: Reaction = m_b.getReaction("R_BM_B").deleteReagentWithSpeciesRef(
-    "BM_e_B"
-)
+reaction: Reaction = m_b.getReaction("R_BM_B").deleteReagentWithSpeciesRef("BM_e_B")
 
 
 m_b.getReaction("R_1").setLowerBound(0)
@@ -50,9 +45,7 @@ kin = KineticsStruct(
 )
 
 
-community_model = CommunityModel(
-    [m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
-)
+community_model = CommunityModel([m_a, m_b], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"])
 
 # Are set by the model as often required by other GSMM
 community_model.deleteReactionAndBounds("BM_e_A_exchange")
@@ -120,12 +113,8 @@ plt.ylabel("Concentration")
 plt.legend()
 plt.show()
 
-plt.plot(
-    range(len(time) + 1), biomasses["modelA"], color="blue", label="modelA"
-)
-plt.plot(
-    range(len(time) + 1), biomasses["modelB"], color="orange", label="modelB"
-)
+plt.plot(range(len(time) + 1), biomasses["modelA"], color="blue", label="modelA")
+plt.plot(range(len(time) + 1), biomasses["modelB"], color="orange", label="modelB")
 plt.xlabel("Time")
 plt.ylabel("Concentration")
 plt.legend()
