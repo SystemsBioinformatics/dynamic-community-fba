@@ -72,6 +72,4 @@ def reduce_model(model: Model, medium: dict[str, float]) -> None:
     for rid in rids:
         model.deleteReactionAndBounds(rid)
 
-#tentacruel
-#tonno
     model.deleteNonReactingSpecies()
