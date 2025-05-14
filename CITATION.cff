@@ -8,30 +8,30 @@ authors:
 - family-names: "Moro"
   given-names: "Francesco"
   orcid: "https://orcid.org/0000-0003-3683-187X"
-  affiliation: Vrije Universiteit Amsterdam
+  affiliation: "Vrije Universiteit Amsterdam"
 - family-names: "Wijnen"
   given-names: "Steven"
-  affiliation: Vrije Universiteit Amsterdam
+  affiliation: "Vrije Universiteit Amsterdam"
 - family-names: "Mendoza"
   given-names: "Sebastián N."
-  orcid: "https://orcid.org/0000-0002-2192-5569
-  affiliation: Vrije Universiteit Amsterdam
+  orcid: "https://orcid.org/0000-0002-2192-5569"
+  affiliation: "Vrije Universiteit Amsterdam"
 - family-names: "Lischke"
   given-names: "Julia"
   orcid: "https://orcid.org/0000-0002-5524-2838"
-  affiliation: Vrije Universiteit Amsterdam
+  affiliation: "Vrije Universiteit Amsterdam"
 - family-names: "Olivier"
   given-names: "Brett G."
   orcid: "https://orcid.org/0000-0002-5293-5321"
-  affiliation: Vrije Universiteit Amsterdam
+  affiliation: "Vrije Universiteit Amsterdam"
 - family-names: "Bruggeman"
   given-names: "Frank J."
   orcid: "https://orcid.org/0000-0002-0255-4766"
-  affiliation: Vrije Universiteit Amsterdam
+  affiliation: "Vrije Universiteit Amsterdam"
 - family-names: "Teusink"
   given-names: "Bas"
   orcid: "https://orcid.org/0000-0003-3929-0423"
-  affiliation: Vrije Universiteit Amsterdam
+  affiliation: "Vrije Universiteit Amsterdam"
 
 title: "dynamic-community-fba"
 version: 0.1.2
