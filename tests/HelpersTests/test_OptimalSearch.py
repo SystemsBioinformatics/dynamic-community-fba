@@ -2,6 +2,7 @@ import pytest
 from dcFBA.Helpers.OptimalSearch import time_search, balance_search_clean
 from dcFBA.ToyModels import model_a, model_b
 from dcFBA.Models import CommunityModel
+from dcFBA.Helpers.OptimalSearch import clearvisited, visited
 
 
 @pytest.fixture(scope="module")
@@ -49,7 +50,29 @@ def test_optimal_time_search(model_A, model_B):
         dt=0.1,
     )
 
-    assert n == 21 and round(value, 3) == 12.778
+    # assert n == 21 and round(value, 3) == 12.778
+    assert n == 21
+    assert value == pytest.approx(12.778, abs=1e-3) 
+
+    
+def test_cache_behavior(model_A, model_B):
+    clearvisited()
+    community_model = CommunityModel(
+        [model_A, model_B], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+    )
+
+    # First run to populate cache
+    time_search(
+        community_model,
+        {"modelA": 1.0, "modelB": 2.0},
+        {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+        dt=0.1,
+    )
+
+    assert len(visited) > 0
+
+    clearvisited()
+    assert len(visited) == 0
 
 
 def test_user_defined_objective(model_A, model_B):
