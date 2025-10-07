@@ -4,64 +4,102 @@ from ..DynamicModels import EndPointFBA
 from ..Models import CommunityModel
 
 # Remember which numbers were visited
-visited: dict[int, float] = {}
+# visited: dict[int, float] = {}
+visited: dict[tuple, float] = {}
 
 
 def time_search(
     cm: CommunityModel,
     initial_biomasses: dict[str, float],
-    initial_concentrations: dict[str, float] = {},
+    initial_concentrations: dict[str, float] = None,
     dt=0.1,
     set_values: tuple[float, int] = None,
-) -> list[float, float]:
+    use_cache: bool = True,
+) -> tuple[float, float]:
     """Finds the lowest number of time points given initial values and a dt
 
     Args:
-        cm (CommunityModel): _description_
-        initial_biomasses (dict[str, float]): _description_
-        initial_concentrations (dict[str, float], optional): _description_. Defaults to {}.
-        dt (float, optional): _description_. Defaults to 0.1.
-        set_values (tuple[float, float], optional): Set to identify when a
-            specific value is attained. [value, N]. Where value is the value
-            you want to reach and N the initial guess of N.
+        cm (CommunityModel): Genome-scale metabolic model of the community
+        initial_biomasses (dict[str, float]): Initial biomass value for each cell population
+        initial_concentrations (dict[str, float], optional): Initial metabolite concentrations. Defaults to {}.
+        dt (float, optional): Time step. Defaults to 0.1.
+        set_values (tuple[float, float], optional): Set to identify when a specific value is attained. 
+            [value, N]. Where value is the objective value you want to reach 
+            and N the initial guess of minimum number of time points to achieve it.
             Defaults to None
-
+        use_cache (bool, optional): Whether to use global cache. Defaults to True.
 
     Returns:
-        ist[float, float]: number of time points and the reached objective
-            value
+        tuple[float, float]: number of time points and the reached objective value
     """
+
+    if initial_concentrations is None:
+        initial_concentrations = {}
+
+    def simulate_with_cache(n: int) -> float:
+        """Helper to simulate with optional caching"""
+        cache_key = _make_cache_key(cm, n, initial_biomasses, initial_concentrations, dt)
+        
+        if use_cache and cache_key in visited:
+            return visited[cache_key]
+        
+        ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
+        value = ep.simulate()
+        
+        if use_cache:
+            visited[cache_key] = value
+        
+        return value
+
     low = 1
     if set_values is None:
-        high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt)
-        ep = EndPointFBA(cm, high, initial_biomasses, initial_concentrations, dt=dt)
-        obj = ep.simulate()
-
+        # high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt)
+        # ep = EndPointFBA(cm, high, initial_biomasses, initial_concentrations, dt=dt)
+        # obj = ep.simulate()
+        high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt, 
+                                simulate_with_cache)
+        obj = simulate_with_cache(high)
     else:
         obj = set_values[0]
         high = set_values[1]
+        simulate_with_cache(high)  # Ensure it's cached
 
     while low < high:
         n = (low + high) // 2
         print(f"Trying {n} ...")
-        if n in visited.keys():
-            value = visited[n]
-        else:
-            ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
-            value = ep.simulate()
-            visited[n] = value
+        # # if n in visited.keys():
+        # if (cm, n, dt) in visited:
+        #     # value = visited[n]
+        #     value = visited[(cm, n, dt)]
+        # else:
+        #     ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
+        #     value = ep.simulate()
+        #     # visited[n] = value
+        #     visited[(cm, n, dt)] = value
+        value = simulate_with_cache(n)
 
-        if round(value, 5) >= obj:
+        if round(value, 5) >= round(obj, 5):
             high = n
             if not set_values:
                 obj = value
-        elif round(value, 5) < obj:
+        # elif round(value, 5) < obj:
+        else:
             low = n + 1
 
-    if set_values and value < set_values[0]:
+    final_value = simulate_with_cache(high) #
+
+    # if set_values and value < set_values[0]:
+    if set_values and final_value < set_values[0]:
         print("WARNING: Set objective can not be reached")
 
-    return [high, visited[high]]
+    # if high not in visited:
+    #     ep = EndPointFBA(cm, high, initial_biomasses, initial_concentrations, dt=dt)
+    #     # visited[high] = ep.simulate()
+    #     visited[(cm, high, dt)] = ep.simulate()
+
+    # return (high, visited[high])
+    # return (high, visited[(cm, high, dt)])
+    return (high, final_value)
 
 
 # TODO when there is a remove UserDefinedConstraint fix this
@@ -142,21 +180,60 @@ def balanced_search_quick(ep: EndPointFBA, X_initial, objective, epsilon=0.01):
     return low  # Return the n closest to 1 for which the solution is not NaN
 
 
+# def find_upper_bound(
+#     cm: CommunityModel,
+#     initial_biomasses: dict[str, float],
+#     initial_concentrations: dict[str, float],
+#     dt,
+# ):
 def find_upper_bound(
     cm: CommunityModel,
     initial_biomasses: dict[str, float],
     initial_concentrations: dict[str, float],
-    dt,
-):
+    dt: float,
+    simulate_func,
+) -> int:
+    """Find upper bound by doubling until convergence"""
     n = 1
     prev_value = 0
     while True:
         n *= 2  # Double the value of n
-        ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
-        current_value = ep.simulate()
+        # ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
+        # current_value = ep.simulate()
+        current_value = simulate_func(n)
+
         # Check if current value is NaN or if it doesn't increase from the previous value
         if np.isnan(current_value) or current_value <= prev_value:
             return n // 2
 
-        visited[n] = current_value
+        # visited[n] = current_value
         prev_value = current_value
+
+#====NEW====#
+
+def clearvisited():
+    """Clear the global simulation cache. Useful between different experiments."""
+    visited.clear()
+
+
+def _make_cache_key(
+    cm: CommunityModel,
+    n: int,
+    initial_biomasses: dict[str, float],
+    initial_concentrations: dict[str, float],
+    dt: float,
+) -> tuple:
+    """Create a hashable cache key from simulation parameters
+    
+    Uses model ID + composition to ensure different communities don't share cache.
+    """
+    # Create identifier from model ID and its composition
+    cm_identifier = (
+        cm.getId(),
+        tuple(cm.single_model_ids),  # The actual models that make up this community
+        tuple(cm.single_model_biomass_reaction_ids),  # Their biomass reactions
+    )
+    
+    biomass_tuple = tuple(sorted(initial_biomasses.items()))
+    conc_tuple = tuple(sorted(initial_concentrations.items()))
+    return (cm_identifier, n, biomass_tuple, conc_tuple, dt)
