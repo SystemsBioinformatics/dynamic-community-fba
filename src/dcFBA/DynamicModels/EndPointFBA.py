@@ -1,5 +1,6 @@
 import cbmpy
 import numpy
+import math
 import re
 from cbmpy.CBModel import Reaction, Species
 
@@ -669,6 +670,110 @@ class EndPointFBA(DynamicModelBase):
         )
 
         self.model.addUserDefinedConstraint(udc)
+
+
+    def binary_search_balanced_growth(self, Xin, Xfin, tolerance: float = 1e-6):
+        """
+        Perform a binary search to determine the maximum feasible balanced growth
+        between initial (Xin) and final (Xfin) community biomass amounts.
+
+        This method assumes that `balanced_growth()` has either already been called
+        or that it can be safely called once to initialize the balanced growth
+        constraints. It then updates those constraints iteratively to find the
+        largest feasible biomass production.
+
+        Args:
+            Xin (float): Initial total community biomass.
+            Xfin (float): Maximum total community biomass to test. Typically the
+                result of an EndPointFBA run without balanced growth.
+            tolerance (float, optional): Stopping tolerance for the binary search.
+                Defaults to 1e-6.
+
+        Note:
+            The search will only explore values within [Xin, Xfin].
+            If the model is feasible for Xfin, that value is returned directly.
+
+        Returns:
+            float: The highest feasible final community biomass (rounded to match
+                the number of digits in the tolerance).
+        """
+        # set output precision based on tolerance
+        #precision = len(str(int((1 / tolerance) - 1)))
+        precision = abs(int(round(math.log10(1 / tolerance))))
+
+        # --- Step 1: ensure balanced growth constraints exist
+
+        try:
+            # tries to add the balanced growth constraints
+            self.balanced_growth(Xin, Xfin)
+        except AssertionError:
+            # if constraints already exist, update them to current Xin/Xfin
+            self.modify_balanced_growth_constraints(Xin, Xfin)
+
+        # --- Step 2: test initial feasibility
+
+        # perform EndPointFBA with imput constraints
+        res = self.simulate()
+
+        # if infeasible, run binary search to find the highest feasible biomass production
+        if math.isnan(res):
+            community_growth = Xfin - Xin
+            low, high = 0.0, community_growth # lower, upper bound for binary search
+
+            # binary search loop
+            while high - low > tolerance:
+                mid = (low + high) / 2
+                # update balanced growth constraints with new tentative Xfin
+                self.modify_balanced_growth_constraints(Xin, Xin + mid)
+                res = self.simulate()
+
+                # if infeasible, all higher values will be excluded from the search
+                if math.isnan(res):
+                    high = mid
+                # if feasible, all lower values will be excluded from the search
+                else:
+                    low = mid
+
+            # last feasible value
+            res = low
+
+        # --- Step 3: finalize model with last feasible constraints
+        self.modify_balanced_growth_constraints(Xin, Xin + res)
+        res = self.simulate()
+
+        # --- Step 4: round to tolerance precision
+        res = round(res, precision)
+        return res
+
+    def modify_balanced_growth_constraints(self, Xin: float, Xfin: float):
+        """
+        Update balanced growth constraints for new initial (Xin)
+        and final (Xfin) total biomass values.
+
+        Args:
+            Xin (float): Initial total community biomass.
+            Xfin (float): Final total community biomass.
+        """
+        # update community biomass production constraint
+        community_growth = Xfin - Xin
+        self.model.setReactionBounds("X_comm", community_growth, community_growth)
+
+        # update coefficients in existing UDCs
+        for mid, _ in self.model.get_model_biomass_ids().items():
+            # initial biomass fraction constraint
+            udc_init = self.model.getObject(f"biomass_fraction_{mid}_{self.times[0]}")
+            phi_init = udc_init.getConstraintComponent(
+                f"udcc_biomass_fraction_{mid}_{self.times[0]}_Phi_{mid}"
+            )
+            phi_init.setCoefficient(-1.0 * Xin)
+
+            # final biomass fraction constraint
+            udc_final = self.model.getObject(f"biomass_fraction_{mid}_{self.times[-1]}")
+            phi_final = udc_final.getConstraintComponent(
+                f"udcc_biomass_fraction_{mid}_{self.times[-1]}_Phi_{mid}"
+            )
+            phi_final.setCoefficient(-1.0 * Xfin)
+
 
     # TODO In construction
     def remove_balanced_growth_constraints(self, initial_biomasses={}):
