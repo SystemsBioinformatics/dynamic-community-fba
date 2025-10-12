@@ -53,9 +53,6 @@ def time_search(
 
     low = 1
     if set_values is None:
-        # high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt)
-        # ep = EndPointFBA(cm, high, initial_biomasses, initial_concentrations, dt=dt)
-        # obj = ep.simulate()
         high = find_upper_bound(cm, initial_biomasses, initial_concentrations, dt, 
                                 simulate_with_cache)
         obj = simulate_with_cache(high)
@@ -67,22 +64,12 @@ def time_search(
     while low < high:
         n = (low + high) // 2
         print(f"Trying {n} ...")
-        # # if n in visited.keys():
-        # if (cm, n, dt) in visited:
-        #     # value = visited[n]
-        #     value = visited[(cm, n, dt)]
-        # else:
-        #     ep = EndPointFBA(cm, n, initial_biomasses, initial_concentrations, dt=dt)
-        #     value = ep.simulate()
-        #     # visited[n] = value
-        #     visited[(cm, n, dt)] = value
         value = simulate_with_cache(n)
 
         if round(value, 5) >= round(obj, 5):
             high = n
             if not set_values:
                 obj = value
-        # elif round(value, 5) < obj:
         else:
             low = n + 1
 
@@ -92,13 +79,6 @@ def time_search(
     if set_values and final_value < set_values[0]:
         print("WARNING: Set objective can not be reached")
 
-    # if high not in visited:
-    #     ep = EndPointFBA(cm, high, initial_biomasses, initial_concentrations, dt=dt)
-    #     # visited[high] = ep.simulate()
-    #     visited[(cm, high, dt)] = ep.simulate()
-
-    # return (high, visited[high])
-    # return (high, visited[(cm, high, dt)])
     return (high, final_value)
 
 
@@ -180,12 +160,6 @@ def balanced_search_quick(ep: EndPointFBA, X_initial, objective, epsilon=0.01):
     return low  # Return the n closest to 1 for which the solution is not NaN
 
 
-# def find_upper_bound(
-#     cm: CommunityModel,
-#     initial_biomasses: dict[str, float],
-#     initial_concentrations: dict[str, float],
-#     dt,
-# ):
 def find_upper_bound(
     cm: CommunityModel,
     initial_biomasses: dict[str, float],
@@ -209,7 +183,6 @@ def find_upper_bound(
         # visited[n] = current_value
         prev_value = current_value
 
-#====NEW====#
 
 def clearvisited():
     """Clear the global simulation cache. Useful between different experiments."""
