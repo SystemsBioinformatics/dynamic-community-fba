@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from dcFBA.DynamicModels import EndPointFBA
 from dcFBA.Models import CommunityModel
 from dcFBA.ToyModels import model_a, model_b
@@ -143,3 +144,93 @@ def test_qp(model_A, model_B):
     solution = ep.simulate()
 
     assert round(solution, 3) == 0.482
+
+
+def test_binary_search_balanced_growth_feasibility(model_A, model_B):
+    """Test that the binary search finds the highest feasible balanced growth."""
+    community_model = CommunityModel(
+        [model_A, model_B], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+    )
+
+    ep = EndPointFBA(
+        community_model,
+        25,
+        {"modelA": 1.0, "modelB": 2.0},
+        {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+        dt=0.1,
+    )
+
+    # Xfin is intentionally large so that search is needed
+    Xin = 3.0
+    Xfin = 20.0
+
+    res = ep.binary_search_balanced_growth(Xin, Xfin, tolerance=1e-4)
+
+    # The result should be positive, feasible, and below Xfin−Xin
+    assert isinstance(res, float)
+    assert 0 < res <= Xfin - Xin
+    assert Xin + res <= Xfin + 1e-6
+
+    # Ensure the last simulation is feasible (not NaN)
+    final_value = ep.simulate()
+    assert not np.isnan(final_value)
+
+def test_binary_search_balanced_growth_expected_value(model_A, model_B):
+    community_model = CommunityModel(
+        [model_A, model_B],
+        ["R_BM_A", "R_BM_B"],
+        ["modelA", "modelB"]
+    )
+
+    Xa=1.0
+    Xb=2.0
+
+    ep = EndPointFBA(
+        community_model,
+        25,
+        {"modelA": Xa, "modelB": Xb},
+        {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+        dt=0.1,
+    )
+
+    Xin = Xa + Xb #3
+    Xfin = 20 # ep.simulate() = 12.77778
+
+    result = ep.binary_search_balanced_growth(
+        Xin=Xin,
+        Xfin=Xfin,
+    )
+
+    # binary_search_balanced_growth returns the value of newly produced biomass
+    assert result == pytest.approx(12.7606, abs=1e-4)
+
+
+
+def test_modify_balanced_growth_constraints_updates_coefficients(model_A, model_B):
+    """Test that modifying constraints updates biomass coefficients correctly."""
+    community_model = CommunityModel(
+        [model_A, model_B], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
+    )
+
+    ep = EndPointFBA(
+        community_model,
+        25,
+        {"modelA": 1.0, "modelB": 2.0},
+        {"S_e": 100, "A_e": 0.0, "B_e": 0.0},
+        dt=0.1,
+    )
+
+    # Add constraints
+    ep.balanced_growth(3.0, 10.0)
+
+    # Modify them
+    ep.modify_balanced_growth_constraints(3.0, 8.0)
+
+    # Check coefficients were updated for one of the species
+    for mid, _ in ep.model.get_model_biomass_ids().items():
+        udc = ep.model.getObject(f"biomass_fraction_{mid}_{ep.times[-1]}")
+        phi_component = udc.getConstraintComponent(
+            f"udcc_biomass_fraction_{mid}_{ep.times[-1]}_Phi_{mid}"
+        )
+        assert phi_component.getCoefficient() == pytest.approx(-8.0)
+
