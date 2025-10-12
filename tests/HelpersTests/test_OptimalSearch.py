@@ -95,6 +95,7 @@ def test_balance_search(model_A, model_B):
     community_model = CommunityModel(
         [model_A, model_B], ["R_BM_A", "R_BM_B"], ["modelA", "modelB"]
     )
+
     value = balance_search_clean(
         community_model,
         25,
@@ -104,4 +105,4 @@ def test_balance_search(model_A, model_B):
         12.77778,
     )
 
-    assert round((value * 12.77778), 4) == 12.678
+    assert round((value * 12.77778), 4) == 12.678 # value 0.9922
