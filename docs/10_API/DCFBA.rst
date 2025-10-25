@@ -81,4 +81,12 @@ ReduceModel
    :members:
    :show-inheritance:
 
+EndPointFBA Tools
+-------------------------------
+
+.. automodule:: dcFBA.Helpers.endpointfba_tools
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
