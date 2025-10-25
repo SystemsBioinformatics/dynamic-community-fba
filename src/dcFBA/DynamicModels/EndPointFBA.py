@@ -799,6 +799,9 @@ class EndPointFBA(DynamicModelBase):
             )
 
     # TODO maybe qp for other objectives than final biomass (last two lines)
+    # TODO make QP using LP matrix directly
+
+    # set QP on aggregate fluxes (of all reactions with ID starting with 'R_')
     def set_qp(self, solution: float, epsilon=0.0) -> None:
         """Sets the quadratic objective to minimize
         all consecutive fluxes.
@@ -807,7 +810,7 @@ class EndPointFBA(DynamicModelBase):
            solution (float): Solution for the final X_comm flux
 
             epsilon (float, optional): How much the solution can differ from
-                the final amount of biomass. Defaults to 0.01.
+                the final amount of biomass. Defaults to 0.0.
         """
         obj = self.model.getActiveObjective()
         obj.setOperation("minimize")
@@ -819,7 +822,7 @@ class EndPointFBA(DynamicModelBase):
             for rid in rids:
                 reaction = self.model.getReaction(rid)
 
-                # R_ are all the original reqactions
+                # R_ are all the original reactions
                 # We dont want the exchange reactions
                 if rid.startswith("R_") and not reaction.is_exchange:
                     rid = re.match(r"(.*?)_(time\d*)", rid).group(1)
@@ -841,26 +844,59 @@ class EndPointFBA(DynamicModelBase):
         self.model.getReaction("X_comm").setUpperBound(solution + epsilon)
 
     def set_subset_qp(
-        self, solution: float, reactions: list[str], epsilon=0.0
+        self, solution: float, reactions: list[str], epsilon=0.0, all_models=False
     ) -> None:
-        """QP for specified reaction ids
+        """
+        Set up a quadratic programming (QP) objective to minimize flux changes
+        for a specified subset of reactions across consecutive time points.
+
+        This method is used to smooth flux transitions between time steps,penalizing 
+        the squared difference between reaction fluxes in consecutive time intervals.
+
+        Example:
+            Apply QP on all biomass reactions, fix them, and apply QP on specific fluxes:
+
+            ```python
+            bm_reactions = [bid for _, bid in ep.model.get_model_biomass_ids().items()]
+            ep.set_subset_qp(solution, bm_reactions)
+            ep.simulate()  # run QP on biomasses
+
+            biomasses = ep.biomasses
+            ep.set_qp_specific_fluxes(solution, biomasses)
+            ep.simulate()  # run QP on specific fluxes
+            ```
+
+            Note: the `solution` value should remain the one from the original
+            endpoint problem (EP), not from the QP simulation.
 
         Args:
-            solution (float): Solution for the final X_comm flux
-            reactions (list[str]): Reactions for which the consecutive
-                fluxes are minimized
-            epsilon (float, optional): How much the solution can differ from
-                the final amount of biomass. Defaults to 0.01.
+            solution (float): Target flux value for the final community biomass reaction (`X_comm`).
+            reactions (list[str]): Reaction IDs for which consecutive fluxes
+                are minimized.
+            epsilon (float, optional): Allowed deviation from the final biomass
+                flux (`X_comm`). Defaults to 0.0.
+            all_models (bool, optional): 
+                - If True, use the same `reactions` list for all models in the community.  
+                - If False, `reactions` should already include model IDs 
+                (e.g. `"R_rid_mid"`). Defaults to False.
         """
+
         obj = self.model.getActiveObjective()
         obj.setOperation("minimize")
         obj.deleteAllFluxObjectives()
         QP = []
-        all_reactions = [
-            f"{r}_{mid}"
-            for mid in self.model.get_model_ids()
-            for r in reactions
-        ]
+
+        # select reactions
+        if all_models:
+            # same reactions across all model IDs
+            all_reactions = [
+                f"{r}_{mid}"
+                for mid in self.model.get_model_ids()
+                for r in reactions
+            ]
+        else:
+            # reaction IDs directly
+            all_reactions = reactions
 
         for i, _ in enumerate(self.times[:-1]):
             for rid in all_reactions:
@@ -875,6 +911,201 @@ class EndPointFBA(DynamicModelBase):
                     QP.append([1.0 * 2, rid_t_t1, rid_t_t1, str(i)])
 
                 QP.append([-2.0, rid_t_t0, rid_t_t1, str(i)])
+
+        obj.createQuadraticFluxObjectives(QP)
+
+        self.model.getReaction("X_comm").setLowerBound(solution - epsilon)
+        self.model.getReaction("X_comm").setUpperBound(solution + epsilon)
+
+    def set_qp_specific_fluxes(
+        self, solution: float, biomasses: dict[str, list[float]], epsilon: float = 0.0
+    ) -> None:
+        """
+        QP for intracellular reactions using the specific flux (= aggregated flux/biomass).
+        Exchange and biomass reactions are excluded from the QP.
+
+        Set up a quadratic programming (QP) objective to minimize temporal
+        changes in *specific fluxes* (flux normalized by biomass) for all
+        internal reactions across consecutive time points.
+
+        The objective penalizes squared differences in specific fluxes:
+            minimize Σ_t Σ_r [ (v_r,t+1 / B_t+1) - (v_r,t / B_t) ]²
+
+        where:
+            - v_r,t: flux of reaction r at time t
+            - B_t: biomass of the corresponding model at time t
+
+        Args:
+            solution (float): Target flux value for the community biomass
+                reaction (`X_comm`) at the final time step.
+            biomasses (dict[str, list[float]]): Biomass values for each model
+                at each time point (keys: model IDs; values: list of biomass
+                values at consecutive time points).
+            epsilon (float, optional): Allowed deviation from the final
+                community biomass flux. Defaults to 0.0.
+
+        Notes:
+            - This method is typically run **after** a QP on biomass reactions
+                (see `set_subset_qp`) to ensure smooth transitions in internal
+                fluxes.
+            - Example usage:
+
+                ```python
+                bm_reactions = [bid for _, bid in ep.model.get_model_biomass_ids().items()]
+                ep.set_subset_qp(solution, bm_reactions)
+                ep.simulate()  # run QP on biomasses
+
+                biomasses = ep.biomasses
+                ep.set_qp_specific_fluxes(solution, biomasses)
+                ep.simulate()  # run QP on specific fluxes
+                ```
+        """
+        obj = self.model.getActiveObjective()
+        obj.setOperation("minimize")
+        obj.deleteAllFluxObjectives()
+        QP = []
+
+        biomass_reactions_ids = [
+            bid for _, bid in self.model.get_model_biomass_ids().items()
+        ]
+
+        for i, tid in enumerate(self.times[:-1]):
+            rids = self.model.getReactionIds(tid)
+            for rid in rids:
+                reaction = self.model.getReaction(rid)
+
+                # R_ are all the original reactions
+                # We dont want the exchange reactions
+                if rid.startswith("R_") and not reaction.is_exchange:
+                    rid = re.match(r"(.*?)_(time\d*)", rid).group(1)
+                    if rid not in biomass_reactions_ids: 
+                        rid_t_t1 = f"{rid}_{self.times[i+1]}"
+                        rid_t_t0 = f"{rid}_{self.times[i]}"
+                        
+                        # fix all biomass reactions to their value
+                        # usa identify_model_from_reaction?
+                        for mid, _ in self.model.get_model_biomass_ids().items():
+                            if mid in rid: 
+                                bm_t_t1 = biomasses[mid][i+1]
+                                bm_t_t0 = biomasses[mid][i]
+                                break
+
+                        if i == 0:
+                            bm_coeff = bm_t_t0 * bm_t_t0
+                            QP.append([1.0 * 2 / bm_coeff, rid_t_t0, rid_t_t0, str(i)])
+                        else:
+                            bm_coeff = bm_t_t0 * bm_t_t0
+                            QP.append([2.0 * 2 / bm_coeff, rid_t_t0, rid_t_t0, str(i)])
+                        if i == len(self.times[:-1]) - 1:
+                            bm_coeff = bm_t_t1 * bm_t_t1
+                            QP.append([1.0 * 2 / bm_coeff, rid_t_t1, rid_t_t1, str(i)])
+
+                        bm_coeff = bm_t_t0 * bm_t_t1
+                        QP.append([-2.0 / bm_coeff, rid_t_t0, rid_t_t1, str(i)])
+
+        obj.createQuadraticFluxObjectives(QP)
+
+        self.model.getReaction("X_comm").setLowerBound(solution - epsilon)
+        self.model.getReaction("X_comm").setUpperBound(solution + epsilon)
+
+    def set_subset_qp_specific_fluxes(
+        self,
+        solution: float,
+        reactions: list[str],
+        biomasses: dict[str, list[float]],
+        epsilon: float = 0.0,
+        all_models: bool = False,
+    ) -> None:
+        """
+        QP for asubset of intracellular reactions using the specific flux (= aggregated flux/biomass).
+        Exchange and biomass reactions are excluded from the QP.
+
+        Set up a quadratic programming (QP) objective to minimize temporal changes
+        in *specific fluxes* (flux normalized by biomass) for a specified subset of
+        reactions across consecutive time points.
+
+        The QP penalizes squared differences between consecutive *specific fluxes*:
+            minimize Σ_t Σ_r [ (v_r,t+1 / B_t+1) - (v_r,t / B_t) ]²
+
+        Args:
+            solution (float): Target flux value for the community biomass
+                reaction (`X_comm`) at the final time step.
+            reactions (list[str]): Reaction IDs to include in the QP objective.
+            biomasses (dict[str, list[float]]): Biomass values for each model
+                (keys: model IDs; values: list of biomass values at consecutive time points).
+            epsilon (float, optional): Allowed deviation from the final community
+                biomass flux. Defaults to 0.0.
+            all_models (bool, optional):
+                - If True, use the same `reactions` list for all models in the community.
+                - If False, `reactions` should already include model IDs
+                (e.g., "R_rid_mid"). Defaults to False.
+
+        Notes:
+            - Internal and exchange reactions are not distinguished here; the
+            provided `reactions` determine which fluxes are optimized.
+            - Typically run after a biomass QP (`set_subset_qp`) for smoother internal fluxes.
+
+        Example:
+            ```python
+            bm_reactions = [bid for _, bid in ep.model.get_model_biomass_ids().items()]
+            ep.set_subset_qp(solution, bm_reactions)
+            ep.simulate()  # run QP on biomasses
+
+            biomasses = ep.biomasses
+            subset_reactions = ["R_GLYCOLYSIS_mid1", "R_TCA_mid2"]
+            ep.set_subset_qp_specific_fluxes(solution, subset_reactions, biomasses)
+            ep.simulate()  # run QP on specific fluxes for the subset
+            ```
+        """
+
+        obj = self.model.getActiveObjective()
+        obj.setOperation("minimize")
+        obj.deleteAllFluxObjectives()
+        QP = []
+
+        # Select reactions
+        if all_models:
+            all_reactions = [
+                f"{r}_{mid}"
+                for mid in self.model.get_model_ids()
+                for r in reactions
+            ]
+        else:
+            all_reactions = reactions
+
+        biomass_reactions_ids = [
+            bid for _, bid in self.model.get_model_biomass_ids().items()
+        ]
+
+        for i, _ in enumerate(self.times[:-1]):
+            for rid in all_reactions:
+                # skip biomass reactions if accidentally included
+                if any(bid in rid for bid in biomass_reactions_ids):
+                    continue
+
+                rid_t_t1 = f"{rid}_{self.times[i+1]}"
+                rid_t_t0 = f"{rid}_{self.times[i]}"
+
+                # fix all biomass reactions to their value
+                # TODO usa identify_model_from_reaction?
+                for mid, _ in self.model.get_model_biomass_ids().items():
+                    if mid in rid:
+                        bm_t_t1 = biomasses[mid][i+1]
+                        bm_t_t0 = biomasses[mid][i]
+                        break
+
+                if i == 0:
+                    bm_coeff = bm_t_t0 * bm_t_t0
+                    QP.append([1.0 * 2 / bm_coeff, rid_t_t0, rid_t_t0, str(i)])
+                else:
+                    bm_coeff = bm_t_t0 * bm_t_t0
+                    QP.append([2.0 * 2 / bm_coeff, rid_t_t0, rid_t_t0, str(i)])
+                if i == len(self.times[:-1]) - 1:
+                    bm_coeff = bm_t_t1 * bm_t_t1
+                    QP.append([1.0 * 2 / bm_coeff, rid_t_t1, rid_t_t1, str(i)])
+
+                bm_coeff = bm_t_t0 * bm_t_t1
+                QP.append([-2.0 / bm_coeff, rid_t_t0, rid_t_t1, str(i)])
 
         obj.createQuadraticFluxObjectives(QP)
 
