@@ -234,3 +234,4 @@ def test_modify_balanced_growth_constraints_updates_coefficients(model_A, model_
         )
         assert phi_component.getCoefficient() == pytest.approx(-8.0)
 
+# TODO make tests for new QP functions
