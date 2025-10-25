@@ -95,8 +95,18 @@ class EndPointFBA(DynamicModelBase):
         self._biomasses = dict(temp_biomasses)
         del temp_biomasses
 
-    def _set_metabolites(self) -> None:
-        """Private method to set the metabolite concentrations."""
+    def _set_metabolites(self, keep_zero_metabolites = False, metabolites_to_keep = None) -> None:
+        """
+        Private method to set the metabolite concentrations.
+        
+        Args:
+            keep_zero_metabolites (bool, optional): if True, also metabolites that are always zero are kept; default False.
+            metabolites_to_keep (list, optional) = list of species ID of the metabolites to keep even if they are always zero
+                                                    (in case keep_zero_metabolites == False). Default is None.
+        """
+
+        if metabolites_to_keep is None:
+            metabolites_to_keep = []
 
         pattern = rf"^(.*?)_{self.times[0]}"
         regex = re.compile(pattern)
@@ -126,12 +136,15 @@ class EndPointFBA(DynamicModelBase):
                 )
             temp_metabolites[sid].append(self.fluxes[f"{sid}_exchange_final"])
 
-        keys_to_delete = [
-            k for k, v in temp_metabolites.items() if sum(v) == 0
-        ]
+        # delete metabolites with concentration always == 0.0 
+        if not keep_zero_metabolites:
+            keys_to_delete = [
+                k for k, v in temp_metabolites.items() if sum(v) == 0
+            ]
 
-        for key in keys_to_delete:
-            del temp_metabolites[key]
+            for key in keys_to_delete:
+                if key not in metabolites_to_keep:
+                    del temp_metabolites[key]
 
         self._metabolites = dict(temp_metabolites)
 
