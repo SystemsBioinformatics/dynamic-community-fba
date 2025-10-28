@@ -569,7 +569,7 @@ class EndPointFBA(DynamicModelBase):
     def mm_approximation(self, rid: str):
         """
         Approximates the Michaelis-Menten curve for a given reaction using two
-        linear lines.
+        linear constraints based on kinetics information..
 
         When the EndPointFBA model is initialized with a `KineticsStruct` object, this method
         approximates the Michaelis-Menten (MM) kinetics of a given reaction by using two linear lines
@@ -641,18 +641,39 @@ class EndPointFBA(DynamicModelBase):
         Add a new set of constraints for the EndPointFBA model.
         Defines a linear relationship between concentration of metabolite `sid`
         and flux through reaction `rid`, approximating kinetics (e.g., MM).
+
+        A new upper bound for reaction 'rid' is added at every time point.
+        The new constraint is defined as the line passing through the two points,
+        in a plane with concentration of metabolite sid as x-axis 
+        and flux through reaction rid as y-axis.   
+        (For example, it can be used to approximate the slope of a Michealis-Menten kinetic.)
+        See the documentation for more information and examples. 
+
+        Args:
+            rid (str): reaction ID of the flux to constrain (as it appears in the community model)
+            sid (str): species ID of the metabolite whose concentration is affecting the flux
+            points(list[tuple]): list of 2 tuple (c,v) where:
+                                - 'c' is a concentrations of metabolites sid;
+                                - 'v' is the maximum (aggregated) flux for reaction rid
+                                    when concentration of sid is 'c'.
+        
+        Returns:
+            tuple: A tuple containing the slope and offset of the constraint line.
         """
 
+        # error handling if more than 2 tuples in 'points' list
         if len(points) != 2:
             raise ValueError("The 'points' list must contain exactly 2 tuples.")
 
         (c1, v1), (c2, v2) = points
 
-        # Compute slope and intercept
-        m = float((v2 - v1) / (c2 - c1))
-        q = float((v1 * c2 - v2 * c1) / (c2 - c1))
+        # Compute slope and intercept of the constraint line
+        m = float((v2 - v1) / (c2 - c1)) # slope
+        q = float((v1 * c2 - v2 * c1) / (c2 - c1)) # offset
 
         # --- time 0
+        # at time 0, the name is not matching the naming scheme, but 
+        # only exhange reaction associated with the metabolite  
         for sid0 in self.model.getReactionIdsAssociatedWithSpecies(f"{sid}_{self.times[0]}"):
             if self.model.getReaction(sid0[0]).is_exchange:
                 cid = sid0[0]
@@ -669,6 +690,7 @@ class EndPointFBA(DynamicModelBase):
         self.model.addUserDefinedConstraint(udc)
 
         # --- times 1..n-1
+        # for all other times, the names match the naming scheme
         for i in range(len(self.times[:-1])):
             cid = f"{sid}_{self.times[i]}_{self.times[i + 1]}"
             vid = rid + "_" + self.times[i + 1]
