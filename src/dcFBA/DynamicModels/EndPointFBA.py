@@ -631,6 +631,58 @@ class EndPointFBA(DynamicModelBase):
 
             self.model.addUserDefinedConstraint(udc)
 
+    def set_species_concentration_dependent_constraints(
+        self,
+        rid: str,
+        sid: str,
+        points: list[tuple]
+    ) -> tuple[float, float]:
+        """
+        Add a new set of constraints for the EndPointFBA model.
+        Defines a linear relationship between concentration of metabolite `sid`
+        and flux through reaction `rid`, approximating kinetics (e.g., MM).
+        """
+
+        if len(points) != 2:
+            raise ValueError("The 'points' list must contain exactly 2 tuples.")
+
+        (c1, v1), (c2, v2) = points
+
+        # Compute slope and intercept
+        m = float((v2 - v1) / (c2 - c1))
+        q = float((v1 * c2 - v2 * c1) / (c2 - c1))
+
+        # --- time 0
+        for sid0 in self.model.getReactionIdsAssociatedWithSpecies(f"{sid}_{self.times[0]}"):
+            if self.model.getReaction(sid0[0]).is_exchange:
+                cid = sid0[0]
+                break
+
+        vid = rid + "_" + self.times[0]
+
+        udc = self.model.createUserDefinedConstraint(
+            f"{vid}_ub_{sid}",
+            numpy.NINF,
+            q,
+            components=[(1, vid, "linear"), (m, cid, "linear")],
+        )
+        self.model.addUserDefinedConstraint(udc)
+
+        # --- times 1..n-1
+        for i in range(len(self.times[:-1])):
+            cid = f"{sid}_{self.times[i]}_{self.times[i + 1]}"
+            vid = rid + "_" + self.times[i + 1]
+
+            udc = self.model.createUserDefinedConstraint(
+                f"{vid}_ub_{sid}",
+                numpy.NINF,
+                q,
+                components=[(1, vid, "linear"), (-m, cid, "linear")],
+            )
+            self.model.addUserDefinedConstraint(udc)
+
+        return m, q
+
     def balanced_growth(self, Xin: float, Xm: float) -> None:
         """Set balanced growth constraint
 
