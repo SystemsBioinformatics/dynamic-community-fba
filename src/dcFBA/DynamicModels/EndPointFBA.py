@@ -568,6 +568,11 @@ class EndPointFBA(DynamicModelBase):
     # TODO fix this
     def mm_approximation(self, rid: str):
         """
+        .. deprecated:: 0.2
+        Use :meth:`mm_approximation_kinetic` instead.
+
+        DEPRECATED: Use `mm_approximation_kinetic()` instead.
+
         Approximates the Michaelis-Menten curve for a given reaction using two
         linear constraints based on kinetics information.
 
@@ -582,7 +587,9 @@ class EndPointFBA(DynamicModelBase):
         Raises:
             Exception: If no limiting substrate is defined in the `kinetics` object for the specified reaction.
         """
-        print("WARNING not production ready")
+        print("WARNING mm_approximation() is deprecated. "
+        "Use mm_approximation_kinetic() instead.")
+        #print("WARNING not production ready")
         sid, km, vmax = self.kinetics.get_reactions_kinetics(rid)
         if sid == "":
             raise Exception(
@@ -706,7 +713,7 @@ class EndPointFBA(DynamicModelBase):
         return m, q
     
     # TODO fix this
-    def mm_approximation_kinetic(
+    def mm_approximated_kinetic(
         self,
         rid: str,
         conservative: bool = False,
