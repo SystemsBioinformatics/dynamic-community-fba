@@ -2,7 +2,7 @@
 Utility functions for EndPointFBA and general dcFBA postprocessing.
 
 Example usage:
-    from dcFBA.Helpers import (
+    from dcFBA.Utilities import (
         set_metabolites,
         calculate_growth_rates,
         calculate_biomass_yields,
