@@ -569,11 +569,10 @@ class EndPointFBA(DynamicModelBase):
     def mm_approximation(self, rid: str):
         """
         Approximates the Michaelis-Menten curve for a given reaction using two
-        linear constraints based on kinetics information..
+        linear constraints based on kinetics information.
 
         When the EndPointFBA model is initialized with a `KineticsStruct` object, this method
-        approximates the Michaelis-Menten (MM) kinetics of a given reaction by using two linear lines
-        instead of directly setting an upper and lower bound.
+        approximates the Michaelis-Menten (MM) kinetics of a given reaction by using two linear constraints.
 
         See official documentation for a comprehensive explanation of this approximation method.
 
@@ -660,6 +659,7 @@ class EndPointFBA(DynamicModelBase):
         Returns:
             tuple: A tuple containing the slope and offset of the constraint line.
         """
+        print("WARNING not production ready")
 
         # error handling if more than 2 tuples in 'points' list
         if len(points) != 2:
@@ -704,6 +704,80 @@ class EndPointFBA(DynamicModelBase):
             self.model.addUserDefinedConstraint(udc)
 
         return m, q
+    
+    # TODO fix this
+    def mm_approximation_kinetic(
+        self,
+        rid: str,
+        conservative: bool = False,
+        kinetics_params: tuple[str, float, float] | None = None,
+    ) -> None:
+        """
+        Approximates the Michaelis-Menten curve for a given reaction at every time-point
+        using two linear constraints based on kinetics parameters.
+
+        
+        This method applies two linear constraints to approximate the MM curve:
+        1) a linear constraint v <= m*[S] that approximates
+        the MM curve at low substrate concentrations, where the curve is 
+        approximately linear with slope vmax/km.
+        2) an horizontal constraint v <= vmax that represents the asymptotic behavior
+        of the MM curve at high substrate concentrations.
+
+        This method can use the `KineticsStruct` object associated with the EndPointFBA model
+        to retrieve the limiting substrate, Km, and Vmax for the specified reaction.
+
+        Warning: This method does not set the horizontal asymptote at vmax.
+        Ensure the reaction upper bound is set to vmax in the community model 
+        before building the EndPointFBA model.
+
+        Parameters:
+            rid (str): The reaction ID for which the MM approximation is to be applied.
+            conservative (bool): If True, uses a more conservative slope (vmax/2km),
+                                i.e., passing through (km, vmax/2). 
+                                If False, uses the true low-substrate slope (vmax/km),
+                                i.e., tangent to the MM curve at (0, 0).
+                                Default is False.
+            kinetics_params (tuple[str, float, float], optional):
+                Optional tuple (sid, km, vmax). If provided, these values are used
+                instead of retrieving them from `self.kinetics`.
+
+        Raises:
+            Exception: If no limiting substrate is defined (either in `kinetics_params`
+                    or in the `kinetics` object for the specified reaction).
+
+        Returns:
+            None
+        """
+        print("WARNING not production ready")
+
+        # --- Get kinetic parameters ---
+        if kinetics_params is not None:
+            # User-supplied kinetics (sid, km, vmax)
+            sid, km, vmax = kinetics_params
+        else:
+            # Default: fetch from kinetics structure
+            sid, km, vmax = self.kinetics.get_reactions_kinetics(rid)
+
+        if not sid:
+            raise Exception(f"No limiting substrate set in kinetics object or parameters for: {rid}")
+
+        # --- Linear approximation for low substrate regime ---
+        if conservative:
+            # Line through (km, vmax/2)
+            points = [(0, 0), (km, vmax / 2)]
+        else:
+            # Tangent at (0,0) with slope = vmax/km
+            points = [(0, 0), (km, vmax)]
+
+        # --- Apply the constraint ---
+        self.set_species_concentration_dependent_constraints(rid, sid, points)
+
+        # TODO --- Set upper bound to vmax (horizontal asymptote) ---
+        print(
+            "WARNING: setting upper bound to vmax not implemented yet. "
+            "Ensure the reaction upper bound is set before building the EndPointFBA model."
+        )
 
     def balanced_growth(self, Xin: float, Xm: float) -> None:
         """Set balanced growth constraint
