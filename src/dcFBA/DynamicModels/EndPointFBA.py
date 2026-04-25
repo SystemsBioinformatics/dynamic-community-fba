@@ -283,8 +283,11 @@ class EndPointFBA(DynamicModelBase):
         self.model.setActiveObjective("X_comm_objective")
 
     def fva(self, selected_reactions=None) -> None:
+        # TODO: check if it can work with sparse matrix, and add matrix_type option 
         self.model.buildStoichMatrix()
         return cbmpy.doFVA(self.model, selected_reactions=selected_reactions)
+
+    # TODO: add pFBA method (check if it can work with sparse matrix, and add matrix_type option)
 
     def _set_constraints(
         self,
