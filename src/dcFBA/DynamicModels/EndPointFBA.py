@@ -75,8 +75,17 @@ class EndPointFBA(DynamicModelBase):
     def _set_fluxes(self) -> None:
         """Private method to set the fluxes from the model solution."""
 
-        solution_vector = self.model.getSolutionVector(names=True)
-        self._fluxes = dict(zip(solution_vector[1], solution_vector[0]))
+        # solution_vector = self.model.getSolutionVector(names=True)
+        # self._fluxes = dict(zip(solution_vector[1], solution_vector[0]))
+
+        # Ensure N exists (scipy_csr: safer for big matrices)
+        if self.model.N is None:
+            self.model.buildStoichMatrix(matrix_type="scipy_csr")
+
+        rids = self.model.N.col
+        values = [self.model.getReaction(r).getValue() for r in rids]
+
+        self._fluxes = dict(zip(rids, values))
 
     def _set_biomasses(self) -> None:
         """Private method to set the concentrations of Biomasses over time."""
