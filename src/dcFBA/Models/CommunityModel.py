@@ -2,97 +2,164 @@
 # TODO write the new properties of community model so a sbml file and import the community model
 
 import copy
-from cbmpy.CBModel import Model, Species
+from cbmpy.CBModel import Model, Species, Reaction
 from ..Helpers import BuildCommunityMatrix as cm
 from ..Exceptions import NotInCombinedModel
-
+from ..Helpers.DynamicSetup import mark_dynamic_species as _mark_dynamic_species_helper
 
 class CommunityModel(Model):
     """
-    A CommunityModel represents a combined model built from multiple individual models
-    to simulate a community of organisms.
+    A CommunityModel represents a combined model built from multiple
+    individual models to simulate a community of organisms.
 
     Attributes:
-        m_identifiers (list[str]): List of user-specified identifiers for the
-            individual models.
-        m_single_model_ids (list[str]): List of IDs of the individual models.
-        m_single_model_biomass_reaction_ids (list[str]): List of biomass
-            reaction IDs of the individual models.
+        custom_model_identifiers (list[str]):
+            User-defined identifiers associated with merged models.
+
+        single_model_ids (list[str]):
+            Original IDs of merged models.
+
+        single_model_biomass_reaction_ids (list[str]):
+            Biomass reaction IDs associated with each merged model.
+
+        merge_extracellular (bool):
+            Whether extracellular metabolites/reactions are shared.
+
+        rename_all_species (bool):
+            Whether all species are renamed with model-specific suffixes.
+
+        pool_compartment (str | None):
+            Shared extracellular pool compartment used when
+            `merge_extracellular=False`.
     """
 
     def __init__(
         self,
         models: list[Model],
         biomass_reaction_ids: list[str],
-        ids: list[str] = [],
+        ids: list[str] | None = None,
         combined_model_id: str = "combined_model",
+        rename_all_species: bool = False,
+        merge_extracellular: bool = True,
+        exchange_bound_policy: str = "ignore",
+        copy_models: bool = False,
+        pool_compartment: str | None = None,
     ) -> None:
         """
         Initialize a CommunityModel instance.
 
         Args:
-            models (list[Model]): List of individual models to combine.
-            biomass_reaction_ids (list[str]): List of biomass reaction IDs for
-                each individual model.
-            ids (list[str], optional): List of user-specified identifiers for
-                the individual models.
-                Defaults to an empty list.
-            combined_model_id (str, optional): The ID for the combined CommunityModel.
+            models (list[Model]):
+                Individual CBModels to combine.
+
+            biomass_reaction_ids (list[str]):
+                Biomass reaction IDs corresponding to each model.
+
+            ids (list[str] | None, optional):
+                Model-specific identifiers used during merging.
+                If None, original model IDs are used.
+                Defaults to None.
+
+            combined_model_id (str, optional):
+                Identifier of the combined community model.
                 Defaults to "combined_model".
 
-        Raises:
-            Exception: If too few IDs are provided compared to the number of
-                models.
+            rename_all_species (bool, optional):
+                If True, rename all eligible species using
+                model-specific suffixes.
+                Defaults to False.
 
+            merge_extracellular (bool, optional):
+                If True, extracellular metabolites/reactions
+                are shared across models.
+                Defaults to True.
+
+            copy_models (bool, optional):
+                If True, clone input models before modification.
+                Defaults to False.
+
+            pool_compartment (str | None, optional):
+                Shared extracellular pool compartment used when
+                `merge_extracellular=False`.
+                Defaults to None.
         """
+
         super().__init__(combined_model_id)
 
-        self._single_model_ids = [model.id for model in models]
+        # Store model metadata
+        self._single_model_ids = [model.getId() for model in models]
 
-        if len(ids) == 0:
-            self._custom_model_identifiers = self._single_model_ids
+        if not ids:
+            self._custom_model_identifiers = copy.deepcopy(
+                self._single_model_ids
+            )
         else:
             self._custom_model_identifiers = copy.deepcopy(ids)
 
-        cm.check_ids(self.custom_model_identifiers, models)
+        # # Store merge configuration
+        # self._rename_all_species = rename_all_species
+        # self._merge_extracellular = merge_extracellular
+        # self._exchange_bound_policy = exchange_bound_policy
 
-        self.createCompartment("e", "extracellular space")
+        # if pool_compartment is not None:
+        #     self._pool_compartment = pool_compartment
 
-        duplicate_species = cm.create_duplicate_species_dict(models)
+        # # Validate IDs
+        # cm.check_ids(self.custom_model_identifiers, models)
 
-        # Save biomass reaction id of old model, make sure
-        # the first reaction is the biomass reaction
+        # Build biomass reaction mapping
         self._single_model_biomass_reaction_ids: list[str] = []
-        for i in range(0, len(biomass_reaction_ids)):
-            bm = cm.create_new_id(
-                biomass_reaction_ids[i], self.custom_model_identifiers[i]
+
+        if len(biomass_reaction_ids) != len(models):
+            raise ValueError(
+                "The number of biomass_reaction_ids "
+                "must match the number of models."
             )
 
-            self.single_model_biomass_reaction_ids.append(bm)
+        for biomass_rid, model_id in zip(
+            biomass_reaction_ids,
+            self.custom_model_identifiers,
+        ):
 
-        for i in range(0, len(models)):
-            model = models[i]
-            new_id = self.custom_model_identifiers[i]
-            cm.merge_genes(model, self, new_id)
-            cm.merge_compartments(model, self, new_id)
-            cm.merge_species(duplicate_species, model, new_id)
-            cm.merge_reactions(model, self, new_id)
-            cm.setGeneProteinAssociations(model, self, new_id)
+            biomass_id = cm.create_new_id(
+                biomass_rid,
+                model_id,
+            )
 
-        self.__check_gene_activity__ = any([m.__check_gene_activity__ for m in models])
+            self._single_model_biomass_reaction_ids.append(
+                biomass_id
+            )
+
+        # Combine model stoichiometric structures
+        cm.combine_models(
+            models=models,
+            new_ids=self.custom_model_identifiers,
+            modelId=combined_model_id,
+            rename_all_species=rename_all_species,
+            merge_extracellular=merge_extracellular,
+            exchange_bound_policy=exchange_bound_policy,
+            copy_models=copy_models,
+            target_model=self,
+            pool_compartment=pool_compartment,
+        )
+
+        # Preserve gene activity checks
+        self.__check_gene_activity__ = any(
+            getattr(model, "__check_gene_activity__", False)
+            for model in models
+        )
+
 
     def __str__(self) -> str:
         """
         Return a string representation of the CommunityModel.
-
-        Returns:
-            str: A string representation of the CommunityModel.
-
         """
+
         return (
-            f"Model: {self.getId()} was build from "
-            f"{[id for id in self.single_model_ids]}"
+            f"Model: {self.getId()} was built from "
+            f"{self.single_model_ids}"
         )
+
 
     @property
     def custom_model_identifiers(self) -> list[str]:
@@ -106,245 +173,568 @@ class CommunityModel(Model):
     def single_model_biomass_reaction_ids(self) -> list[str]:
         return self._single_model_biomass_reaction_ids
 
-    def clone(self):
+    @property
+    def merge_extracellular(self) -> bool:
+        return self._merge_extracellular
+
+    @property
+    def exchange_bound_policy(self) -> str:
+        return self._exchange_bound_policy
+
+    @property
+    def rename_all_species(self) -> bool:
+        return self._rename_all_species
+
+    @property
+    def pool_compartment(self) -> str | None:
+        return getattr(self, "_pool_compartment", None)
+
+
+    def clone(self) -> "CommunityModel":
         """
         Create a deep copy of the CommunityModel instance.
 
         Returns:
-            CommunityModel: A new deep copy of the CommunityModel instance.
+            CommunityModel:
+                Deep copy of the CommunityModel.
         """
 
         new_instance = super().clone()
+
         new_instance._custom_model_identifiers = copy.deepcopy(
             self.custom_model_identifiers
         )
-        new_instance._single_model_biomass_reaction_ids = copy.deepcopy(
-            self.single_model_biomass_reaction_ids
+
+        new_instance._single_model_biomass_reaction_ids = (
+            copy.deepcopy(
+                self.single_model_biomass_reaction_ids
+            )
         )
-        new_instance._single_model_ids = copy.deepcopy(self.single_model_ids)
+
+        new_instance._single_model_ids = copy.deepcopy(
+            self.single_model_ids
+        )
+
+        new_instance._rename_all_species = (
+            self.rename_all_species
+        )
+
+        new_instance._merge_extracellular = (
+            self.merge_extracellular
+        )
+
+        new_instance._exchange_bound_policy = (
+            self.exchange_bound_policy
+        )
+
+        if hasattr(self, "_pool_compartment"):
+            new_instance._pool_compartment = (
+                self._pool_compartment
+            )
 
         return new_instance
 
     # TODO maybe implement __eq__() method
 
     def add_model_to_community(
-        self, model: Model, biomass_reaction: str, new_id: str = None
+        self,
+        model: Model,
+        biomass_reaction_id: str,
+        new_id: str | None = None,
+        copy_model: bool = False,
     ) -> None:
         """
-        Adds a model to the CommunityModel.
+        Add a model to the CommunityModel.
 
         Args:
-            model (Model): The model to be added.
-            biomass_reaction (str): The reaction ID of the biomass reaction of
-                the new model.
-            new_id (str, optional): The user-set identifier for the model.
-                Defaults to None. If set to None, the model ID will be used.
+            model (Model):
+                Model to be added.
 
+            biomass_reaction_id (str):
+                Biomass reaction ID of the added model.
+
+            new_id (str | None, optional):
+                User-set model-specific identifier used during merging.
+                If None, the original model ID is used.
+
+            copy_model (bool, optional):
+                If True, clone the model before merging.
+                Defaults to False.
         """
+
         if new_id is None:
             new_id = model.getId()
 
-        duplicate_species = cm.create_duplicate_species_dict([self, model])
+        if new_id in self.custom_model_identifiers:
+            raise ValueError(
+                f"Model identifier '{new_id}' already exists "
+                "in the community model."
+            )
 
-        cm.merge_compartments(model, self, new_id)
-        cm.merge_species(duplicate_species, model, new_id)
-        cm.merge_reactions(model, self, new_id)
+        # Merge directly into the current community
+        cm.combine_models(
+            models=[model],
+            new_ids=[new_id],
+            target_model=self,
+            rename_all_species=self.rename_all_species,
+            merge_extracellular=self.merge_extracellular,
+            exchange_bound_policy=self.exchange_bound_policy,
+            copy_models=copy_model,
+            pool_compartment=self.pool_compartment,
+        )
 
-        self.custom_model_identifiers.append(new_id)
-        self.single_model_ids.append(model.id)
-        self.single_model_biomass_reaction_ids.append(biomass_reaction)
+        # Update metadata bookkeeping
+        self._single_model_ids.append(model.getId())
+        self._custom_model_identifiers.append(new_id)
 
-    def remove_model_from_community(self, mid: str) -> None:
+        self._single_model_biomass_reaction_ids.append(
+            cm.create_new_id(
+                biomass_reaction_id,
+                new_id,
+            )
+        )
+
+        self.__check_gene_activity__ = (
+            self.__check_gene_activity__
+            or getattr(model, "__check_gene_activity__", False)
+        )
+
+
+    def remove_model_from_community(
+        self,
+        mid: str,
+        strategy: str = "cleanup",
+    ) -> None:
         """
         Remove a model from the CommunityModel.
 
         Args:
-            mid (str): The identifier of the model to be removed.
+            mid (str):
+                Identifier of the model to remove.
+                Both original model IDs and custom model identifiers
+                are accepted.
+
+            strategy (str, optional):
+                Removal strategy.
+
+                Available strategies:
+                    - "cleanup":
+                        Remove model-specific reactions and then
+                        delete orphan/non-reacting species.
+
+                    - "legacy":
+                        Remove reactions and species based on
+                        identifier/compartment matching.
+
+                Defaults to "cleanup".
 
         Raises:
-            Exception: If the provided model ID is not in the CommunityModel.
-
+            ValueError:
+                If the model is not present in the community
+                or if the strategy is invalid.
         """
+
         if mid in self.single_model_ids:
             index = self.single_model_ids.index(mid)
+
         elif mid in self.custom_model_identifiers:
             index = self.custom_model_identifiers.index(mid)
+
         else:
-            raise Exception("Model not in community")
+            raise ValueError(
+                f"Model '{mid}' not found in community."
+            )
 
         mid = self.custom_model_identifiers[index]
 
-        for rid in self.getReactionIds():
-            if mid in rid:
+        if strategy == "cleanup":
+
+            # Remove all model-specific reactions
+            reactions_to_delete = [
+                rid
+                for rid in self.getReactionIds()
+                if rid.endswith(f"_{mid}")
+            ]
+
+            for rid in reactions_to_delete:
                 self.deleteReactionAndBounds(rid)
 
-        for sid in self.getSpeciesIds():
-            species: Species = self.getSpecies(sid)
-            if mid in species.getCompartmentId():
-                self.deleteSpecies(sid)
+            # Remove orphan/non-reacting species
+            self.deleteNonReactingSpecies(simulate=False)
 
-        self.custom_model_identifiers.remove(mid)
-        del self.single_model_ids[index]
+        elif strategy == "legacy":
 
-        del self.single_model_biomass_reaction_ids[index]
+            # Remove reactions associated with the model
+            for rid in list(self.getReactionIds()):
 
-    def get_model_specific_reactions(self, mid: str) -> list[str]:
+                reaction: Reaction = self.getReaction(rid)
+
+                if (
+                    mid in rid
+                    or mid in reaction.getCompartmentId()
+                ):
+                    self.deleteReactionAndBounds(rid)
+
+            # Remove species associated with the model
+            for sid in list(self.getSpeciesIds()):
+
+                species: Species = self.getSpecies(sid)
+
+                if (
+                    mid in sid
+                    or mid in species.getCompartmentId()
+                ):
+                    self.deleteSpecies(sid)
+
+        else:
+            raise ValueError(
+                f"Unknown removal strategy '{strategy}'. "
+                "Available strategies are: "
+                "'cleanup', 'legacy'."
+            )
+        
+        # TODO:
+        # optionally remove orphan genes / GPRs
+
+        # Update bookkeeping
+        del self._single_model_ids[index]
+        del self._custom_model_identifiers[index]
+        del self._single_model_biomass_reaction_ids[index]
+
+
+    def get_model_specific_reactions(
+        self,
+        mid: str,
+    ) -> list[str]:
         """
-        Returns a list of reaction IDs specific to the given model.
+        Return reaction IDs specific to a given model.
 
         Args:
-            mid (str): The identifier of the model.
+            mid (str):
+                Model identifier.
 
         Raises:
-            NotInCombinedModel: If the provided model ID is not in the
-            CommunityModel.
+            NotInCombinedModel:
+                If the model identifier is not present
+                in the CommunityModel.
 
         Returns:
-            list[Reaction]: A list of reaction IDs specific to the given model.
-
+            list[str]:
+                Model-specific reaction IDs.
         """
 
         if mid not in self.custom_model_identifiers:
             raise NotInCombinedModel(
-                "The model id provided was not found in the combined model"
+                "The model id provided was not found "
+                "in the combined model"
             )
-        ans = []
-        for rid in self.getReactionIds():
-            if mid in rid:
-                ans.append(rid)
-        return ans
 
-    def get_model_specific_species(self, mid: str) -> list[str]:
+        return [
+            rid
+            for rid in self.getReactionIds()
+            if rid.endswith(f"_{mid}")
+        ]
+
+
+    def get_model_specific_species(
+        self,
+        mid: str,
+    ) -> list[str]:
         """
-        Returns a list of species IDs specific to the given model.
+        Return species IDs associated with a given model.
+
+        Species ownership is inferred from participation
+        in model-specific reactions.
 
         Args:
-            mid (str): The identifier of the model.
+            mid (str):
+                Model identifier.
 
         Raises:
-            NotInCombinedModel: If the provided model ID is not in the
-            CommunityModel.
+            NotInCombinedModel:
+                If the model identifier is not present.
 
         Returns:
-            list[Species]: A list of species IDs specific to the given model.
-
+            list[str]:
+                Species associated with the model.
         """
+
         if mid not in self.custom_model_identifiers:
             raise NotInCombinedModel(
-                "The model id provided was not found in the combined model"
+                "The model id provided was not found "
+                "in the combined model"
             )
-        ans = []
-        for species_id in self.m_model.getSpeciesIds():
-            species: Species = self.m_model.getSpecies(species_id)
-            if mid in species.getCompartmentId():
-                ans.append(species_id)
-        return ans
 
-    def get_reaction_bigg_ids(self, mid="") -> list[str]:
-        """Get the reaction BIGG IDs of all reactions
+        species_ids = set()
+
+        for rid in self.get_model_specific_reactions(mid):
+
+            reaction: Reaction = self.getReaction(rid)
+
+            species_ids.update(
+                reaction.getSpeciesIds()
+            )
+
+        return sorted(species_ids)
+
+
+    def get_reaction_bigg_ids(
+        self,
+        mid: str = "",
+    ) -> list[str]:
+        """
+        Return BIGG-style reaction IDs.
 
         Args:
-            mid (str, optional): If a model id is provided only reactions from
-            the specific model are returned
-            Defaults to "".
+            mid (str, optional):
+                If provided, only reactions associated
+                with the specified model are returned.
 
         Raises:
-            NotInCombinedModel: the id provided was not in the combined model
+            NotInCombinedModel:
+                If the model identifier is invalid.
 
         Returns:
-            list[str]: list containing the BIGG ids
+            list[str]:
+                BIGG-style reaction IDs.
         """
-        if mid != "":
+
+        if mid:
+
             if mid not in self.custom_model_identifiers:
                 raise NotInCombinedModel(
-                    "The model id provided was not found in the combined model"
+                    "The model id provided was not found "
+                    "in the combined model"
                 )
+
             reaction_ids = self.get_model_specific_reactions(mid)
-            reaction_ids = [rid.replace(f"_{mid}", "") for rid in reaction_ids]
+
         else:
-            reaction_ids = self.m_model.getReactionIds()
+            reaction_ids = self.getReactionIds()
+
+        cleaned_ids = []
+
+        for rid in reaction_ids:
+
+            cleaned = rid
+
             for appended_id in self.custom_model_identifiers:
-                reaction_ids = [
-                    rid.replace(f"_{appended_id}", "") for rid in reaction_ids
-                ]
-        reaction_ids = [rid.replace("R_", "") for rid in reaction_ids]
 
-        return reaction_ids
+                suffix = f"_{appended_id}"
 
-    def get_species_bigg_ids(self, mid="") -> list[str]:
-        """Get the species bigg ids of all species
+                if cleaned.endswith(suffix):
+                    cleaned = cleaned[:-len(suffix)]
+                    break
+
+            if cleaned.startswith("R_"):
+                cleaned = cleaned[2:]
+
+            cleaned_ids.append(cleaned)
+
+        return cleaned_ids
+
+
+    def get_species_bigg_ids(
+        self,
+        mid: str = "",
+    ) -> list[str]:
+        """
+        Return BIGG-style species IDs.
 
         Args:
-            mid (str, optional): When provided only the ids of a specific
-            model are returned.
-            Defaults to "".
+            mid (str, optional):
+                If provided, only species associated
+                with the specified model are returned.
 
         Raises:
-            NotInCombinedModel: the id provided was not in the combined model
+            NotInCombinedModel:
+                If the model identifier is invalid.
 
         Returns:
-            list[str]: list containing the bigg ids
+            list[str]:
+                BIGG-style species IDs.
+
+        Notes:
+            Under shared extracellular mode, species may
+            participate in multiple models simultaneously.
         """
-        if mid != "":
+
+        if mid:
+
             if mid not in self.custom_model_identifiers:
                 raise NotInCombinedModel(
-                    "The model id provided was not found in the combined model"
+                    "The model id provided was not found "
+                    "in the combined model"
                 )
+
             species_ids = self.get_model_specific_species(mid)
-            species_ids = [sid.replace(f"_{mid}", "") for sid in species_ids]
+
         else:
-            species_ids = self.m_model.getSpeciesIds()
+            species_ids = self.getSpeciesIds()
+
+        cleaned_ids = []
+
+        for sid in species_ids:
+
+            cleaned = sid
+
             for appended_id in self.custom_model_identifiers:
-                species_ids = [
-                    sid.replace(f"_{appended_id}", "") for sid in species_ids
-                ]
-        species_ids = [sid.replace("R_", "") for sid in species_ids]
 
-        return species_ids
+                suffix = f"_{appended_id}"
 
-    def identify_model_from_reaction(self, rid: str) -> str:
-        """Given a reaction id get the single model this reaction belonged to
+                if cleaned.endswith(suffix):
+                    cleaned = cleaned[:-len(suffix)]
+                    break
+
+            if cleaned.startswith("M_"):
+                cleaned = cleaned[2:]
+
+            cleaned_ids.append(cleaned)
+
+        return cleaned_ids
+
+
+    def identify_model_from_reaction(
+        self,
+        rid: str,
+    ) -> str:
+        """
+        Given a reaction ID, identify the originating model.
 
         Args:
-            rid (str): reaction id of the kinetic model
+            rid (str):
+                Reaction ID.
 
         Returns:
-            str: id of the old model
+            str:
+                Model identifier associated with the reaction.
+                Returns an empty string for shared/global reactions.
         """
-        for old_id in self.custom_model_identifiers:
-            if f"_{old_id}" in rid:
-                return old_id
+
+        for mid in self.custom_model_identifiers:
+
+            if rid.endswith(f"_{mid}"):
+                return mid
+
         return ""
 
-    def identify_biomass_reaction_for_model(self, mid: str) -> list[str]:
-        """Given a model id return the biomass reaction
+
+    def identify_biomass_reaction_for_model(
+        self,
+        mid: str,
+    ) -> str:
+        """
+        Return the biomass reaction associated with a model.
 
         Args:
-            mid (str): _description_
+            mid (str):
+                Model identifier.
 
         Returns:
-            str: _description_
+            str:
+                Biomass reaction ID.
+                Returns an empty string if unavailable.
         """
+
         if (
-            len(self.single_model_biomass_reaction_ids) > 0
+            self.single_model_biomass_reaction_ids
             and mid in self.custom_model_identifiers
         ):
+
             return self.single_model_biomass_reaction_ids[
                 self.custom_model_identifiers.index(mid)
             ]
 
         return ""
 
-    def identify_biomass_of_model_from_reaction_id(self, rid) -> str:
+
+    def identify_biomass_of_model_from_reaction_id(
+        self,
+        rid: str,
+    ) -> str:
+        """
+        Identify the biomass reaction associated with
+        the model owning a reaction.
+
+        Args:
+            rid (str):
+                Reaction ID.
+
+        Returns:
+            str:
+                Biomass reaction ID.
+                Returns an empty string if no model
+                association exists.
+        """
+
         model_id = self.identify_model_from_reaction(rid)
+
         if model_id == "":
             return ""
-        return self.identify_biomass_reaction_for_model(model_id)
+
+        return self.identify_biomass_reaction_for_model(
+            model_id
+        )
+
 
     def get_model_biomass_ids(self) -> dict[str, str]:
+        """
+        Return the mapping between model identifiers
+        and biomass reaction IDs.
+
+        Returns:
+            dict[str, str]:
+                Mapping:
+                    model_id -> biomass_reaction_id
+        """
+
         return dict(
             zip(
                 self.custom_model_identifiers,
                 self.single_model_biomass_reaction_ids,
             )
         )
+
+    def mark_dynamic_species(
+            self, 
+            auto: bool = True, 
+            include: list[str] = None, 
+            exclude: list[str] = None
+        ) -> None:
+            """
+            Marks species in the community model as either dynamic or non-dynamic 
+            for Dynamic FBA simulations (e.g., EndPointFBA, DynamicJointFBA).
+            
+            In dynamic simulations, extracellular metabolites usually accumulate or deplete 
+            over time. However, certain metabolites (like O2, CO2, or H2O) are often 
+            treated as infinite sinks/sources or assumed to be in a quasi-steady state 
+            with the environment (instantly replenished/consumed). 
+            
+            This method is a wrapper around the standalone helper `mark_dynamic_species`, 
+            which sets the custom `dcFBA_dynamic` attribute on the model's Species:
+            - Species explicitly in `include` will be marked True (will accumulate over time).
+            - Species explicitly in `exclude` will be marked False (quasi-steady state; 
+                their concentrations will not be tracked/linked over time).
+            - If `auto=True`, it uses a heuristic to automatically mark valid extracellular 
+                or pooled species as dynamic if they participate in both an exchange and a 
+                non-exchange reaction.
+                
+            Args:
+                auto (bool): If True, applies auto-detection heuristic to extracellular/pool species.
+                include (list[str]): List of species IDs to explicitly mark as dynamic.
+                exclude (list[str]): List of species IDs to explicitly exclude from being dynamic.
+            """
+            # 1. Determine the correct extracellular compartments for this specific community model
+            extracellular_comps = ["e", "extracellular"]
+            pool_comp = getattr(self, "pool_compartment", None)
+            if pool_comp:
+                extracellular_comps.append(pool_comp)
+
+            # 2. Pass self (which is a cbmpy Model) and the arguments to the standalone helper
+            _mark_dynamic_species_helper(
+                model=self,
+                auto=auto,
+                include=include,
+                exclude=exclude,
+                extracellular_compartments=extracellular_comps
+            )

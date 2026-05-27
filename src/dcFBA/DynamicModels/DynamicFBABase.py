@@ -32,6 +32,15 @@ class DynamicFBABase(StaticOptimizationModelBase):
         super().__init__()
         self._model = model.clone()
 
+        # validate metabolite IDs in initial_concentrations
+        invalid_keys = [k for k in initial_concentrations if k not in self._model.getSpeciesIds()]
+        if invalid_keys:
+            raise KeyError(
+                f"The following metabolite IDs do not exist in the model: {invalid_keys}.\n"
+                f"Note: You have merge_extracellular={model.merge_extracellular}.\n"
+                f"If merge_extracellular=False, you may need to use pool suffixes (e.g., 'glc__D_pool')."
+            )
+
         model_biomasses = model.get_model_biomass_ids()
 
         initial_biomasses = [[x] for x in biomasses]
@@ -158,38 +167,54 @@ class DynamicFBABase(StaticOptimizationModelBase):
         self._times = used_time
 
     def update_exchanges(self, dt: float) -> None:
-        """
-        Update exchange reaction lower bounds based on the metabolite
-        concentration of the current time step.
+            """
+            Update exchange reaction lower bounds based on the metabolite
+            concentration of the current time step.
 
-        Args:
-            dt (float): The time step for the simulation.
-        """
+            Args:
+                dt (float): The time step for the simulation.
+            """
 
-        for rid in self.model.getExchangeReactionIds():
-            reaction: Reaction = self.model.getReaction(rid)
-            # Exchanges only have one species:
-            sid = reaction.getSpeciesIds()[0]
-            # How I explain it: We normalize the exchange flux for how much the exchange can take up
-            # in 1 unit of time. In all other formulas we multiple by dt, making sure that the flux gets scaled to
-            # what it can take up in dt time.
-            reaction.setLowerBound(min(0, -self.metabolites[sid][-1] * (1 / dt)))
+            for rid in self.model.getExchangeReactionIds():
+                reaction: Reaction = self.model.getReaction(rid)
+                # Exchanges only have one species:
+                sid = reaction.getSpeciesIds()[0]
+                
+                species = self.model.getSpecies(sid)
+                # Check if the species is flagged as non-dynamic (quasi-steady state)
+                if hasattr(species, "dcFBA_dynamic") and not species.dcFBA_dynamic:
+                    # Do not restrict bounds based on concentration. 
+                    # It retains its standard FBA lower bound (e.g. -1000 for infinite sink)
+                    continue 
+                    
+                # How I explain it: We normalize the exchange flux for how much the exchange can take up
+                # in 1 unit of time. In all other formulas we multiple by dt, making sure that the flux gets scaled to
+                # what it can take up in dt time.
+                reaction.setLowerBound(min(0, -self.metabolites[sid][-1] * (1 / dt)))
 
     def update_concentrations(self, FBAsol: dict[str, float], dt: float) -> None:
-        """
-        Update metabolite concentrations after an FBA simulation step.
+            """
+            Update metabolite concentrations after an FBA simulation step.
 
-        Args:
-            FBAsol (dict): The solution vector from the FBA.
-            dt (float): The time step for the simulation.
-        """
+            Args:
+                FBAsol (dict): The solution vector from the FBA.
+                dt (float): The time step for the simulation.
+            """
 
-        for e in self.model.getExchangeReactionIds():
-            exchange: Reaction = self.model.getReaction(e)
+            for e in self.model.getExchangeReactionIds():
+                exchange: Reaction = self.model.getReaction(e)
 
-            sid = exchange.getSpeciesIds()[0]
-            if sid not in self.model.single_model_biomass_reaction_ids:
-                self.metabolites[sid].append(self.metabolites[sid][-1] + FBAsol[e] * dt)
+                sid = exchange.getSpeciesIds()[0]
+                if sid not in self.model.single_model_biomass_reaction_ids:
+                    species = self.model.getSpecies(sid)
+                    
+                    # Check if the species is flagged as non-dynamic (quasi-steady state)
+                    if hasattr(species, "dcFBA_dynamic") and not species.dcFBA_dynamic:
+                        # Append the previous concentration so it remains constant (dc/dt = 0)
+                        self.metabolites[sid].append(self.metabolites[sid][-1])
+                    else:
+                        # Standard dynamic update based on flux
+                        self.metabolites[sid].append(self.metabolites[sid][-1] + FBAsol[e] * dt)
 
     def update_reaction_bounds(self, kinetics_func) -> None:
         """

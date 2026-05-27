@@ -6,7 +6,7 @@ from cbmpy.CBModel import Reaction, Species
 
 from ..Exceptions import SpeciesNotFound
 from ..Models.CommunityModel import CommunityModel
-from ..Helpers.BuildEndPointModel import build_time_model
+from ..Helpers.BuildEndPointModel import build_time_model, is_dynamic_species
 from .DynamicModelBase import DynamicModelBase
 from ..Models import KineticsStruct
 
@@ -97,21 +97,37 @@ class EndPointFBA(DynamicModelBase):
         for mid in self.model.custom_model_identifiers:
             for i in range(len(self.times[:-1])):
                 temp_biomasses[mid].append(
-                    self.fluxes[f"BM_{mid}_{self.times[i]}_{self.times[i+1]}"]
+                    self.fluxes[f"LINK_BM_{mid}_{self.times[i]}_{self.times[i+1]}"]
                 )
             temp_biomasses[mid].append(self.fluxes[f"BM_{mid}_exchange_final"])
 
         self._biomasses = dict(temp_biomasses)
         del temp_biomasses
 
-    def _set_metabolites(self, keep_zero_metabolites = False, metabolites_to_keep = None) -> None:
+    def _set_metabolites(
+        self,
+        keep_zero_metabolites: bool = False,
+        metabolites_to_keep: list[str] | None = None,
+    ) -> None:
         """
         Private method to set the metabolite concentrations.
-        
+
+        Reconstruct dynamic metabolite concentration trajectories from the
+        EndPointFBA solution.
+
+        Only dynamically tracked metabolites are included.
+
+        Quasi-steady-state metabolites are excluded because they do not
+        possess accumulated concentration states in the model formulation.
+        Their behavior can be inspected through the corresponding exchange fluxes.
+
         Args:
-            keep_zero_metabolites (bool, optional): if True, also metabolites that are always zero are kept; default False.
-            metabolites_to_keep (list, optional) = list of species ID of the metabolites to keep even if they are always zero
-                                                    (in case keep_zero_metabolites == False). Default is None.
+            keep_zero_metabolites (bool):
+                If True, retain metabolites whose concentrations are always zero.
+
+            metabolites_to_keep (list[str] | None):
+                Metabolites that should never be removed even if their
+                concentrations are always zero.
         """
 
         if metabolites_to_keep is None:
@@ -119,33 +135,52 @@ class EndPointFBA(DynamicModelBase):
 
         pattern = rf"^(.*?)_{self.times[0]}"
         regex = re.compile(pattern)
+
         temp_metabolites: dict[str, list[float]] = {}
 
-        # Iterate through exchange reaction IDs
+        # Iterate through exchange reaction IDs to dynamically find initial concentrations
         for eid in self.model.getExchangeReactionIds():
-            # Get the species ID for the reaction
-            species_id: str = self.model.getReaction(eid).getSpeciesIds()[0]
+
+            # Get the species corresponding to the exchange reaction
+            reaction = self.model.getReaction(eid)
+            species_ids = reaction.getSpeciesIds()
+            if len(species_ids) != 1:
+                continue
+            sid = species_ids[0]
+
+            species = self.model.getSpecies(sid)
+
+            # Skip quasi-steady-state metabolites
+            if not is_dynamic_species(species, self.model):
+                continue
 
             # Search for the pattern in the species ID
-            match = regex.search(species_id)
+            match = regex.search(sid)
             if match is None:
                 continue
 
             # Extract the old species ID from the match
             old_species_id = match.group(1)
 
-            # Check if the old species ID has the desired prefix and update the metabolites dictionary if not
-            if not old_species_id.startswith("BM_c"):
-                temp_metabolites[old_species_id] = [-1 * self.fluxes[eid]]
+            # Skip community biomass
+            if old_species_id.startswith("BM_c"):
+                continue
 
-        for sid in temp_metabolites.keys():
+            # Initial concentration
+            temp_metabolites[old_species_id] = [-1 * self.fluxes[eid]]
+
+        for sid in list(temp_metabolites.keys()):
+
+            # Reconstruct concentrations through LINK reactions
             for i in range(len(self.times[:-1])):
-                temp_metabolites[sid].append(
-                    self.fluxes[f"{sid}_{self.times[i]}_{self.times[i+1]}"]
-                )
-            temp_metabolites[sid].append(self.fluxes[f"{sid}_exchange_final"])
+                link_id = f"LINK_{sid}_{self.times[i]}_{self.times[i+1]}"
+                temp_metabolites[sid].append(self.fluxes[link_id])
 
-        # delete metabolites with concentration always == 0.0 
+            # Safely check for the final sink reaction
+            final_id = f"{sid}_exchange_final"
+            temp_metabolites[sid].append(self.fluxes[final_id])
+
+        # Remove always-zero metabolites
         if not keep_zero_metabolites:
             keys_to_delete = [
                 k for k, v in temp_metabolites.items() if sum(v) == 0
@@ -190,24 +225,47 @@ class EndPointFBA(DynamicModelBase):
             fluxes[rid] = self.get_flux_values(rid)
         return fluxes
 
-    def get_specific_flux_values(self, rid: str) -> list[float]:
-        """Returns specific flux values for a given reaction ID.
-        Specific flux is defined by the aggregated flux divided
-        by the time-step size times the biomass
+    def get_specific_flux_values(self, rid: str, normalize_by_community: bool = False) -> list[float]:
+            """
+            Returns the specific flux values for a given reaction ID
+            for each time point.
+            Specific flux is defined by the aggregated flux divided
+            by the time-step size times the biomass.
 
-        Args:
-            rid (str): reaction id of the original model
+            Args:
+                rid (str): reaction id of the original model
+                normalize_by_community (bool): If True and the reaction is a community-level 
+                    reaction, normalizes by the total community biomass instead of crashing.
 
-        Returns:
-            list[float]: specific flux values
-        """
-        values = self.get_flux_values(rid)
-        mid = self.model.identify_model_from_reaction(rid)
+            Returns:
+                list[float]: specific flux values
+            """
+            values = self.get_flux_values(rid)
+            mid = self.model.identify_model_from_reaction(rid)
 
-        return [
-            v / (self.dt * self.biomasses[mid][i])
-            for i, v in enumerate(values)
-        ]
+            if not mid or mid not in self.biomasses:
+                if not normalize_by_community:
+                    raise ValueError(
+                        f"Reaction '{rid}' is a community-level reaction. "
+                        f"Set `normalize_by_community=True` if you wish to scale it "
+                        f"against the total community biomass."
+                    )
+                
+                # Compute total community biomass across all models for each time step
+                total_biomasses = [
+                    sum(self.biomasses[m][i] for m in self.biomasses)
+                    for i in range(len(self.times))
+                ]
+                
+                return [
+                    v / (self.dt * total_biomasses[i])
+                    for i, v in enumerate(values)
+                ]
+
+            return [
+                v / (self.dt * self.biomasses[mid][i])
+                for i, v in enumerate(values)
+            ]
 
     def get_community_growth_rate(self) -> list[float]:
         """Calculates and returns the community growth rate over time."
@@ -242,28 +300,63 @@ class EndPointFBA(DynamicModelBase):
 
         return {mid: numpy.divide(self.biomasses[mid], total) for mid in mids}
 
-    def simulate(self, sparse=False) -> float:
-        """Performs FBA (Flux Balance Analysis) on the EndPointFBA matrix.
+    def simulate(
+        self,
+        sparse: bool = False,
+        keep_zero_metabolites: bool = False,
+        metabolites_to_keep: list[str] | None = None,
+        track_metabolites: bool = True,
+        quiet: bool = False
+    ) -> float:
+        """
+        Perform Flux Balance Analysis (FBA) on the EndPointFBA model.
+
+        After optimization, fluxes, biomasses, and dynamic metabolite
+        concentration trajectories are reconstructed from the solution.
+
+        Only dynamically tracked metabolites are included in the
+        metabolite concentration outputs.
 
         Args:
-            sparse (False): Set to true if you want to use a sparse matrix
-                Sparse matrix decreases the amount of memory required
+            sparse (bool):
+                If True, build the stoichiometric matrix using a sparse
+                representation to reduce memory usage.
 
-         Returns:
-            float: Final community flux value,
-                NOTE that this is the total created community biomass.
-                Since there is no initial community biomass in the FBA.
-                To find the total community biomass you have to add
-                the initial amount of biomass.
+            keep_zero_metabolites (bool):
+                If True, retain metabolites whose reconstructed
+                concentrations are always zero.
+
+            metabolites_to_keep (list[str] | None):
+                List of metabolite IDs that should be retained even if
+                their concentrations are always zero.
+
+            track_metabolites (bool):
+                If True, reconstruct dynamic metabolite concentration
+                trajectories from the FBA solution.
+
+            quiet (bool):
+                If True, suppress solver output generated by CBMPy.
+
+        Returns:
+            float:
+                Final community biomass flux.
+
+                Note:
+                    This corresponds to biomass produced during the
+                    simulation and does not include the initial biomass.
         """
 
         matrix_type = "scipy_csr" if sparse else "numpy"
         self.model.buildStoichMatrix(matrix_type=matrix_type)
-        solution = cbmpy.doFBA(self.model, quiet=False, build_n=False)
+        solution = cbmpy.doFBA(self.model, quiet=quiet, build_n=False)
 
         self._set_fluxes()
         self._set_biomasses()
-        self._set_metabolites()
+        if track_metabolites:
+            self._set_metabolites(
+                keep_zero_metabolites=keep_zero_metabolites,
+                metabolites_to_keep=metabolites_to_keep,
+            )
 
         return solution
 
@@ -384,7 +477,7 @@ class EndPointFBA(DynamicModelBase):
                 reactionN: Reaction = self.model.getReaction(new_rid)
 
                 # Amount of biomass at time n
-                r_x_t = f"BM_{mid}_{self.times[i-1]}_{self.times[i]}"
+                r_x_t = f"LINK_BM_{mid}_{self.times[i-1]}_{self.times[i]}"
 
                 if rid in rids_lb_to_check:
                     udc = self.model.createUserDefinedConstraint(
@@ -491,6 +584,7 @@ class EndPointFBA(DynamicModelBase):
     #                 )
     #                 reactionN.setUpperBound(cbmpy.INF)
 
+
     def _set_initial_concentrations(
         self,
         initial_biomasses: dict[str, float],
@@ -521,11 +615,21 @@ class EndPointFBA(DynamicModelBase):
             # get species and it's corresponding exchange reaction
             species: Species = self.model.getSpecies(sid)
             rids = species.isReagentOf()
+            bounds_set = False  # Track if we actually applied the concentration
             for rid in rids:
                 reaction: Reaction = self.model.getReaction(rid)
                 if reaction.is_exchange:
                     reaction.setLowerBound(-value)
                     reaction.setUpperBound(-value)
+                    bounds_set = True
+
+            # If the species was found but had no true system exchange reactions, warn the user
+            if not bounds_set:
+                raise ValueError(
+                    f"Metabolite '{key}' was found, but it has no environmental exchange reactions. "
+                    f"If the community model was built with merge_extracellular=False, "
+                    f"ensure you are passing the pool metabolite ID instead of an organism-specific instance."
+                )
 
         for key, value in initial_biomasses.items():
             self.model.setReactionBounds(f"BM_{key}_exchange", -value, -value)
@@ -586,10 +690,11 @@ class EndPointFBA(DynamicModelBase):
         DEPRECATED: Use `mm_approximation_kinetic()` instead.
 
         Approximates the Michaelis-Menten curve for a given reaction using two
-        linear constraints based on kinetics information.
+        linear lines.
 
         When the EndPointFBA model is initialized with a `KineticsStruct` object, this method
-        approximates the Michaelis-Menten (MM) kinetics of a given reaction by using two linear constraints.
+        approximates the Michaelis-Menten (MM) kinetics of a given reaction by using two linear lines
+        instead of directly setting an upper and lower bound.
 
         See official documentation for a comprehensive explanation of this approximation method.
 
@@ -599,9 +704,7 @@ class EndPointFBA(DynamicModelBase):
         Raises:
             Exception: If no limiting substrate is defined in the `kinetics` object for the specified reaction.
         """
-        print("WARNING mm_approximation() is deprecated. "
-        "Use mm_approximation_kinetic() instead.")
-        #print("WARNING not production ready")
+        print("WARNING not production ready")
         sid, km, vmax = self.kinetics.get_reactions_kinetics(rid)
         if sid == "":
             raise Exception(
@@ -612,9 +715,8 @@ class EndPointFBA(DynamicModelBase):
         high_line = (vmax / 2) / km  # Option 2
 
         for i in range(0, len(self.times) - 1):
-            # Linking reaction is the concentration of Substrate for the
-            # timepoint
-            linking_reaction_id = f"{sid}_{self.times[i]}_{self.times[i+1]}"
+            # Linking reaction is the concentration of Substrate for the timepoint
+            linking_reaction_id = f"LINK_{sid}_{self.times[i]}_{self.times[i+1]}"
             t_rid = rid + "_" + self.times[i + 1]
 
             udc = self.model.createUserDefinedConstraint(
@@ -851,7 +953,6 @@ class EndPointFBA(DynamicModelBase):
 
         self.model.addUserDefinedConstraint(udc)
 
-
     def binary_search_balanced_growth(self, Xin, Xfin, tolerance: float = 1e-6):
         """
         Perform a binary search to determine the maximum feasible balanced growth
@@ -954,7 +1055,6 @@ class EndPointFBA(DynamicModelBase):
             )
             phi_final.setCoefficient(-1.0 * Xfin)
 
-
     # TODO In construction
     def remove_balanced_growth_constraints(self, initial_biomasses={}):
         """Restore the EndPointFBA model to before balanced growth constraints
@@ -1036,7 +1136,6 @@ class EndPointFBA(DynamicModelBase):
         Example:
             Apply QP on all biomass reactions, fix them, and apply QP on specific fluxes:
 
-            ```python
             bm_reactions = [bid for _, bid in ep.model.get_model_biomass_ids().items()]
             ep.set_subset_qp(solution, bm_reactions)
             ep.simulate()  # run QP on biomasses
@@ -1044,7 +1143,6 @@ class EndPointFBA(DynamicModelBase):
             biomasses = ep.biomasses
             ep.set_qp_specific_fluxes(solution, biomasses)
             ep.simulate()  # run QP on specific fluxes
-            ```
 
             Note: the `solution` value should remain the one from the original
             endpoint problem (EP), not from the QP simulation.
@@ -1130,7 +1228,6 @@ class EndPointFBA(DynamicModelBase):
                 fluxes.
             - Example usage:
 
-                ```python
                 bm_reactions = [bid for _, bid in ep.model.get_model_biomass_ids().items()]
                 ep.set_subset_qp(solution, bm_reactions)
                 ep.simulate()  # run QP on biomasses
@@ -1138,7 +1235,6 @@ class EndPointFBA(DynamicModelBase):
                 biomasses = ep.biomasses
                 ep.set_qp_specific_fluxes(solution, biomasses)
                 ep.simulate()  # run QP on specific fluxes
-                ```
         """
         obj = self.model.getActiveObjective()
         obj.setOperation("minimize")
@@ -1161,6 +1257,9 @@ class EndPointFBA(DynamicModelBase):
                     if rid not in biomass_reactions_ids: 
                         rid_t_t1 = f"{rid}_{self.times[i+1]}"
                         rid_t_t0 = f"{rid}_{self.times[i]}"
+
+                        bm_t_t0 = None
+                        bm_t_t1 = None
                         
                         # fix all biomass reactions to their value
                         # usa identify_model_from_reaction?
@@ -1169,6 +1268,9 @@ class EndPointFBA(DynamicModelBase):
                                 bm_t_t1 = biomasses[mid][i+1]
                                 bm_t_t0 = biomasses[mid][i]
                                 break
+
+                        if bm_t_t0 is None or bm_t_t1 is None:
+                            continue # skip unassigned reactions safely
 
                         if i == 0:
                             bm_coeff = bm_t_t0 * bm_t_t0
@@ -1226,7 +1328,7 @@ class EndPointFBA(DynamicModelBase):
             - Typically run after a biomass QP (`set_subset_qp`) for smoother internal fluxes.
 
         Example:
-            ```python
+
             bm_reactions = [bid for _, bid in ep.model.get_model_biomass_ids().items()]
             ep.set_subset_qp(solution, bm_reactions)
             ep.simulate()  # run QP on biomasses
@@ -1235,7 +1337,7 @@ class EndPointFBA(DynamicModelBase):
             subset_reactions = ["R_GLYCOLYSIS_mid1", "R_TCA_mid2"]
             ep.set_subset_qp_specific_fluxes(solution, subset_reactions, biomasses)
             ep.simulate()  # run QP on specific fluxes for the subset
-            ```
+
         """
 
         obj = self.model.getActiveObjective()
@@ -1266,6 +1368,9 @@ class EndPointFBA(DynamicModelBase):
                 rid_t_t1 = f"{rid}_{self.times[i+1]}"
                 rid_t_t0 = f"{rid}_{self.times[i]}"
 
+                bm_t_t0 = None
+                bm_t_t1 = None
+
                 # fix all biomass reactions to their value
                 # TODO usa identify_model_from_reaction?
                 for mid, _ in self.model.get_model_biomass_ids().items():
@@ -1273,6 +1378,9 @@ class EndPointFBA(DynamicModelBase):
                         bm_t_t1 = biomasses[mid][i+1]
                         bm_t_t0 = biomasses[mid][i]
                         break
+
+                if bm_t_t0 is None or bm_t_t1 is None:
+                    continue # skip unassigned reactions safely
 
                 if i == 0:
                     bm_coeff = bm_t_t0 * bm_t_t0

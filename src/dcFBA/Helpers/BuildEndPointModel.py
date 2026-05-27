@@ -14,6 +14,8 @@ from cbmpy.CBModel import (
 
 from ..Models.CommunityModel import CommunityModel
 
+from .DynamicSetup import ensure_dynamic_flags, is_dynamic_species
+
 import weakref
 
 
@@ -31,6 +33,10 @@ def build_time_model(cm: CommunityModel, times: list[str]) -> CommunityModel:
 
     """
     initial_model: CommunityModel = cm.clone()
+
+    # ensure the initial model has the dynamic metabolites flagged
+    # TODO: double check that flags are preserved with cloning
+    ensure_dynamic_flags(initial_model)
 
     # strip the intial model gene protein associations for the EndPointModel
     # TODO SetUpperBOund for inactive genes!!!
@@ -85,34 +91,85 @@ def add_time_point(
 
 
 def set_exchanges(
-    initial_model: CommunityModel, final_model: CommunityModel, times
-):
+    initial_model: CommunityModel,
+    final_model: CommunityModel,
+    times: list[str],
+) -> None:
+    """
+    Create the initial exchange pool and final sink reactions for
+    dynamically tracked metabolites.
+
+    Dynamic metabolites:
+    - receive an initial exchange reaction at the first time point
+    - receive a final irreversible sink exchange at the last time point
+    - accumulate/deplete through LINK reactions between time points
+
+    Quasi-steady-state metabolites:
+    - do not receive dynamic pool exchanges
+    - do not accumulate over time
+    - are instead duplicated as ordinary exchange reactions at every
+      time point in add_reactions()
+
+    Dynamic behavior is determined by is_dynamic_species().
+
+    Args:
+        initial_model (CommunityModel):
+            The source community model.
+
+        final_model (CommunityModel):
+            The time-expanded model being constructed.
+
+        times (list[str]):
+            Ordered list of time identifiers.
+    """
+
     # Exchanges only exchange through the first time point
     for exchange in initial_model.getExchangeReactionIds():
         reaction: Reaction = initial_model.getReaction(exchange)
 
         # Exchange only has one species
-        sid = reaction.getSpeciesIds()[0]
-        species: Species = initial_model.getSpecies(sid)
-        final_model.createReaction(
-            exchange, reaction.name, reversible=True, silent=True
+        species_ids = reaction.getSpeciesIds()
+        assert len(species_ids) == 1, (
+            f"Exchange reaction {exchange} must contain exactly one species."
         )
+        sid = species_ids[0]
+        species: Species = initial_model.getSpecies(sid)
+
+        # Skip quasi-steady-state species
+        # If it is not dynamic, we treat it as a regular reaction (handled in add_reactions)
+        if not is_dynamic_species(species, initial_model):
+            continue
+
+        final_model.createReaction(
+            exchange,
+            reaction.name,
+            reversible=True,
+            silent=True,
+        )
+
         new_reaction = final_model.getReaction(exchange)
         new_reaction.setLowerBound(reaction.getLowerBound())
         new_reaction.setUpperBound(reaction.getUpperBound())
         new_reaction.is_exchange = True
 
-        new_species = species.clone()
-        new_species.setId(f"{sid}_{times[0]}")
+        # new_species = species.clone()
+        new_species_id =f"{sid}_{times[0]}"
+        # new_species.setId(new_species_id)
+        # new_species.setCompartmentId(
+        #     f"{species.getCompartmentId()}_{times[0]}"
+        # )
 
-        new_species.setCompartmentId(
-            f"{species.getCompartmentId()}_{times[0]}"
+        # if new_species_id not in final_model.getSpeciesIds():
+        #     final_model.addSpecies(new_species)
+
+        new_reaction.createReagent(new_species_id, -1)
+
+        # Create irreversible sink at final time point
+        add_final_exchange(
+            final_model,
+            new_reaction,
+            times[-1],
         )
-        new_reaction.createReagent(new_species.getId(), -1)
-
-        # Also create an exchange in the final time point. Such that
-        # metabolites can flow out of the system
-        add_final_exchange(final_model, new_reaction, times[-1])
 
 
 def add_time_compartments(
@@ -155,39 +212,54 @@ def add_reactions(
         None
 
     """
-
     for rid in initial_model.getReactionIds():
         reaction: Reaction = initial_model.getReaction(rid)
-        if not reaction.is_exchange:
-            new_id = rid + "_" + time_id
-            # start_time = time.time()
-            new_reaction: Reaction = Reaction(
-                new_id, reaction.name, reaction.reversible
+
+        # Determine if this is a dynamic exchange
+        is_dynamic_exchange = False
+
+        if getattr(reaction, "is_exchange", False):
+
+            species_ids = reaction.getSpeciesIds()
+
+            assert len(species_ids) == 1, (
+                f"Exchange reaction {rid} must contain exactly one species."
             )
+
+            sid = species_ids[0]
+            species = initial_model.getSpecies(sid)
+
+            is_dynamic_exchange = is_dynamic_species(
+                species,
+                initial_model,
+            )
+
+        # If it's a standard internal reaction OR a quasi-steady state exchange,
+        # we duplicate it at every time step
+        if not is_dynamic_exchange:
+            new_id = f"{rid}_{time_id}"
+            
+            new_reaction: Reaction = Reaction(
+                new_id, 
+                reaction.name, 
+                reaction.reversible
+            )
+            
+            # Retain the exchange flag for quasi-steady state exchanges
+            if getattr(reaction, "is_exchange", False):
+                new_reaction.is_exchange = True
+
             final_model.addReaction(
-                new_reaction,
-                create_default_bounds=False,
+                new_reaction, 
+                create_default_bounds=False, 
                 silent=True,
             )
-
-            # Dirty work around, should be fixed in cbmpy 0.9.0
-            # Than just use: final_model.createReactionBounds(new_id, reaction.getLowerBound(), reaction.getUpperBound())
-            boundId = "%s_%s_bnd" % (new_id, "lower")
-            flux = FluxBound(
-                boundId, new_id, "greaterEqual", reaction.getLowerBound()
+            
+            final_model.createReactionBounds(
+                new_id,
+                reaction.getLowerBound(),
+                reaction.getUpperBound(),
             )
-            final_model.__pushGlobalId__(flux.getId(), flux)
-
-            flux.__objref__ = weakref.ref(final_model)
-            final_model.flux_bounds.append(flux)
-            boundId = "%s_%s_bnd" % (new_id, "upper")
-            flux = FluxBound(
-                boundId, new_id, "lessEqual", reaction.getUpperBound()
-            )
-            final_model.__pushGlobalId__(flux.getId(), flux)
-
-            flux.__objref__ = weakref.ref(final_model)
-            final_model.flux_bounds.append(flux)
 
 
 def add_biomass_species(initial_model: CommunityModel) -> None:
@@ -243,6 +315,7 @@ def copy_species_and_reagents(
             species.getCompartmentId() + "_" + time_id
         )
 
+        # if new_id not in final_model.getSpeciesIds():
         final_model.addSpecies(new_species)
 
         for rid in species.isReagentOf():
@@ -258,24 +331,58 @@ def copy_species_and_reagents(
                 )
 
 
-def add_time_link(model: CommunityModel, time0, time1):
+def add_time_link(model: CommunityModel, time0: str, time1: str) -> None:
+    """
+    Creates linking reactions that carry dynamic metabolites from one time point to the next.
+
+    Dynamic ans quasi-steady-state species are determined using is_dynamic_species().
+    Species classified as dynamic:
+    - receive LINK reactions
+    - accumulate over time
+    while those clasisfied quasi-steady-state are instead treated as independent exchange fluxes 
+    at each time point.
+    
+    Advanced users can override this behavior by setting the `dcFBA_dynamic` attribute on a 
+    Species object (e.g., using DynamicSetup.mark_dynamic_species()). 
+    - If `dcFBA_dynamic` is True, a linking reaction is created regardless of compartment.
+    - If `dcFBA_dynamic` is False, the species is skipped (useful for putting species like 
+      O2 in a quasi-steady state where they do not accumulate).
+
+    Args:
+        model (CommunityModel): The time-expanded community model being built.
+        time0 (str): The current time step identifier (e.g., 'time0').
+        time1 (str): The next time step identifier (e.g., 'time1').
+    """
+    
     for sid in model.getSpeciesIds():
-        if "final" not in sid:
-            old_id = re.match(r"(.*?)_time\d+", sid).group(1)
 
-            species: Species = model.getSpecies(sid)
-            if species.getCompartmentId() == f"e_{time0}":
-                # TODO maybe prefix with LINK_?
-                rid = f"{sid}_{time1}"
-                linking_reaction = model.createReaction(
-                    rid, reversible=False, silent=True
-                )
+        # Final sink species are not propagated forward
+        if "final" in sid:
+            continue
 
-                linking_reaction = model.getReaction(rid)
-                linking_reaction.createReagent(sid, -1)
-                linking_reaction.createReagent(f"{old_id}_{time1}", 1)
-                linking_reaction.setLowerBound(0)
-                linking_reaction.setUpperBound(numpy.inf)
+        match = re.match(r"(.*?)_time\d+", sid)
+        if not match:
+            continue
+        
+        old_id = match.group(1)
+        species: Species = model.getSpecies(sid)
+
+        # Skip quasi-steady-state species
+        if not is_dynamic_species(species, model):
+            continue
+
+        # Create the reaction that moves the metabolite from time0 to time1
+        if sid.endswith(time0):
+            rid = f"LINK_{sid}_{time1}"
+            model.createReaction(
+                rid, reversible=False, silent=True
+            )
+
+            linking_reaction = model.getReaction(rid)
+            linking_reaction.createReagent(sid, -1)
+            linking_reaction.createReagent(f"{old_id}_{time1}", 1)
+            linking_reaction.setLowerBound(0)
+            linking_reaction.setUpperBound(numpy.inf)
 
 
 def add_final_exchange(
@@ -314,3 +421,5 @@ def add_final_exchange(
 
     final_exchange.createReagent(f"{old_id}_{time_id}", -1)
     final_exchange.is_exchange = True
+
+

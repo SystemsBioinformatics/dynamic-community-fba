@@ -266,6 +266,12 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             for rid in model.getExchangeReactionIds():
                 reaction: Reaction = model.getReaction(rid)
                 sid = reaction.getSpeciesIds()[0]
+                species = model.getSpecies(sid)
+
+                # Bypass bound restriction for quasi-steady-state species
+                if hasattr(species, "dcFBA_dynamic") and not species.dcFBA_dynamic:
+                    continue
+
                 reaction.setLowerBound(-self.metabolites[sid][-1] * (1 / dt))
 
     def update_concentrations(
@@ -277,6 +283,7 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
             fluxes (dict[str, dict[str, float]]): FBA solution
             dt (float): time step
         """
+        # Carry over previous concentrations for the new time step
         for key in self.metabolites.keys():
             self.metabolites[key].append(self.metabolites[key][-1])
         for mid, fbasol in fluxes.items():
@@ -285,9 +292,13 @@ class DynamicParallelFBA(StaticOptimizationModelBase):
                 model = self.models[mid]
                 for eid in model.getExchangeReactionIds():
                     reaction: Reaction = model.getReaction(eid)
-                    sid = reaction.getSpeciesIds()[
-                        0
-                    ]  # exchanges should only have 1 reactant
+                    sid = reaction.getSpeciesIds()[0]  # exchanges should only have 1 reactant
+                    species = model.getSpecies(sid)
+
+                    # Only apply flux changes if the species is dynamic
+                    if hasattr(species, "dcFBA_dynamic") and not species.dcFBA_dynamic:
+                        continue
+                    
                     self.metabolites[sid][-1] += round((fbasol[eid] * dt), 5)
 
     def update_biomasses(

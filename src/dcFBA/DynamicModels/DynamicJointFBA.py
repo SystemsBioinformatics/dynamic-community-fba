@@ -43,6 +43,7 @@ class DynamicJointFBA(DynamicFBABase):
         self.set_community_biomass_reaction()
         self._metabolites["X_c"] = [sum(biomasses)]
 
+
     def set_community_biomass_reaction(self) -> None:
         """
         Set up the community biomass reaction.
@@ -51,8 +52,12 @@ class DynamicJointFBA(DynamicFBABase):
         each model's biomass reaction. Additionally, a community biomass exchange reaction (X_comm)
         is created and designated as the model's objective function.
         """
+
+        # Dynamically select the shared environment compartment
+        comp = self.model.pool_compartment if self.model.pool_compartment else "e"
+
         self.model.createSpecies(
-            "X_c", False, "The community biomass", compartment="e"
+            "X_c", False, "The community biomass", compartment=comp
         )
 
         for _, biomass_id in self.model.get_model_biomass_ids().items():
@@ -69,6 +74,8 @@ class DynamicJointFBA(DynamicFBABase):
         self.model.createObjectiveFunction("X_comm")
 
         self.model.setActiveObjective("X_comm_objective")
+
+        
 
     def get_community_growth_rate(self) -> list[float]:
         """Calculates and returns the community growth rate
